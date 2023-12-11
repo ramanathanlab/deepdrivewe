@@ -1,2 +1,4 @@
 colmena==0.5.2
 parsl
+pyyaml==6.0
+mdtraj==1.9.9
