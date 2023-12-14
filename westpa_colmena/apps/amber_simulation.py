@@ -80,8 +80,8 @@ class CppTrajAnalyzer:
 
             # Parse the cpptraj output file (first line is a header)
             lines = Path(align_file).read_text().splitlines()[1:]
-            second_column = [line.split()[1] for line in lines if line]
-            pcoord = [float(x) for x in second_column]
+            # The second column is the progress coordinate
+            pcoord = [float(line.split()[1]) for line in lines if line]
 
         return np.array(pcoord)
 
@@ -99,3 +99,10 @@ class CppTrajAnalyzer:
         aligned_coordinates = traj_aligned.xyz
 
         return aligned_coordinates
+
+
+@dataclass
+class SimulationResult:
+    pcoord: np.ndarray
+    coords: np.ndarray
+    restart_file: Path

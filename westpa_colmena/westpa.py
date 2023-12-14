@@ -6,7 +6,6 @@ from argparse import ArgumentParser
 from functools import partial, update_wrapper
 from pathlib import Path
 from typing import Any, List
-import numpy as np
 
 from colmena.queue import ColmenaQueues
 from colmena.models import Result
@@ -22,6 +21,7 @@ from westpa_colmena.api import (  # InferenceCountDoneCallback,
     TimeoutDoneCallback,
 )
 from westpa_colmena.parsl import ComputeSettingsTypes
+from westpa_colmena.apps.amber_simulation import SimulationResult
 
 
 def run_simulation(
@@ -32,10 +32,22 @@ def run_simulation(
     checkpoint_file: Path,
     reference_pdb_file: Path,
     cpp_traj_exe: Path,
-) -> tuple[np.ndarray, np.ndarray, Path]:
+) -> SimulationResult:
     """Run a simulation and return the pcoord and coordinates."""
 
-    from westpa_colmena.apps.amber_simulation import AmberSimulation, CppTrajAnalyzer
+    from westpa_colmena.apps.amber_simulation import (
+        AmberSimulation,
+        CppTrajAnalyzer,
+        SimulationResult,
+    )
+
+    # from proxystore.proxy import Proxy
+    # from proxystore.factory import SimpleFactory
+    # from westpa_colmena.apps.amber_simulation import SimulationResult as Result
+    # class SimulationResult(Result):
+    #     def __post_init__(self) -> None:
+    #         factory = SimpleFactory(self.coords)
+    #         self.coords = Proxy(factory)
 
     # First run the simulation
     simulation = AmberSimulation(
@@ -52,14 +64,16 @@ def run_simulation(
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
 
-    return pcoord, coords, simulation.restart_file
+    result = SimulationResult(pcoord, coords, simulation.restart_file)
+
+    return result
 
 
 def run_train(input_data: Any) -> None:
     ...
 
 
-def run_inference(input_data: Any) -> None:
+def run_inference(input_data: List[SimulationResult]) -> None:
     ...
 
 
@@ -71,7 +85,6 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         simulation_input_dir: Path,
         num_workers: int,
         simulations_per_train: int,
-        simulations_per_inference: int,
     ) -> None:
         """
         Parameters
@@ -111,10 +124,11 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         self.run_inference = Event()
 
         # Custom data structures
-        self.train_input: List[Any] = []
-        self.inference_input: List[Any] = []
-        self.simulations_per_train = 1
-        self.simulations_per_inference = 1
+        self.train_input: List[SimulationResult] = []
+        self.inference_input: List[SimulationResult] = []
+        # Always want to run inference on all the simulations in the batch
+        self.simulations_per_train = simulations_per_train
+        self.simulations_per_inference = self.num_workers - 1
 
     def log_result(self, result: Result, topic: str) -> None:
         """Write a JSON result per line of the output file."""
@@ -213,10 +227,6 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         self.handle_inference_output(result.value)
         self.logger.info("Inference process is complete")
 
-    def westpa_logic(self) -> None:
-        """Analyze the current batch of simulations and output a new set of starting points."""
-        self.westpa_split()
-        self.westpa_merge()
 
     def simulate(self) -> None:
         """Start a simulation task.
@@ -242,7 +252,7 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         self.inference_input = []  # Clear batched data
         self.logger.info("processed inference result")
 
-    def handle_simulation_output(self, output: Any) -> None:
+    def handle_simulation_output(self, output: SimulationResult) -> None:
         """Stores a simulation output in the training set and define new inference tasks
 
         Should call ``self.run_training.set()`` and/or ``self.run_inference.set()``
