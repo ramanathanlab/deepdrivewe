@@ -105,4 +105,5 @@ class CppTrajAnalyzer:
 class SimulationResult:
     pcoord: np.ndarray
     coords: np.ndarray
-    restart_file: Path
+    restart_file: Path | None
+    parent_restart_file: Path

@@ -64,7 +64,12 @@ def run_simulation(
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
 
-    result = SimulationResult(pcoord, coords, simulation.restart_file)
+    result = SimulationResult(
+        pcoord=pcoord,
+        coords=coords,
+        restart_file=simulation.restart_file,
+        parent_restart_file=checkpoint_file,
+    )
 
     return result
 

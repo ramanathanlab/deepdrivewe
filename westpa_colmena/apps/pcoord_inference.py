@@ -5,6 +5,7 @@ from westpa_colmena.apps.amber_simulation import SimulationResult
 import numpy as np
 from dataclasses import dataclass, field
 
+# TODO: It would be nice to support merge multiple into 1 and split 1 into multiple
 
 def westpa_logic() -> None:
     """Analyze the current batch of simulations and output a new set of starting points."""
@@ -67,13 +68,29 @@ class WeightedEnsemble:
             prev_simulation_id=sim.simulation_id,
         )
 
+        # TODO: Probably easier to store the restart_file and parent_restart_file
+        # in the SimulationMetadata object so that we don't have to store everything
+        # (pcoords, coords, etc) in the SimulationResult object. This means we also
+        # don't need to maintain a separate list of SimulationResult objects which will
+        # make it easier to checkpoint the WeightedEnsemble object, since it will only
+        # store be plain old data and otherwise be stateless. We could store it as a json
+        # file or something similar once per iteration.
+
         # Update the weight of the parent simulation so that the total
         # weight of the ensemble sums to one
         self.simulations[sim.simulation_id].weight /= 2
 
+        # Setup a new simulation result object for the new simulation
+        assert result.restart_file is not None
+        new_result = SimulationResult(
+            pcoord=[],
+            coords=[],
+            restart_file=None,
+            parent_restart_file=result.restart_file
+        )
+
         # Add the new simulation data to the lists
-        # TODO: This should be a new result (consider making an empty result?)
-        self.data.append(result)
+        self.data.append(new_result)
         self.simulations.append(new_simulation)
 
     def merge(
