@@ -130,7 +130,12 @@ class WeightedEnsemble:
         to_merge: list[list[SimulationMetadata]],
         n_split: int = 2,
     ) -> None:
-        """Advance the iteration of the weighted ensemble."""
+        """Advance the iteration of the weighted ensemble.
+
+        The binner is responsible for determining which simulations to split
+        and merge. The binner will then call this method to advance the
+        iteration of the weighted ensemble.
+        """
         # Create a list to store the new simulations for this iteration
         self.simulations.append([])
         self.iteration_idx += 1

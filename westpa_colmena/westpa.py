@@ -1,27 +1,37 @@
 """DeepDriveMD WESTPA example."""
+from __future__ import annotations
+
+import itertools
 import logging
 import time
-import itertools
 from argparse import ArgumentParser
-from functools import partial, update_wrapper
+from functools import partial
+from functools import update_wrapper
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
-from colmena.queue import ColmenaQueues
 from colmena.models import Result
-from colmena.thinker import BaseThinker, result_processor, agent, event_responder
+from colmena.queue import ColmenaQueues
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
+from colmena.thinker import agent
+from colmena.thinker import BaseThinker
+from colmena.thinker import event_responder
+from colmena.thinker import result_processor
 from proxystore.store import register_store
 from proxystore.store.file import FileStore
 
 from westpa_colmena.api import (  # InferenceCountDoneCallback,
     DeepDriveMDSettings,
+)
+from westpa_colmena.api import (  # InferenceCountDoneCallback,
     SimulationCountDoneCallback,
+)
+from westpa_colmena.api import (  # InferenceCountDoneCallback,
     TimeoutDoneCallback,
 )
-from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.apps.amber_simulation import SimulationResult
+from westpa_colmena.parsl import ComputeSettingsTypes
 
 
 def run_simulation(
@@ -34,12 +44,9 @@ def run_simulation(
     cpp_traj_exe: Path,
 ) -> SimulationResult:
     """Run a simulation and return the pcoord and coordinates."""
-
-    from westpa_colmena.apps.amber_simulation import (
-        AmberSimulation,
-        CppTrajAnalyzer,
-        SimulationResult,
-    )
+    from westpa_colmena.apps.amber_simulation import AmberSimulation
+    from westpa_colmena.apps.amber_simulation import CppTrajAnalyzer
+    from westpa_colmena.apps.amber_simulation import SimulationResult
 
     # from proxystore.proxy import Proxy
     # from proxystore.factory import SimpleFactory
@@ -51,7 +58,11 @@ def run_simulation(
 
     # First run the simulation
     simulation = AmberSimulation(
-        amber_exe, md_input_file, prmtop_file, output_dir, checkpoint_file
+        amber_exe,
+        md_input_file,
+        prmtop_file,
+        output_dir,
+        checkpoint_file,
     )
 
     # Run the simulation
@@ -59,7 +70,8 @@ def run_simulation(
 
     # Then run cpptraj to get the pcoord and coordinates
     analyzer = CppTrajAnalyzer(
-        cpp_traj_exe=cpp_traj_exe, reference_pdb_file=reference_pdb_file
+        cpp_traj_exe=cpp_traj_exe,
+        reference_pdb_file=reference_pdb_file,
     )
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
@@ -78,7 +90,7 @@ def run_train(input_data: Any) -> None:
     ...
 
 
-def run_inference(input_data: List[SimulationResult]) -> None:
+def run_inference(input_data: list[SimulationResult]) -> None:
     ...
 
 
@@ -113,7 +125,7 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
 
         # Collect initial simulation directories, assumes they are in nested subdirectories
         self.simulation_input_dirs = itertools.cycle(
-            filter(lambda p: p.is_dir(), simulation_input_dir.glob("*"))
+            filter(lambda p: p.is_dir(), simulation_input_dir.glob('*')),
         )
 
         # Keep track of the workflow state
@@ -129,20 +141,23 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         self.run_inference = Event()
 
         # Custom data structures
-        self.train_input: List[SimulationResult] = []
-        self.inference_input: List[SimulationResult] = []
+        self.train_input: list[SimulationResult] = []
+        self.inference_input: list[SimulationResult] = []
         # Always want to run inference on all the simulations in the batch
         self.simulations_per_train = simulations_per_train
         self.simulations_per_inference = self.num_workers - 1
 
     def log_result(self, result: Result, topic: str) -> None:
         """Write a JSON result per line of the output file."""
-        with open(self.result_dir / f"{topic}.json", "a") as f:
-            print(result.json(exclude={"inputs", "value"}), file=f)
+        with open(self.result_dir / f'{topic}.json', 'a') as f:
+            print(result.json(exclude={'inputs', 'value'}), file=f)
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         self.queues.send_inputs(
-            *inputs, method=f"run_{topic}", topic=topic, keep_inputs=False
+            *inputs,
+            method=f'run_{topic}',
+            topic=topic,
+            keep_inputs=False,
         )
         self.task_counter[topic] += 1
 
@@ -151,7 +166,7 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         while not self.done.is_set():
             for callback in self.done_callbacks:
                 if callback.workflow_finished(self):
-                    self.logger.info("Exiting DeepDriveMD")
+                    self.logger.info('Exiting DeepDriveMD')
                     self.done.set()
                     return
             time.sleep(1)
@@ -163,18 +178,19 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         for _ in range(self.num_workers - 1):
             self.simulate()
 
-    @result_processor(topic="simulation")  # type: ignore[misc]
+    @result_processor(topic='simulation')  # type: ignore[misc]
     def process_simulation_result(self, result: Result) -> None:
         """Receive a training result and then submit new tasks
 
         Will always submit a new simulation tasks and an inference or training
-        if the :meth:`handle_simulation_output` sets the appropriate flags."""
+        if the :meth:`handle_simulation_output` sets the appropriate flags.
+        """
         # Log simulation job results
-        self.log_result(result, "simulation")
+        self.log_result(result, 'simulation')
         if not result.success:
             # TODO (wardlt): Should we submit a new simulation if one fails?
             # (braceal): Yes, I think so. I think we can move this check to after submit_task()
-            self.logger.warning("Bad simulation result")
+            self.logger.warning('Bad simulation result')
             return
 
         self.simulations_completed += 1
@@ -191,71 +207,73 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         self.handle_simulation_output(result.value)
 
     # TODO (wardlt): We can have this event_responder allocate resources away from simulation if desired.
-    @event_responder(event_name="run_training")  # type: ignore[misc]
+    @event_responder(event_name='run_training')  # type: ignore[misc]
     def perform_training(self) -> None:
-        self.logger.info("Started training process")
+        self.logger.info('Started training process')
 
         # Send in a training task
         self.train()
 
         # Wait for the result to complete
-        result: Result = self.queues.get_result(topic="train")
-        self.logger.info("Received training result")
+        result: Result = self.queues.get_result(topic='train')
+        self.logger.info('Received training result')
 
-        self.log_result(result, "train")
+        self.log_result(result, 'train')
         if not result.success:
-            self.logger.warning("Bad train result")
+            self.logger.warning('Bad train result')
             return
 
         # Process the training output
         self.handle_train_output(result.value)
-        self.logger.info("Training process is complete")
+        self.logger.info('Training process is complete')
 
     # TODO (wardlt): We can have this event_responder allocate resources away from simulation if desired.
-    @event_responder(event_name="run_inference")  # type: ignore[misc]
+    @event_responder(event_name='run_inference')  # type: ignore[misc]
     def perform_inference(self) -> None:
-        self.logger.info("Started inference process")
+        self.logger.info('Started inference process')
 
         # Send in an inference task
         self.inference()
 
         # Wait for the result to complete
-        result: Result = self.queues.get_result(topic="inference")
-        self.logger.info("Received inference result")
+        result: Result = self.queues.get_result(topic='inference')
+        self.logger.info('Received inference result')
 
-        self.log_result(result, "inference")
+        self.log_result(result, 'inference')
         if not result.success:
-            self.logger.warning("Bad inference result")
+            self.logger.warning('Bad inference result')
             return
 
         # Process the inference output
         self.handle_inference_output(result.value)
-        self.logger.info("Inference process is complete")
-
+        self.logger.info('Inference process is complete')
 
     def simulate(self) -> None:
         """Start a simulation task.
 
-        Must call :meth:`submit_task` with ``topic='simulation'``"""
+        Must call :meth:`submit_task` with ``topic='simulation'``
+        """
         ...
 
     def train(self) -> None:
         """Start a training task.
 
-        Must call :meth:`submit_task` with ``topic='train'``"""
+        Must call :meth:`submit_task` with ``topic='train'``
+        """
         ...
 
     def inference(self) -> None:
         """Start an inference task
 
-        Must call a :meth:`submit_task` with ``topic='infer'``"""
+        Must call a :meth:`submit_task` with ``topic='infer'``
+        """
         # Inference must wait for a trained model to be available
         while not self.model_weights_available:
             time.sleep(1)
 
-        self.submit_task("inference", self.inference_input)
+        self.submit_task('inference', self.inference_input)
         self.inference_input = []  # Clear batched data
-        self.logger.info("processed inference result")
+        self.logger.info('processed inference result')
 
     def handle_simulation_output(self, output: SimulationResult) -> None:
         """Stores a simulation output in the training set and define new inference tasks
@@ -288,7 +306,7 @@ class DeepDriveWESTPA(BaseThinker):  # type: ignore[misc]
         """Use the output from an inference run to update the list of available simulations"""
         # Run the next batch simulations
         for sim_input in output.simulation_inputs:
-            self.submit_task("simulation", sim_input)
+            self.submit_task('simulation', sim_input)
 
 
 class ExperimentSettings(DeepDriveMDSettings):
@@ -297,29 +315,31 @@ class ExperimentSettings(DeepDriveMDSettings):
     compute_settings: ComputeSettingsTypes
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-c", "--config", required=True)
+    parser.add_argument('-c', '--config', required=True)
     args = parser.parse_args()
     cfg = ExperimentSettings.from_yaml(args.config)
-    cfg.dump_yaml(cfg.run_dir / "params.yaml")
+    cfg.dump_yaml(cfg.run_dir / 'params.yaml')
     cfg.configure_logging()
 
     # Make the proxy store
-    store = FileStore(name="file", store_dir=str(cfg.run_dir / "proxy-store"))
+    store = FileStore(name='file', store_dir=str(cfg.run_dir / 'proxy-store'))
     register_store(store)
 
     # Make the queues
     queues = PipeQueues(
-        serialization_method="pickle",
-        topics=["simulation", "train", "inference"],
-        proxystore_name="file",
+        serialization_method='pickle',
+        topics=['simulation', 'train', 'inference'],
+        proxystore_name='file',
         proxystore_threshold=10000,
     )
 
     # Define the parsl configuration (this can be done using the config_factory
     # for common use cases or by defining your own configuration.)
-    parsl_config = cfg.compute_settings.config_factory(cfg.run_dir / "run-info")
+    parsl_config = cfg.compute_settings.config_factory(
+        cfg.run_dir / 'run-info',
+    )
 
     # Assign constant settings to each task function
     my_run_simulation = partial(run_simulation)
@@ -330,12 +350,14 @@ if __name__ == "__main__":
     update_wrapper(my_run_inference, run_inference)
 
     doer = ParslTaskServer(
-        [my_run_simulation, my_run_train, my_run_inference], queues, parsl_config
+        [my_run_simulation, my_run_train, my_run_inference],
+        queues,
+        parsl_config,
     )
 
     thinker = DeepDriveWESTPA(
         queue=queues,
-        result_dir=cfg.run_dir / "result",
+        result_dir=cfg.run_dir / 'result',
         simulation_input_dir=cfg.simulation_input_dir,
         num_workers=cfg.num_workers,
         simulations_per_train=cfg.simulations_per_train,
@@ -346,17 +368,17 @@ if __name__ == "__main__":
             TimeoutDoneCallback(cfg.duration_sec),
         ],
     )
-    logging.info("Created the task server and task generator")
+    logging.info('Created the task server and task generator')
 
     try:
         # Launch the servers
         doer.start()
         thinker.start()
-        logging.info("Launched the servers")
+        logging.info('Launched the servers')
 
         # Wait for the task generator to complete
         thinker.join()
-        logging.info("Task generator has completed")
+        logging.info('Task generator has completed')
     finally:
         queues.send_kill_signal()
 
