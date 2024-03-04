@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+authors:
+  - family-names: Brace
+    given-names: Alexander
+    orcid: https://orcid.org/0000-0001-9873-9177
+  - family-names: Frazee
+    given-names: Nicolas
+    orcid: https://orcid.org/0000-0002-6223-8036
+license: MIT
+repository-code: https://github.com/braceal/westpa_colmena
+title: westpa_colmena
+url: https://github.com/braceal/westpa_colmena
