@@ -43,9 +43,6 @@ class SimulationMetadata:
 
 
 class WeightedEnsemble:
-    # TODO: Implement a split-into-multiple and merge-multiple
-    #       merge could take a list of simulations to merge and
-    #       split can take an integer parameter to specify the number of splits
     # TODO: Figure out a checkpointing mechanism for the metadata
 
     # The list of simulations for each iteration
@@ -98,9 +95,10 @@ class WeightedEnsemble:
         self.current_iteration.append(new_simulation)
 
     def advance_iteration(
-            self,
-            to_split: list[SimulationMetadata],
-            to_merge: list[list[SimulationMetadata]]
+        self,
+        to_split: list[SimulationMetadata],
+        to_merge: list[list[SimulationMetadata]],
+        n_split: int = 2,
     ) -> None:
         """Advance the iteration of the weighted ensemble."""
         # Create a list to store the new simulations for this iteration
@@ -109,11 +107,11 @@ class WeightedEnsemble:
 
         # Split the simulations
         for sim in to_split:
-            self.split(sim)
+            self._split(sim, n_split=n_split)
 
         # Merge the simulations
         for sims in to_merge:
-            self.merge(sims)
+            self._merge(sims)
 
         # Collect any simulations from the previous iteration that were not split or merged
         sims_to_continue = set(self.simulations[self.iteration_idx - 1])
@@ -124,15 +122,14 @@ class WeightedEnsemble:
         for sim in sims_to_continue:
             self._add_new_simulation(sim, sim.weight)
 
-    def split(self, sim: SimulationMetadata, n_split: int = 2) -> None:
-        """Split the parent simulation, `sim`, into two simulations where
-        `result` is the data from the new simulation."""
+    def _split(self, sim: SimulationMetadata, n_split: int = 2) -> None:
+        """Split the parent simulation, `sim`, into `n_split` simulations with equal weight."""
 
         # Add the new simulations to the current iteration
         for _ in range(n_split):
             self._add_new_simulation(sim, sim.weight / n_split)
 
-    def merge(self, sims: list[SimulationMetadata]) -> None:
+    def _merge(self, sims: list[SimulationMetadata]) -> None:
         """Merge multiple simulations into one."""
 
         # Get the weights of each simulation to merge
