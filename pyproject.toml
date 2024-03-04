@@ -21,6 +21,7 @@ dependencies = [
     "colmena==0.5.2",
     "parsl",
     "pyyaml==6.0",
+    "numpy",
     #"mdtraj==1.9.9",
 ]
 

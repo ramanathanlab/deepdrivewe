@@ -1,39 +1,47 @@
+"""Weighted ensemble logic."""
+
 from __future__ import annotations
-from pathlib import Path
+
 import itertools
+from dataclasses import dataclass
+from dataclasses import field
+from pathlib import Path
+
 import numpy as np
-from westpa_colmena.apps.amber_simulation import SimulationResult
-from dataclasses import dataclass, field
-
-# TODO: It would be nice to support merge multiple into 1 and split 1 into multiple
-
-def westpa_logic() -> None:
-    """Analyze the current batch of simulations and output a new set of starting points."""
-    # westpa_split()
-    # westpa_merge()
 
 
 @dataclass
 class SimulationMetadata:
-    weight: float
-    simulation_id: int
+    """Metadata for a simulation in the weighted ensemble."""
+
+    weight: float = field(
+        metadata={
+            'help': 'The weight of the simulation.',
+        },
+    )
+    simulation_id: int = field(
+        metadata={
+            'help': 'The ID of the simulation.',
+        },
+    )
     prev_simulation_id: int | None = field(
         default=None,
         metadata={
-            "help": "The ID of the previous simulation the current one is split from, or None if it's a basis state."
+            'help': 'The ID of the previous simulation the current one is'
+            " split from, or None if it's a basis state.",
         },
     )
-    restart_file : Path | None = field(
+    restart_file: Path | None = field(
         default=None,
         metadata={
-            "help": "The restart file for the simulation."
+            'help': 'The restart file for the simulation.',
         },
     )
     # TODO: This may not need to be None because the bstates can populate it
     parent_restart_file: Path | None = field(
         default=None,
         metadata={
-            "help": "The restart file for the parent simulation."
+            'help': 'The restart file for the parent simulation.',
         },
     )
 
@@ -43,6 +51,8 @@ class SimulationMetadata:
 
 
 class WeightedEnsemble:
+    """Weighted ensemble."""
+
     # TODO: Figure out a checkpointing mechanism for the metadata
 
     # The list of simulations for each iteration
@@ -51,7 +61,20 @@ class WeightedEnsemble:
     # The current iteration of the weighted ensemble
     iteration_idx: int
 
-    def __init__(self, basis_states: list[Path], ensemble_members: int) -> None:
+    def __init__(
+        self,
+        basis_states: list[Path],
+        ensemble_members: int,
+    ) -> None:
+        """Initialize the weighted ensemble.
+
+        Parameters
+        ----------
+        basis_states : list[Path]
+            The basis states for the weighted ensemble.
+        ensemble_members : int
+            The number of simulations to start the weighted ensemble with.
+        """
         # The current iteration of the weighted ensemble
         self.iteration_idx = 0
         # The list of simulations for each iteration
@@ -62,7 +85,10 @@ class WeightedEnsemble:
         # Create a generator that will cycle through the basis states (e.g.,
         # if ensemble_members is 3 and there are 2 basis states, the generator
         # will yield [0, basis_state1], [1, basis_state2], [2, basis_state1])
-        sim_generator = zip(range(ensemble_members), itertools.cycle(basis_states))
+        sim_generator = zip(
+            range(ensemble_members),
+            itertools.cycle(basis_states),
+        )
 
         # Create the metadata for each basis state
         sims = [
@@ -83,14 +109,18 @@ class WeightedEnsemble:
         """Return the simulations for the current iteration."""
         return self.simulations[self.iteration_idx]
 
-    def _add_new_simulation(self, sim: SimulationMetadata, weight: float) -> None:
+    def _add_new_simulation(
+        self,
+        sim: SimulationMetadata,
+        weight: float,
+    ) -> None:
         """Add a new simulation to the current iteration."""
         new_simulation = SimulationMetadata(
-                weight=weight,
-                simulation_id=len(self.current_iteration),
-                prev_simulation_id=sim.simulation_id,
-                restart_file=None,
-                parent_restart_file=sim.restart_file
+            weight=weight,
+            simulation_id=len(self.current_iteration),
+            prev_simulation_id=sim.simulation_id,
+            restart_file=None,
+            parent_restart_file=sim.restart_file,
         )
         self.current_iteration.append(new_simulation)
 
@@ -113,7 +143,8 @@ class WeightedEnsemble:
         for sims in to_merge:
             self._merge(sims)
 
-        # Collect any simulations from the previous iteration that were not split or merged
+        # Collect any simulations from the previous iteration that were
+        # not split or merged
         sims_to_continue = set(self.simulations[self.iteration_idx - 1])
         sims_to_continue -= set(to_split)
         sims_to_continue -= set(itertools.chain(*to_merge))
@@ -123,15 +154,14 @@ class WeightedEnsemble:
             self._add_new_simulation(sim, sim.weight)
 
     def _split(self, sim: SimulationMetadata, n_split: int = 2) -> None:
-        """Split the parent simulation, `sim`, into `n_split` simulations with equal weight."""
-
+        """Split the parent simulation, `sim`, into `n_split` simulations."""
         # Add the new simulations to the current iteration
         for _ in range(n_split):
+            # Use equal weights for the split simulations
             self._add_new_simulation(sim, sim.weight / n_split)
 
     def _merge(self, sims: list[SimulationMetadata]) -> None:
         """Merge multiple simulations into one."""
-
         # Get the weights of each simulation to merge
         weights = [sim.weight for sim in sims]
 
@@ -140,15 +170,3 @@ class WeightedEnsemble:
 
         # Add the new simulation to the current iteration
         self._add_new_simulation(sims[select], sum(weights))
-
-
-def run_inference(input_data: list[SimulationResult]) -> None:
-    pcoords = [item.pcoord for item in input_data]
-
-    # Pick the simulation indices to restart
-    num_simulations = len(input_data)
-    restart_simulations = np.random.randint(
-        low=0, high=num_simulations, size=num_simulations
-    )
-
-    # Create weights for each of the simulations
