@@ -17,7 +17,6 @@ from pathlib import Path
 from threading import Event
 from threading import Semaphore
 from typing import Any
-from typing import Optional
 from typing import TypeVar
 from typing import Union
 
@@ -32,12 +31,13 @@ from pydantic import BaseSettings as _BaseSettings
 from pydantic import root_validator
 from pydantic import validator
 
-_T = TypeVar('_T')
+T = TypeVar('T')
 
 PathLike = Union[str, Path]
 
 
-def _resolve_path_exists(value: Optional[Path]) -> Optional[Path]:
+def _resolve_path_exists(value: Path | None) -> Path | None:
+    """Resolve a path and check if it exists."""
     if value is None:
         return None
     p = value.resolve()
@@ -47,31 +47,38 @@ def _resolve_path_exists(value: Optional[Path]) -> Optional[Path]:
 
 
 def path_validator(field: str) -> classmethod:  # type: ignore
+    """Create a path validator for a field."""
     decorator = validator(field, allow_reuse=True)
     _validator = decorator(_resolve_path_exists)
     return _validator
 
 
 class BaseSettings(_BaseSettings):
-    """Base settings to provide an easier interface to read/write YAML files."""
+    """Provide an easy interface to read/write YAML files."""
 
     def dump_yaml(self, filename: PathLike) -> None:
+        """Dump settings to a YAML file."""
         with open(filename, mode='w') as fp:
             yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
 
     @classmethod
-    def from_yaml(cls: type[_T], filename: PathLike) -> _T:
+    def from_yaml(cls: type[T], filename: PathLike) -> T:
+        """Load settings from a YAML file."""
         with open(filename) as fp:
             raw_data = yaml.safe_load(fp)
         return cls(**raw_data)
 
 
 class ApplicationSettings(BaseSettings):
+    """Settings for an application within the DeepDriveMD workflow."""
+
     output_dir: Path
-    node_local_path: Optional[Path] = None
+    node_local_path: Path | None = None
 
     @validator('output_dir')
+    @classmethod
     def create_output_dir(cls, v: Path) -> Path:
+        """Resolve and create the output directory if it does not exist."""
         v = v.resolve()
         v.mkdir(exist_ok=True, parents=True)
         return v
@@ -81,10 +88,12 @@ class BatchSettings(BaseSettings):
     """Dataclass utilities for data batches with multiple lists."""
 
     def __len__(self) -> int:
+        """Get the number of elements in the batch."""
         lists = self.get_lists()
         return len(lists[0]) if lists else 0
 
     def get_lists(self) -> list[list[Any]]:
+        """Get all lists in the batch."""
         return [
             field
             for field in self.__dict__.values()
@@ -92,6 +101,7 @@ class BatchSettings(BaseSettings):
         ]
 
     def append(self, *args: Any) -> None:
+        """Append elements to the batch."""
         lists = self.get_lists()
         assert len(lists) == len(
             args,
@@ -100,11 +110,14 @@ class BatchSettings(BaseSettings):
             _list.append(arg)
 
     def clear(self) -> None:
+        """Clear all lists in the batch."""
         for _list in self.get_lists():
             _list.clear()
 
 
 class DeepDriveMDSettings(BaseSettings):
+    """Settings for the DeepDriveMD workflow."""
+
     experiment_name: str = 'experiment'
     """Name of the experiment to label the run directory."""
     runs_dir: Path = Path('runs')
@@ -114,14 +127,19 @@ class DeepDriveMDSettings(BaseSettings):
     simulation_input_dir: Path
     """Nested directory storing initial simulation start files,
     e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might store
-    PDB files, topology files, etc needed to start the simulation application."""
+    PDB files, topology files, etc needed to start the simulation
+    application."""
     num_total_simulations: int
-    """Number of simulations before signalling to stop (more simulations may be run)."""
+    """Number of simulations before signalling to stop (more simulations
+    may be run)."""
     duration_sec: float = float('inf')
-    """Maximum number of seconds to run workflow before signalling to stop (more time may elapse)."""
+    """Maximum number of seconds to run workflow before signalling to stop
+    (more time may elapse)."""
     num_workers: int
-    """Number of workers available for executing simulations, training, and inference tasks.
-    One worker is reserved for each training and inference task, the rest go to simulation."""
+    """Number of workers available for executing simulations, training, and
+    inference tasks.
+    One worker is reserved for each training and inference task, the rest go
+    to simulation."""
     simulations_per_train: int
     """Number of simulation results to use between model training tasks."""
     simulations_per_inference: int
@@ -144,6 +162,7 @@ class DeepDriveMDSettings(BaseSettings):
         )
 
     @root_validator(pre=True)
+    @classmethod
     def create_output_dirs(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Generate unique run path within run_dirs with a timestamp."""
         runs_dir = Path(values.get('runs_dir', 'runs')).resolve()
@@ -164,19 +183,22 @@ class DeepDriveMDSettings(BaseSettings):
 # TODO: Add logger to Application which writes to file in workdir
 
 
-class Application(ABC):
-    """Application interface for workflow components. Provides
-    standard access to node local storage, persistent storage,
+class Application:
+    """Application interface for workflow components.
+
+    Provides standard access to node local storage, persistent storage,
     work directories.
     """
 
     def __init__(self, config: ApplicationSettings) -> None:
         self.config = config
-        self.__workdir: Optional[Path] = None
+        self.__workdir: Path | None = None
 
     @property
     def persistent_dir(self) -> Path:
-        """A unique directory to save application output files to.
+        """Get the persistent directory for the application.
+
+        A unique directory to save application output files to.
         Same as workdir if node local storage is not used.
         Otherwise, returns the output_dir / run-{uuid} path for the run.
         """
@@ -184,11 +206,14 @@ class Application(ABC):
 
     @property
     def workdir(self) -> Path:
-        """Returns a directory path to for application.run to write files to.
+        """Get the work directory for the application.
+
+        Returns a directory path to for application.run to write files to.
         Will use a node local storage option if it is specified. At the end
         of the application.run function, the workdir will be moved to the
         persistent_dir location, if node local storage is being used. If node
-        local storage is not being used, workdir and persistent_dir are the same.
+        local storage is not being used, workdir and persistent_dir are the
+        same.
         """
         # Check if the workdir has been initialized
         if isinstance(self.__workdir, Path):
@@ -207,12 +232,14 @@ class Application(ABC):
 
     def backup_node_local(self) -> None:
         """Move node local storage contents back to persistent storage."""
-        if self.config.node_local_path is not None:
-            # Check if there is at least one file before backing up the workdir.
-            # This avoids having an empty run directory for applications
-            # that don't make use of the file system for backing up data.
-            if next(self.workdir.iterdir(), None):
-                shutil.move(self.workdir, self.persistent_dir)
+        if self.config.node_local_path is None:
+            return
+
+        # Check for at least one file before backing up the workdir.
+        # This avoids having an empty run directory for applications
+        # that don't make use of the file system for backing up data.
+        if next(self.workdir.iterdir(), None):
+            shutil.move(self.workdir, self.persistent_dir)
 
     def copy_to_workdir(self, p: Path) -> Path:
         """Copy a file or directory to the workdir."""
@@ -223,15 +250,22 @@ class Application(ABC):
 
 
 class DoneCallback(ABC):
+    """Done callback interface."""
+
     @abstractmethod
     def workflow_finished(self, workflow: DeepDriveMDWorkflow) -> bool:
-        """Returns True, if workflow should terminate."""
+        """Return True, if workflow should terminate."""
         ...
 
 
 class TimeoutDoneCallback(DoneCallback):
+    """Timeout done callback.
+
+    Exit from DeepDriveMD after a certain amount of time has elapsed.
+    """
+
     def __init__(self, duration_sec: float) -> None:
-        """Exit from DeepDriveMD after duration_sec seconds has elapsed.
+        """Initialize the timeout done callback.
 
         Parameters
         ----------
@@ -242,13 +276,20 @@ class TimeoutDoneCallback(DoneCallback):
         self.start_time = time.time()
 
     def workflow_finished(self, workflow: DeepDriveMDWorkflow) -> bool:
+        """Return True, if workflow should terminate."""
         elapsed_sec = time.time() - self.start_time
         return elapsed_sec > self.duration_sec
 
 
 class SimulationCountDoneCallback(DoneCallback):
+    """Simulation count done callback.
+
+    Exit from DeepDriveMD after a certain number of simulations have
+    finished.
+    """
+
     def __init__(self, total_simulations: int) -> None:
-        """Exit from DeepDriveMD after a certain number of simulations have finished.
+        """Initialize the simulation count done callback.
 
         Parameters
         ----------
@@ -258,12 +299,19 @@ class SimulationCountDoneCallback(DoneCallback):
         self.total_simulations = total_simulations
 
     def workflow_finished(self, workflow: DeepDriveMDWorkflow) -> bool:
+        """Return True, if workflow should terminate."""
         return workflow.task_counter['simulation'] >= self.total_simulations
 
 
 class InferenceCountDoneCallback(DoneCallback):
+    """Inference count done callback.
+
+    Exit from DeepDriveMD after a certain number of inference tasks have
+    finished.
+    """
+
     def __init__(self, total_inferences: int) -> None:
-        """Exit from DeepDriveMD after a certain number of inference tasks have finished.
+        """Initialize the inference count done callback.
 
         Parameters
         ----------
@@ -273,42 +321,52 @@ class InferenceCountDoneCallback(DoneCallback):
         self.total_inferences = total_inferences
 
     def workflow_finished(self, workflow: DeepDriveMDWorkflow) -> bool:
+        """Return True, if workflow should terminate."""
         return workflow.task_counter['inference'] >= self.total_inferences
 
 
 class DeepDriveMDWorkflow(BaseThinker):
-    def __init__(
+    """Base class for DeepDriveMD workflows."""
+
+    def __init__(  # noqa: PLR0913
         self,
         queue: ColmenaQueues,
         result_dir: Path,
         simulation_input_dir: Path,
         num_workers: int,
         done_callbacks: list[DoneCallback],
+        async_simulation: bool = False,
     ) -> None:
         """Initialize the DeepDriveMD workflow.
 
         Parameters
         ----------
-        queue:
+        queue: ColmenaQueues
             Queue used to communicate with the task server
-        result_dir:
+        result_dir: Path
             Directory in which to store outputs
-        simulation_input_dir:
-            Directory with subdirectories each storing initial simulation start files.
-        num_workers:
+        simulation_input_dir: Path
+            Directory with subdirectories each storing initial simulation
+            start files.
+        num_workers: int
             Number of workers available for executing simulations, training,
             and inference tasks. One shared worker is reserved for training
             inference task, the rest (num_workers - 1) go to simulation.
-        done_callbacks:
-            Callbacks that can trigger a run to end
+        done_callbacks: list[DoneCallback]
+            Callbacks that can trigger a run to end.
+        async_simulation: bool
+            If True, the simulation will be run asynchronously, otherwise
+            it will be run synchronously.
         """
         super().__init__(queue)
 
         result_dir.mkdir(exist_ok=True)
         self.result_dir = result_dir
         self.num_workers = num_workers
+        self.async_simulation = async_simulation
 
-        # Collect initial simulation directories, assumes they are in nested subdirectories
+        # Collect initial simulation directories, assumes they are in nested
+        # subdirectories
         self.simulation_input_dirs = itertools.cycle(
             filter(lambda p: p.is_dir(), simulation_input_dir.glob('*')),
         )
@@ -331,6 +389,7 @@ class DeepDriveMDWorkflow(BaseThinker):
             print(result.json(exclude={'inputs', 'value'}), file=f)
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
+        """Submit a task to the task server."""
         self.queues.send_inputs(
             *inputs,
             method=f'run_{topic}',
@@ -341,6 +400,7 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @agent
     def main_loop(self) -> None:
+        """Run main loop for the DeepDriveMD workflow."""
         while not self.done.is_set():
             for callback in self.done_callbacks:
                 if callback.workflow_finished(self):
@@ -351,14 +411,14 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @agent(startup=True)
     def start_simulations(self) -> None:
-        """Launch a first batch of simulations"""
+        """Launch a first batch of simulations."""
         # Save one worker for train/inference tasks
         for _ in range(self.num_workers - 1):
             self.simulate()
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
-        """Receive a training result and then submit new tasks
+        """Process a simulation result.
 
         Will always submit a new simulation tasks and an inference or training
         if the :meth:`handle_simulation_output` sets the appropriate flags.
@@ -367,7 +427,8 @@ class DeepDriveMDWorkflow(BaseThinker):
         self.log_result(result, 'simulation')
         if not result.success:
             # TODO (wardlt): Should we submit a new simulation if one fails?
-            # (braceal): Yes, I think so. I think we can move this check to after submit_task()
+            # (braceal): Yes, I think so. I think we can move this check to
+            # after submit_task()
             self.logger.warning('Bad simulation result')
             return
 
@@ -381,14 +442,15 @@ class DeepDriveMDWorkflow(BaseThinker):
 
         # Submit another simulation as soon as the previous one finishes
         # to keep utilization high
-        self.simulate()
+        if self.async_simulation:
+            self.simulate()
 
         # Result should be used to train the model and infer new restart points
         self.handle_simulation_output(result.value)
 
-    # TODO (wardlt): We can have this event_responder allocate resources away from simulation if desired.
     @event_responder(event_name='run_training')
     def perform_training(self) -> None:
+        """Perform a training task."""
         self.logger.info('Started training process')
 
         # Send in a training task
@@ -407,9 +469,9 @@ class DeepDriveMDWorkflow(BaseThinker):
         self.handle_train_output(result.value)
         self.logger.info('Training process is complete')
 
-    # TODO (wardlt): We can have this event_responder allocate resources away from simulation if desired.
     @event_responder(event_name='run_inference')
     def perform_inference(self) -> None:
+        """Perform an inference task."""
         self.logger.info('Started inference process')
 
         # Send in an inference task
@@ -446,7 +508,7 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @abstractmethod
     def inference(self) -> None:
-        """Start an inference task
+        """Start an inference task.
 
         Must call a :meth:`submit_task` with ``topic='infer'``
         """
@@ -454,9 +516,11 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @abstractmethod
     def handle_simulation_output(self, output: Any) -> None:
-        """Stores a simulation output in the training set and define new inference tasks
+        """Handle a simulation output.
 
-        Should call ``self.run_training.set()`` and/or ``self.run_inference.set()``
+        Stores a simulation output in the training set and define
+        new inference tasks. Should call ``self.run_training.set()``
+        and/or ``self.run_inference.set()``
 
         Parameters
         ----------
@@ -467,10 +531,17 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @abstractmethod
     def handle_train_output(self, output: Any) -> None:
-        """Use the output from a training run to update the model"""
+        """Handle a training output.
+
+        Use the output from a training run to update the model.
+        """
         ...
 
     @abstractmethod
     def handle_inference_output(self, output: Any) -> None:
-        """Use the output from an inference run to update the list of available simulations"""
+        """Handle an inference output.
+
+        Use the output from an inference run to update the list of
+        available simulations.
+        """
         ...
