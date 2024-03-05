@@ -167,14 +167,14 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
     def train(self) -> None:
         """Start a training task.
 
-        Must call :meth:`submit_task` with ``topic='train'``
+        Must call :meth:`submit_task` with ``topic='train'``.
         """
         self.submit_task('train', self.train_input)
 
     def inference(self) -> None:
         """Start an inference task.
 
-        Must call a :meth:`submit_task` with ``topic='infer'``
+        Must call a :meth:`submit_task` with ``topic='infer'``.
         """
         # Inference must wait for a trained model to be available
         while not self.model_weights_available:
