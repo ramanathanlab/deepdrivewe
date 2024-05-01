@@ -24,6 +24,11 @@ class SimulationMetadata:
             'help': 'The ID of the simulation.',
         },
     )
+    parent_restart_file: Path = field(
+        metadata={
+            'help': 'The restart file for the parent simulation.',
+        },
+    )
     prev_simulation_id: int | None = field(
         default=None,
         metadata={
@@ -35,13 +40,6 @@ class SimulationMetadata:
         default=None,
         metadata={
             'help': 'The restart file for the simulation.',
-        },
-    )
-    # TODO: This may not need to be None because the bstates can populate it
-    parent_restart_file: Path | None = field(
-        default=None,
-        metadata={
-            'help': 'The restart file for the parent simulation.',
         },
     )
 
@@ -115,6 +113,11 @@ class WeightedEnsemble:
         weight: float,
     ) -> None:
         """Add a new simulation to the current iteration."""
+        # Ensure that the simulation has a restart file, i.e., the `sim`
+        # object represents a simulation that has been run.
+        assert sim.restart_file is not None
+
+        # Create the metadata for the new simulation
         new_simulation = SimulationMetadata(
             weight=weight,
             simulation_id=len(self.current_iteration),
@@ -122,6 +125,8 @@ class WeightedEnsemble:
             restart_file=None,
             parent_restart_file=sim.restart_file,
         )
+
+        # Add the new simulation to the current iteration
         self.current_iteration.append(new_simulation)
 
     def advance_iteration(
