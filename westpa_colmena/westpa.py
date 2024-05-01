@@ -23,7 +23,7 @@ from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import SimulationCountDoneCallback
 from westpa_colmena.api import TimeoutDoneCallback
 from westpa_colmena.apps.amber_simulation import SimulationResult
-from westpa_colmena.apps.pcoord_inference import WeightedEnsemble
+from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.parsl import ComputeSettingsTypes
 
 # TODO: We need to send a random seed for amber simulations
@@ -129,13 +129,10 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # TODO: Check that this logic is correct
         # Get the basis states by globbing the simulation input directories
-        basis_states: list[Path] = [  # type: ignore[misc]
-            p.glob('.ncrst')
-            for p in itertools.islice(
-                self.simulation_input_dirs,
-                ensemble_members,
-            )
-        ]
+        input_dirs: list[Path] = list(
+            itertools.islice(self.simulation_input_dirs, ensemble_members),
+        )
+        basis_states = [next(p.glob('.ncrst')) for p in input_dirs]
 
         # Initialize the weighted ensemble
         self.weighted_ensemble = WeightedEnsemble(
@@ -208,7 +205,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
     def handle_train_output(self, output: Any) -> None:
         """Use the output from a training run to update the model."""
-        self.inference_input.model_weight_path = output.model_weight_path
+        self.inference_input.model_weight_path = output.model_weight_path  # type: ignore[attr-defined]
         self.model_weights_available = True
         self.logger.info(
             f'Updated model_weight_path to: {output.model_weight_path}',
