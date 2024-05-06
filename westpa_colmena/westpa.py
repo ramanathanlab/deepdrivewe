@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import itertools
 import logging
 import time
 from argparse import ArgumentParser
@@ -14,6 +13,7 @@ from typing import Any
 from colmena.queue import ColmenaQueues
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
+from colmena.thinker import agent
 from proxystore.store import register_store
 from proxystore.store.file import FileStore
 
@@ -23,6 +23,7 @@ from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import SimulationCountDoneCallback
 from westpa_colmena.api import TimeoutDoneCallback
 from westpa_colmena.apps.amber_simulation import SimulationResult
+from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.parsl import ComputeSettingsTypes
 
@@ -89,14 +90,12 @@ def run_inference(input_data: list[SimulationResult]) -> None:
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
     """A WESTPA thinker for DeepDriveMD."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        simulation_input_dir: Path,
-        num_workers: int,
         done_callbacks: list[DoneCallback],
-        ensemble_members: int,
+        ensemble: WeightedEnsemble,
     ) -> None:
         """Initialize the DeepDriveWESTPA thinker.
 
@@ -106,60 +105,42 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
             Queue used to communicate with the task server
         result_dir: Path
             Directory in which to store outputs
-        simulation_input_dir:
-            Directory with subdirectories each storing initial simulation
-            start files.
-        num_workers: int
-            Number of workers available for executing simulations, training,
-            and inference tasks. One shared worker is reserved for training
-            inference task, the rest (num_workers - 1) go to simulation.
         done_callbacks: list[DoneCallback]
             List of callbacks to determine when the thinker should stop.
-        ensemble_members: int
-            The number of simulations to start the weighted ensemble with.
+        ensemble: WeightedEnsemble
+            Weighted ensemble object to manage the simulations and weights.
         """
         super().__init__(
             queue,
             result_dir,
-            simulation_input_dir,
-            num_workers,
             done_callbacks,
             async_simulation=False,
         )
 
-        # TODO: Check that this logic is correct
-        # Get the basis states by globbing the simulation input directories
-        input_dirs: list[Path] = list(
-            itertools.islice(self.simulation_input_dirs, ensemble_members),
-        )
-        basis_states = [next(p.glob('.ncrst')) for p in input_dirs]
-
-        # Initialize the weighted ensemble
-        self.weighted_ensemble = WeightedEnsemble(
-            basis_states=basis_states,
-            ensemble_members=ensemble_members,
-        )
+        self.ensemble = ensemble
 
         # TODO: Update the inputs to support model weights, etc
         # Custom data structures
         self.train_input: list[SimulationResult] = []
         self.inference_input: list[SimulationResult] = []
 
-        self.current_idx = 0
-        self.ensemble_members = ensemble_members
-
         # Make sure there has been at least one training task
         # complete before running inference
         self.model_weights_available = False
 
+    @agent(startup=True)
+    def start_simulations(self) -> None:
+        """Launch the first iteration of simulations to start the workflow."""
+        self.simulate()
+
     def simulate(self) -> None:
-        """Start a simulation task.
+        """Start simulation task(s).
 
         Must call :meth:`submit_task` with ``topic='simulation'``
         """
-        simulations = self.weighted_ensemble.current_iteration
-        self.submit_task('simulation', simulations[self.current_idx])
-        self.current_idx += 1
+        # Submit the next iteration of simulations
+        for sim in self.ensemble.current_iteration:
+            self.submit_task('simulation', sim)
 
     def train(self) -> None:
         """Start a training task.
@@ -197,9 +178,12 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self.train_input.append(output)
         self.inference_input.append(output)
 
+        # Number of simulations in the current iteration
+        num_simulations = len(self.ensemble.current_iteration)
+
         # Since we are not clearing the train/inference inputs, the
         # length will be the same as the ensemble members
-        if self.ensemble_members % len(self.train_input) == 0:
+        if num_simulations % len(self.train_input) == 0:
             self.run_training.set()
             self.run_inference.set()
 
@@ -217,18 +201,14 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         Use the output from an inference run to update the list of
         available simulations.
         """
-        # TODO: Figure out exactly what the output needs to contain
-        # In fact, the inference should just return the binning output
-        to_split, to_merge = self.binner.bin(output)
+        # Extract the next iteration of simulations starting points
+        next_iteration: list[SimulationMetadata] = output.next_iteration
 
-        self.weighted_ensemble.advance_iteration(to_split, to_merge)
+        # Update the weighted ensemble with the next iteration
+        self.ensemble.advance_iteration(next_iteration)
 
-        # Reset the current simulation index for the next iteration
-        self.current_idx = 0
-
-        # Run the next batch simulations
-        for _ in range(self.num_workers - 1):
-            self.simulate()
+        # Submit the next iteration of simulations
+        self.simulate()
 
 
 class ExperimentSettings(DeepDriveMDSettings):
@@ -236,6 +216,8 @@ class ExperimentSettings(DeepDriveMDSettings):
 
     ensemble_members: int
     """Number of simulations to start the weighted ensemble with."""
+    basis_state_ext: str = '.ncrst'
+    """Extension for the basis states."""
     compute_settings: ComputeSettingsTypes
     """Settings for the compute environment."""
 
@@ -274,23 +256,31 @@ if __name__ == '__main__':
     update_wrapper(my_run_train, run_train)
     update_wrapper(my_run_inference, run_inference)
 
+    # Create the task server
     doer = ParslTaskServer(
         [my_run_simulation, my_run_train, my_run_inference],
         queues,
         parsl_config,
     )
 
+    # Define the done callback signals
+    done_callbacks = [
+        SimulationCountDoneCallback(cfg.num_total_simulations),
+        TimeoutDoneCallback(cfg.duration_sec),
+    ]
+
+    # Initialize the weighted ensemble
+    ensemble = WeightedEnsemble(
+        ensemble_members=cfg.ensemble_members,
+        simulation_input_dir=cfg.simulation_input_dir,
+        basis_state_ext=cfg.basis_state_ext,
+    )
+
     thinker = DeepDriveWESTPA(
         queue=queues,
         result_dir=cfg.run_dir / 'result',
-        simulation_input_dir=cfg.simulation_input_dir,
-        num_workers=cfg.num_workers,
-        done_callbacks=[
-            # InferenceCountDoneCallback(2),  # Testing
-            SimulationCountDoneCallback(cfg.num_total_simulations),
-            TimeoutDoneCallback(cfg.duration_sec),
-        ],
-        ensemble_members=cfg.ensemble_members,
+        done_callbacks=done_callbacks,
+        ensemble=ensemble,
     )
     logging.info('Created the task server and task generator')
 

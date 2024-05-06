@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import itertools
 import json
 import logging
 import shutil
@@ -135,11 +134,6 @@ class DeepDriveMDSettings(BaseSettings):
     duration_sec: float = float('inf')
     """Maximum number of seconds to run workflow before signalling to stop
     (more time may elapse)."""
-    num_workers: int
-    """Number of workers available for executing simulations, training, and
-    inference tasks.
-    One worker is reserved for each training and inference task, the rest go
-    to simulation."""
     simulations_per_train: int
     """Number of simulation results to use between model training tasks."""
     simulations_per_inference: int
@@ -325,15 +319,33 @@ class InferenceCountDoneCallback(DoneCallback):
         return workflow.task_counter['inference'] >= self.total_inferences
 
 
+class ResultLogger:
+    """Logger for results."""
+
+    def __init__(self, result_dir: Path) -> None:
+        """Initialize the result logger.
+
+        Parameters
+        ----------
+        result_dir: Path
+            Directory in which to store outputs
+        """
+        result_dir.mkdir(exist_ok=True)
+        self.result_dir = result_dir
+
+    def log(self, result: Result, topic: str) -> None:
+        """Write a JSON result per line of the output file."""
+        with open(self.result_dir / f'{topic}.json', 'a') as f:
+            print(result.json(exclude={'inputs', 'value'}), file=f)
+
+
 class DeepDriveMDWorkflow(BaseThinker):
     """Base class for DeepDriveMD workflows."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        simulation_input_dir: Path,
-        num_workers: int,
         done_callbacks: list[DoneCallback],
         async_simulation: bool = False,
     ) -> None:
@@ -345,13 +357,6 @@ class DeepDriveMDWorkflow(BaseThinker):
             Queue used to communicate with the task server
         result_dir: Path
             Directory in which to store outputs
-        simulation_input_dir: Path
-            Directory with subdirectories each storing initial simulation
-            start files.
-        num_workers: int
-            Number of workers available for executing simulations, training,
-            and inference tasks. One shared worker is reserved for training
-            inference task, the rest (num_workers - 1) go to simulation.
         done_callbacks: list[DoneCallback]
             Callbacks that can trigger a run to end.
         async_simulation: bool
@@ -360,19 +365,8 @@ class DeepDriveMDWorkflow(BaseThinker):
         """
         super().__init__(queue)
 
-        result_dir.mkdir(exist_ok=True)
-        self.result_dir = result_dir
-        self.num_workers = num_workers
         self.async_simulation = async_simulation
-
-        # Collect initial simulation directories, assumes they are in nested
-        # subdirectories
-        self.simulation_input_dirs = itertools.cycle(
-            filter(lambda p: p.is_dir(), simulation_input_dir.glob('*')),
-        )
-
-        # Keep track of the workflow state
-        self.simulations_completed = 0
+        self.result_logger = ResultLogger(result_dir)
 
         # Number of times a given task has been submitted
         self.task_counter: defaultdict[str, int] = defaultdict(int)
@@ -384,9 +378,12 @@ class DeepDriveMDWorkflow(BaseThinker):
         self.run_inference = Event()
 
     def log_result(self, result: Result, topic: str) -> None:
-        """Write a JSON result per line of the output file."""
-        with open(self.result_dir / f'{topic}.json', 'a') as f:
-            print(result.json(exclude={'inputs', 'value'}), file=f)
+        """Log a result to the result logger."""
+        # Log the jsonl result
+        self.result_logger.log(result, topic)
+
+        # Increment the task counter
+        self.task_counter[topic] += 1
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server."""
@@ -396,7 +393,6 @@ class DeepDriveMDWorkflow(BaseThinker):
             topic=topic,
             keep_inputs=False,
         )
-        self.task_counter[topic] += 1
 
     @agent
     def main_loop(self) -> None:
@@ -408,13 +404,6 @@ class DeepDriveMDWorkflow(BaseThinker):
                     self.done.set()
                     return
             time.sleep(1)
-
-    @agent(startup=True)
-    def start_simulations(self) -> None:
-        """Launch a first batch of simulations."""
-        # Save one worker for train/inference tasks
-        for _ in range(self.num_workers - 1):
-            self.simulate()
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
@@ -431,8 +420,6 @@ class DeepDriveMDWorkflow(BaseThinker):
             # after submit_task()
             self.logger.warning('Bad simulation result')
             return
-
-        self.simulations_completed += 1
 
         # This function is running an implicit while-true loop
         # we need to break out if the done flag has been sent,
@@ -492,7 +479,7 @@ class DeepDriveMDWorkflow(BaseThinker):
 
     @abstractmethod
     def simulate(self) -> None:
-        """Start a simulation task.
+        """Start simulation task(s).
 
         Must call :meth:`submit_task` with ``topic='simulation'``
         """
