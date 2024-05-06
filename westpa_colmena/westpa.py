@@ -32,6 +32,15 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 #       within DeepDriveMD to do ablations and make the current westpa
 #       thinker implementation more elegant
 
+# TODO: Next steps:
+# (1) Test the resampler and weighted ensemble logic in pytest.
+# (2) Define the input arguments and return results for the tasks.
+#       - Think about how to store simulation results (such as coordinates)
+#       - in a way that can be proxied so that the thinker does not
+#       - implicitly load all the data into memory. Perhaps having the
+#       - simulation results as a field within the metadata would do it.
+# (3) Create a pytest for the WESTPA thinker.
+
 
 def run_simulation(  # noqa: PLR0913
     output_dir: Path,

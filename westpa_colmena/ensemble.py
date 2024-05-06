@@ -140,8 +140,6 @@ class WeightedEnsemble:
         self.simulations.append(next_iteration)
 
 
-# TODO: Implement the function that calls
-# the resampler to advance the iteration of the weighted ensemble next.
 class Resampler(ABC):
     """Resampler for the weighted ensemble."""
 
