@@ -5,10 +5,14 @@ from __future__ import annotations
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 
 import mdtraj as md
 import numpy as np
+from pydantic import BaseModel
+
+from westpa_colmena.ensemble import SimulationMetadata
 
 
 @dataclass
@@ -140,11 +144,57 @@ class CppTrajAnalyzer:
         return aligned_coordinates
 
 
+class SimulationArgs(BaseModel):
+    """Arguments for an Amber simulation."""
+
+    output_dir: Path = field(
+        metadata={
+            'help': 'The output directory for all the simulations.',
+        },
+    )
+    amber_exe: Path = field(
+        metadata={
+            'help': 'The path to the Amber executable.',
+        },
+    )
+    md_input_file: Path = field(
+        metadata={
+            'help': 'The input file for the Amber simulation.',
+        },
+    )
+    prmtop_file: Path = field(
+        metadata={
+            'help': 'The prmtop file for the Amber simulation.',
+        },
+    )
+    reference_pdb_file: Path = field(
+        metadata={
+            'help': 'The reference PDB file for cpptraj.',
+        },
+    )
+    cpp_traj_exe: Path = field(
+        metadata={
+            'help': 'The path to the cpptraj executable.',
+        },
+    )
+
+
 @dataclass
 class SimulationResult:
     """Store the results of a single Amber simulation."""
 
-    pcoord: np.ndarray
-    coords: np.ndarray
-    restart_file: Path | None
-    parent_restart_file: Path
+    pcoord: np.ndarray = field(
+        metadata={
+            'help': 'The progress coordinate for the Amber simulation.',
+        },
+    )
+    coords: np.ndarray = field(
+        metadata={
+            'help': 'The atomic coordinates for the Amber simulation.',
+        },
+    )
+    metadata: SimulationMetadata = field(
+        metadata={
+            'help': 'The metadata for the Amber simulation.',
+        },
+    )

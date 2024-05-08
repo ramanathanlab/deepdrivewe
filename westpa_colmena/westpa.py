@@ -16,12 +16,14 @@ from colmena.task_server import ParslTaskServer
 from colmena.thinker import agent
 from proxystore.store import register_store
 from proxystore.store.file import FileStore
+from pydantic import Field
 
 from westpa_colmena.api import DeepDriveMDSettings
 from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import SimulationCountDoneCallback
 from westpa_colmena.api import TimeoutDoneCallback
+from westpa_colmena.apps.amber_simulation import SimulationArgs
 from westpa_colmena.apps.amber_simulation import SimulationResult
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
@@ -33,36 +35,39 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 #       thinker implementation more elegant
 
 # TODO: Next steps:
-# (1) Test the resampler and weighted ensemble logic in pytest.
-# (2) Define the input arguments and return results for the tasks.
+# (1) Define the input arguments and return results for the tasks.
+#       - simulation results as a field within the metadata would do it.
 #       - Think about how to store simulation results (such as coordinates)
 #       - in a way that can be proxied so that the thinker does not
 #       - implicitly load all the data into memory. Perhaps having the
-#       - simulation results as a field within the metadata would do it.
+# (2) Test the resampler and weighted ensemble logic in pytest.
 # (3) Create a pytest for the WESTPA thinker.
 
 
-def run_simulation(  # noqa: PLR0913
-    output_dir: Path,
-    amber_exe: Path,
-    md_input_file: Path,
-    prmtop_file: Path,
-    checkpoint_file: Path,
-    reference_pdb_file: Path,
-    cpp_traj_exe: Path,
+def run_simulation(
+    args: SimulationArgs,
+    metadata: SimulationMetadata,
 ) -> SimulationResult:
     """Run a simulation and return the pcoord and coordinates."""
     from westpa_colmena.apps.amber_simulation import AmberSimulation
     from westpa_colmena.apps.amber_simulation import CppTrajAnalyzer
     from westpa_colmena.apps.amber_simulation import SimulationResult
 
+    # Create the simulation output directory
+    output_dir = (
+        args.output_dir
+        / f'{metadata.iteration_id:06d}'
+        / f'{metadata.simulation_id:06d}'
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # First run the simulation
     simulation = AmberSimulation(
-        amber_exe,
-        md_input_file,
-        prmtop_file,
-        output_dir,
-        checkpoint_file,
+        amber_exe=args.amber_exe,
+        md_input_file=args.md_input_file,
+        prmtop_file=args.prmtop_file,
+        output_dir=output_dir,
+        checkpoint_file=metadata.parent_restart_file,
     )
 
     # Run the simulation
@@ -70,17 +75,20 @@ def run_simulation(  # noqa: PLR0913
 
     # Then run cpptraj to get the pcoord and coordinates
     analyzer = CppTrajAnalyzer(
-        cpp_traj_exe=cpp_traj_exe,
-        reference_pdb_file=reference_pdb_file,
+        cpp_traj_exe=args.cpp_traj_exe,
+        reference_pdb_file=args.reference_pdb_file,
     )
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
 
+    # Update the simulation metadata
+    metadata = metadata.copy()
+    metadata.restart_file = simulation.restart_file
+
     result = SimulationResult(
         pcoord=pcoord,
         coords=coords,
-        restart_file=simulation.restart_file,
-        parent_restart_file=checkpoint_file,
+        metadata=metadata,
     )
 
     return result
@@ -223,12 +231,19 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 class ExperimentSettings(DeepDriveMDSettings):
     """Provide a YAML interface to configure the experiment."""
 
-    ensemble_members: int
-    """Number of simulations to start the weighted ensemble with."""
-    basis_state_ext: str = '.ncrst'
-    """Extension for the basis states."""
-    compute_settings: ComputeSettingsTypes
-    """Settings for the compute environment."""
+    ensemble_members: int = Field(
+        description='Number of simulations to start the weighted ensemble.',
+    )
+    basis_state_ext: str = Field(
+        default='.ncrst',
+        description='Extension for the basis states.',
+    )
+    simulation_args: SimulationArgs = Field(
+        description='Arguments for the simulation.',
+    )
+    compute_settings: ComputeSettingsTypes = Field(
+        description='Settings for the compute resources.',
+    )
 
 
 if __name__ == '__main__':
@@ -258,7 +273,7 @@ if __name__ == '__main__':
     )
 
     # Assign constant settings to each task function
-    my_run_simulation = partial(run_simulation)
+    my_run_simulation = partial(run_simulation, args=cfg.simulation_args)
     my_run_train = partial(run_train)
     my_run_inference = partial(run_inference)
     update_wrapper(my_run_simulation, run_simulation)

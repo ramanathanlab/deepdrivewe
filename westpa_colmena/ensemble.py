@@ -26,6 +26,11 @@ class SimulationMetadata:
             'help': 'The ID of the simulation.',
         },
     )
+    iteration_id: int = field(
+        metadata={
+            'help': 'The ID of the iteration the simulation is in.',
+        },
+    )
     parent_restart_file: Path = field(
         metadata={
             'help': 'The restart file for the parent simulation.',
@@ -48,6 +53,10 @@ class SimulationMetadata:
     def __hash__(self) -> int:
         """Hash the simulation metadata to ensure that it is unique."""
         return hash((self.simulation_id, self.restart_file))
+
+    def copy(self) -> SimulationMetadata:
+        """Return a copy of the simulation metadata."""
+        return SimulationMetadata(**self.__dict__)
 
 
 class WeightedEnsemble:
@@ -80,9 +89,13 @@ class WeightedEnsemble:
         self.basis_state_ext = basis_state_ext
 
         # The list of simulations for each iteration
-        self.simulations = []
+        self.simulations = self._uniform_init()
+
+    def _uniform_init(self) -> list[list[SimulationMetadata]]:
+        # The list of simulations for each iteration
+        simulations = []
         # Assign a uniform weight to each of the basis states
-        weight = 1.0 / ensemble_members
+        weight = 1.0 / self.ensemble_members
 
         # Load the basis states
         basis_states = self._load_basis_states()
@@ -94,13 +107,16 @@ class WeightedEnsemble:
                 weight=weight,
                 simulation_id=idx,
                 prev_simulation_id=None,
+                iteration_id=0,
                 restart_file=None,
                 parent_restart_file=basis_state,
             )
             for idx, basis_state in enumerate(basis_states)
         ]
 
-        self.simulations.append(sims)
+        simulations.append(sims)
+
+        return simulations
 
     def _load_basis_states(self) -> list[Path]:
         # Collect initial simulation directories, assumes they are in nested
@@ -169,6 +185,7 @@ class Resampler(ABC):
                 weight=sim.weight,
                 simulation_id=idx,
                 prev_simulation_id=sim.simulation_id,
+                iteration_id=sim.iteration_id + 1,
                 restart_file=None,
                 parent_restart_file=sim.restart_file,
             )
@@ -188,6 +205,7 @@ class Resampler(ABC):
         new_sim = SimulationMetadata(
             weight=weight,
             simulation_id=next(self.index_counter),
+            iteration_id=sim.iteration_id,
             prev_simulation_id=sim.prev_simulation_id,
             restart_file=sim.restart_file,
             parent_restart_file=sim.parent_restart_file,
