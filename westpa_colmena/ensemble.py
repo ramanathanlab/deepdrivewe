@@ -141,8 +141,6 @@ class BasisStates:
 class WeightedEnsemble:
     """Weighted ensemble."""
 
-    # TODO: Figure out a checkpointing mechanism for the metadata
-
     # The list of simulations for each iteration
     simulations: list[list[SimulationMetadata]]
 

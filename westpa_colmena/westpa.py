@@ -31,18 +31,16 @@ from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.parsl import ComputeSettingsTypes
 
 # TODO: We need to send a random seed for amber simulations
-# TODO: It may good to implement the abstract batched simulation pattern
-#       within DeepDriveMD to do ablations and make the current westpa
-#       thinker implementation more elegant
 
 # TODO: Next steps:
-# (1) Define the input arguments and return results for the tasks.
-#       - simulation results as a field within the metadata would do it.
+# (1) Implement the run_inference function using the resampler.
+# (2) Define the input arguments and return results for the tasks.
+#       - Simulation results as a field within the metadata would do it.
 #       - Think about how to store simulation results (such as coordinates)
-#       - in a way that can be proxied so that the thinker does not
-#       - implicitly load all the data into memory. Perhaps having the
-# (2) Test the resampler and weighted ensemble logic in pytest.
-# (3) Create a pytest for the WESTPA thinker.
+#         in a way that can be proxied so that the thinker does not
+#         implicitly load all the data into memory.
+# (3) Test the resampler and weighted ensemble logic in pytest.
+# (4) Create a pytest for the WESTPA thinker.
 
 
 def run_simulation(
