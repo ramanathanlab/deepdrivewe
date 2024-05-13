@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import itertools
+import pickle
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -87,6 +88,14 @@ class BasisStates:
         # Initialize the basis states
         self.basis_states = self._uniform_init(basis_files)
 
+    def __len__(self) -> int:
+        """Return the number of basis states."""
+        return len(self.basis_states)
+
+    def __getitem__(self, idx: int) -> SimulationMetadata:
+        """Return the basis state at the specified index."""
+        return self.basis_states[idx]
+
     def _load_basis_states(self) -> list[Path]:
         # Collect initial simulation directories, assumes they are in nested
         # subdirectories
@@ -137,7 +146,11 @@ class WeightedEnsemble:
     # The list of simulations for each iteration
     simulations: list[list[SimulationMetadata]]
 
-    def __init__(self, basis_states: BasisStates) -> None:
+    def __init__(
+        self,
+        basis_states: BasisStates,
+        checkpoint_file: Path | None,
+    ) -> None:
         """Initialize the weighted ensemble.
 
         Parameters
@@ -146,6 +159,32 @@ class WeightedEnsemble:
             The basis states for the weighted ensemble.
         """
         self.basis_states = basis_states
+
+        # If checkpoint file is provided, load the weighted ensemble
+        if checkpoint_file is not None:
+            self.load_checkpoint(checkpoint_file)
+
+    def load_checkpoint(self, checkpoint_file: Path) -> None:
+        """Load the weighted ensemble from a checkpoint file."""
+        # Load the weighted ensemble from the checkpoint file
+        with checkpoint_file.open('rb') as f:
+            weighted_ensemble = pickle.load(f)
+
+        # Update the weighted ensemble
+        self.__dict__.update(weighted_ensemble.__dict__)
+
+    def save_checkpoint(self, output_dir: Path) -> None:
+        """Save the weighted ensemble to a checkpoint file."""
+        # Make the output directory if it does not exist
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save the weighted ensemble to a checkpoint file
+        checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations)::06d}'
+        checkpoint_file = output_dir / f'{checkpoint_name}.pkl'
+
+        # Save the weighted ensemble to the checkpoint file
+        with checkpoint_file.open('wb') as f:
+            pickle.dump(self, f)
 
     @property
     def current_iteration(self) -> list[SimulationMetadata]:
@@ -190,6 +229,9 @@ class Resampler(ABC):
         # Reset the index counter
         self.index_counter = itertools.count()
 
+        # Get the recycled simulation indices
+        recycle_indices = self.recycle(current_iteration)
+
         # Create a list to store the new simulations for this iteration
         simulations = []
 
@@ -198,24 +240,31 @@ class Resampler(ABC):
             # object represents a simulation that has been run.
             assert sim.restart_file is not None
 
-            # TODO: Implement recycling. prev_simulation_id is None for basis
-            # states and we choose parent_restart_file as a random basis state.
-            # TODO: Next step is to implement recycling. The current
-            # implementation does not allow the resampler to access the basis
-            # states in order to recycle them. The basis states are currently
-            # only accessible in the initialization of the weighted ensemble.
-            # We probably want to combine these in a reasonable way. It may
-            # make sense to have a separate class for the basis states that
-            # can be accessed by the resampler and the weighted ensemble.
+            # Check if the simulation should be recycled
+            if idx in recycle_indices:
+                # Choose a random basis state to restart the simulation from
+                basis_idx = np.random.choice(len(self.basis_states))
+                basis_state = self.basis_states[basis_idx]
+                # Set the parent restart file to the basis state
+                parent_restart_file = basis_state.parent_restart_file
+                # Set the prev simulation ID to the negative of previous
+                # simulation to indicate that the simulation is recycled
+                prev_simulation_id = -1 * sim.simulation_id
+            else:
+                # If the simulation is not recycled, set the parent restart
+                # file and simulation id to the restart file of the current
+                # simulation
+                parent_restart_file = sim.restart_file
+                prev_simulation_id = sim.simulation_id
 
             # Create the metadata for the new simulation
             new_sim = SimulationMetadata(
                 weight=sim.weight,
                 simulation_id=idx,
-                prev_simulation_id=sim.simulation_id,
                 iteration_id=sim.iteration_id + 1,
+                prev_simulation_id=prev_simulation_id,
                 restart_file=None,
-                parent_restart_file=sim.restart_file,
+                parent_restart_file=parent_restart_file,
             )
 
             # Add the new simulation to the current iteration
@@ -230,7 +279,7 @@ class Resampler(ABC):
     ) -> SimulationMetadata:
         """Add a new simulation to the current iteration."""
         # Create the metadata for the new simulation
-        new_sim = SimulationMetadata(
+        return SimulationMetadata(
             weight=weight,
             simulation_id=next(self.index_counter),
             iteration_id=sim.iteration_id,
@@ -238,9 +287,6 @@ class Resampler(ABC):
             restart_file=sim.restart_file,
             parent_restart_file=sim.parent_restart_file,
         )
-
-        # Return the simulation metadata
-        return new_sim
 
     def split_sims(
         self,
@@ -318,20 +364,21 @@ class Resampler(ABC):
     def recycle(
         self,
         current_iteration: list[SimulationMetadata],
-    ) -> list[SimulationMetadata]:
-        """Return a list of simulations to recycle."""
+    ) -> list[int]:
+        """Return a list of simulation indices to recycle."""
         ...
 
 
 class NaiveResampler(Resampler):
     """Naive resampler."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         pcoord: list[float],
         num_resamples: int = 1,
         n_split: int = 2,
         split_low: bool = True,
+        target_threshold: float = 0.5,
     ) -> None:
         """Initialize the resampler.
 
@@ -350,11 +397,16 @@ class NaiveResampler(Resampler):
             and merge the simulations with the highest progress coordinate.
             If False, split the simulation with the highest progress coordinate
             and merge the simulations with the lowest progress coordinate.
+            Default is True.
+        target_threshold : float
+            The target threshold for the progress coordinate to be considered
+            in the target state. Default is 0.5.
         """
         self.pcoord = pcoord
         self.num_resamples = num_resamples
         self.n_split = n_split
         self.split_low = split_low
+        self.target_threshold = target_threshold
 
     def split(
         self,
@@ -409,3 +461,24 @@ class NaiveResampler(Resampler):
         simulations = self.merge(simulations)
 
         return simulations
+
+    def recycle(
+        self,
+        current_iteration: list[SimulationMetadata],
+    ) -> list[int]:
+        """Return a list of simulations to recycle."""
+        # Recycle the simulations
+        if self.split_low:
+            indices = [
+                i
+                for i, p in enumerate(self.pcoord)
+                if p < self.target_threshold
+            ]
+        else:
+            indices = [
+                i
+                for i, p in enumerate(self.pcoord)
+                if p > self.target_threshold
+            ]
+
+        return indices

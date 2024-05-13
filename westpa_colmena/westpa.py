@@ -239,6 +239,10 @@ class ExperimentSettings(DeepDriveMDSettings):
         default='.ncrst',
         description='Extension for the basis states.',
     )
+    checkpoint_file: Path | None = Field(
+        default=None,
+        description='Path to the checkpoint file.',
+    )
     simulation_args: SimulationArgs = Field(
         description='Arguments for the simulation.',
     )
@@ -302,7 +306,10 @@ if __name__ == '__main__':
     )
 
     # Initialize the weighted ensemble
-    ensemble = WeightedEnsemble(basis_states=basis_states)
+    ensemble = WeightedEnsemble(
+        basis_states=basis_states,
+        checkpoint_file=cfg.checkpoint_file,
+    )
 
     thinker = DeepDriveWESTPA(
         queue=queues,
