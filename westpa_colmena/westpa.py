@@ -25,6 +25,7 @@ from westpa_colmena.api import SimulationCountDoneCallback
 from westpa_colmena.api import TimeoutDoneCallback
 from westpa_colmena.apps.amber_simulation import SimulationArgs
 from westpa_colmena.apps.amber_simulation import SimulationResult
+from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.parsl import ComputeSettingsTypes
@@ -293,12 +294,15 @@ if __name__ == '__main__':
         TimeoutDoneCallback(cfg.duration_sec),
     ]
 
-    # Initialize the weighted ensemble
-    ensemble = WeightedEnsemble(
+    # Initialize the basis states
+    basis_states = BasisStates(
         ensemble_members=cfg.ensemble_members,
         simulation_input_dir=cfg.simulation_input_dir,
         basis_state_ext=cfg.basis_state_ext,
     )
+
+    # Initialize the weighted ensemble
+    ensemble = WeightedEnsemble(basis_states=basis_states)
 
     thinker = DeepDriveWESTPA(
         queue=queues,
