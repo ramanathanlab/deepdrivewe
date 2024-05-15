@@ -1,4 +1,8 @@
-"""DeepDriveMD WESTPA example."""
+"""DeepDriveMD WESTPA example.
+
+Adapted from:
+https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_nacl_amber
+"""
 
 from __future__ import annotations
 
