@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from argparse import ArgumentParser
 from functools import partial
 from functools import update_wrapper
@@ -16,17 +17,18 @@ from colmena.thinker import agent
 from proxystore.store import register_store
 from proxystore.store.file import FileStore
 from pydantic import Field
+from pydantic import validator
 
-from westpa_colmena.api import DeepDriveMDSettings
+from westpa_colmena.api import BaseModel
 from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
-from westpa_colmena.api import SimulationCountDoneCallback
-from westpa_colmena.api import TimeoutDoneCallback
-from westpa_colmena.apps.amber_simulation import SimulationArgs
-from westpa_colmena.apps.amber_simulation import SimulationResult
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
+from westpa_colmena.examples.basic_amber.inference import run_inference
+from westpa_colmena.examples.basic_amber.simulate import run_simulation
+from westpa_colmena.examples.basic_amber.simulate import SimulationArgs
+from westpa_colmena.examples.basic_amber.simulate import SimulationResult
 from westpa_colmena.parsl import ComputeSettingsTypes
 
 # TODO: We need to send a random seed for amber simulations
@@ -42,82 +44,6 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 # (4) Create a pytest for the WESTPA thinker.
 
 
-def run_simulation(
-    args: SimulationArgs,
-    metadata: SimulationMetadata,
-) -> SimulationResult:
-    """Run a simulation and return the pcoord and coordinates."""
-    from westpa_colmena.apps.amber_simulation import AmberSimulation
-    from westpa_colmena.apps.amber_simulation import CppTrajAnalyzer
-    from westpa_colmena.apps.amber_simulation import SimulationResult
-
-    # Create the simulation output directory
-    output_dir = (
-        args.output_dir
-        / f'{metadata.iteration_id:06d}'
-        / f'{metadata.simulation_id:06d}'
-    )
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # First run the simulation
-    simulation = AmberSimulation(
-        amber_exe=args.amber_exe,
-        md_input_file=args.md_input_file,
-        prmtop_file=args.prmtop_file,
-        output_dir=output_dir,
-        checkpoint_file=metadata.parent_restart_file,
-    )
-
-    # Run the simulation
-    simulation.run()
-
-    # Then run cpptraj to get the pcoord and coordinates
-    analyzer = CppTrajAnalyzer(
-        cpp_traj_exe=args.cpp_traj_exe,
-        reference_pdb_file=args.reference_pdb_file,
-    )
-    pcoord = analyzer.get_pcoords(simulation)
-    coords = analyzer.get_coords(simulation)
-
-    # Update the simulation metadata
-    metadata = metadata.copy()
-    metadata.restart_file = simulation.restart_file
-
-    result = SimulationResult(
-        pcoord=pcoord,
-        coords=coords,
-        metadata=metadata,
-    )
-
-    return result
-
-
-def run_train(input_data: Any) -> None:
-    """Train a model on the input data."""
-    ...
-
-
-def run_inference(
-    input_data: list[SimulationResult],
-) -> list[SimulationMetadata]:
-    """Run inference on the input data."""
-    from westpa_colmena.ensemble import NaiveResampler
-
-    # Extract the pcoord from the last frame of each simulation
-    pcoords = [sim_result.pcoord[-1] for sim_result in input_data]
-
-    # Extract the simulation metadata
-    current_iteration = [sim_result.metadata for sim_result in input_data]
-
-    # Resamlpe the ensemble
-    resampler = NaiveResampler(pcoord=pcoords)
-
-    # Get the next iteration of simulations
-    next_iteration = resampler.resample(current_iteration)
-
-    return next_iteration
-
-
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
     """A WESTPA thinker for DeepDriveMD."""
 
@@ -125,8 +51,8 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        done_callbacks: list[DoneCallback],
         ensemble: WeightedEnsemble,
+        done_callbacks: list[DoneCallback] | None = None,
     ) -> None:
         """Initialize the DeepDriveWESTPA thinker.
 
@@ -136,10 +62,10 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
             Queue used to communicate with the task server
         result_dir: Path
             Directory in which to store outputs
-        done_callbacks: list[DoneCallback]
-            List of callbacks to determine when the thinker should stop.
         ensemble: WeightedEnsemble
             Weighted ensemble object to manage the simulations and weights.
+        done_callbacks: list[DoneCallback] | None
+            List of callbacks to determine when the thinker should stop.
         """
         super().__init__(
             queue,
@@ -244,9 +170,18 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self.simulate()
 
 
-class ExperimentSettings(DeepDriveMDSettings):
+class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
+    simulation_input_dir: Path = Field(
+        description='Nested directory storing initial simulation start files, '
+        'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
+        'store PDB files, topology files, etc needed to start the simulation '
+        'application.',
+    )
+    output_dir: Path = Field(
+        description='Directory in which to store the results.',
+    )
     ensemble_members: int = Field(
         description='Number of simulations to start the weighted ensemble.',
     )
@@ -265,17 +200,37 @@ class ExperimentSettings(DeepDriveMDSettings):
         description='Settings for the compute resources.',
     )
 
+    @validator('output_dir')
+    @classmethod
+    def mkdir_validator(cls, value: Path) -> Path:
+        """Resolve and make the output directory."""
+        value = value.resolve()
+        value.mkdir(parents=True, exist_ok=True)
+        return value
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-c', '--config', required=True)
     args = parser.parse_args()
     cfg = ExperimentSettings.from_yaml(args.config)
-    cfg.dump_yaml(cfg.run_dir / 'params.yaml')
-    cfg.configure_logging()
+    cfg.dump_yaml(cfg.output_dir / 'params.yaml')
+
+    # Set up logging
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO,
+        handlers=[
+            logging.FileHandler(cfg.output_dir / 'runtime.log'),
+            logging.StreamHandler(sys.stdout),
+        ],
+    )
 
     # Make the proxy store
-    store = FileStore(name='file', store_dir=str(cfg.run_dir / 'proxy-store'))
+    store = FileStore(
+        name='file',
+        store_dir=str(cfg.output_dir / 'proxy-store'),
+    )
     register_store(store)
 
     # Make the queues
@@ -289,29 +244,25 @@ if __name__ == '__main__':
     # Define the parsl configuration (this can be done using the config_factory
     # for common use cases or by defining your own configuration.)
     parsl_config = cfg.compute_settings.config_factory(
-        cfg.run_dir / 'run-info',
+        cfg.output_dir / 'run-info',
     )
 
     # Assign constant settings to each task function
-    my_run_simulation = partial(run_simulation, args=cfg.simulation_args)
-    my_run_train = partial(run_train)
+    my_run_simulation = partial(
+        run_simulation,
+        output_dir=cfg.output_dir / 'simulation',
+        args=cfg.simulation_args,
+    )
     my_run_inference = partial(run_inference)
     update_wrapper(my_run_simulation, run_simulation)
-    update_wrapper(my_run_train, run_train)
     update_wrapper(my_run_inference, run_inference)
 
     # Create the task server
     doer = ParslTaskServer(
-        [my_run_simulation, my_run_train, my_run_inference],
+        [my_run_simulation, my_run_inference],
         queues,
         parsl_config,
     )
-
-    # Define the done callback signals
-    done_callbacks = [
-        SimulationCountDoneCallback(cfg.num_total_simulations),
-        TimeoutDoneCallback(cfg.duration_sec),
-    ]
 
     # Initialize the basis states
     basis_states = BasisStates(
@@ -323,14 +274,13 @@ if __name__ == '__main__':
     # Initialize the weighted ensemble
     ensemble = WeightedEnsemble(
         basis_states=basis_states,
-        checkpoint_dir=cfg.run_dir / 'checkpoint',
+        checkpoint_dir=cfg.output_dir / 'checkpoint',
         resume_checkpoint=cfg.resume_checkpoint,
     )
 
     thinker = DeepDriveWESTPA(
         queue=queues,
-        result_dir=cfg.run_dir / 'result',
-        done_callbacks=done_callbacks,
+        result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
     )
     logging.info('Created the task server and task generator')

@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import json
-import logging
 import shutil
-import sys
 import time
 import uuid
 from abc import ABC
 from abc import abstractmethod
 from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from threading import Event
 from threading import Semaphore
@@ -26,8 +23,7 @@ from colmena.thinker import agent
 from colmena.thinker import BaseThinker
 from colmena.thinker import event_responder
 from colmena.thinker import result_processor
-from pydantic import BaseSettings as _BaseSettings
-from pydantic import root_validator
+from pydantic import BaseModel as _BaseModel
 from pydantic import validator
 
 T = TypeVar('T')
@@ -35,24 +31,7 @@ T = TypeVar('T')
 PathLike = Union[str, Path]
 
 
-def _resolve_path_exists(value: Path | None) -> Path | None:
-    """Resolve a path and check if it exists."""
-    if value is None:
-        return None
-    p = value.resolve()
-    if not p.exists():
-        raise FileNotFoundError(p)
-    return p
-
-
-def path_validator(field: str) -> classmethod:  # type: ignore
-    """Create a path validator for a field."""
-    decorator = validator(field, allow_reuse=True)
-    _validator = decorator(_resolve_path_exists)
-    return _validator
-
-
-class BaseSettings(_BaseSettings):
+class BaseModel(_BaseModel):
     """Provide an easy interface to read/write YAML files."""
 
     def dump_yaml(self, filename: PathLike) -> None:
@@ -68,7 +47,7 @@ class BaseSettings(_BaseSettings):
         return cls(**raw_data)
 
 
-class ApplicationSettings(BaseSettings):
+class ApplicationSettings(BaseModel):
     """Settings for an application within the DeepDriveMD workflow."""
 
     output_dir: Path
@@ -83,7 +62,7 @@ class ApplicationSettings(BaseSettings):
         return v
 
 
-class BatchSettings(BaseSettings):
+class BatchSettings(BaseModel):
     """Dataclass utilities for data batches with multiple lists."""
 
     def __len__(self) -> int:
@@ -112,66 +91,6 @@ class BatchSettings(BaseSettings):
         """Clear all lists in the batch."""
         for _list in self.get_lists():
             _list.clear()
-
-
-class DeepDriveMDSettings(BaseSettings):
-    """Settings for the DeepDriveMD workflow."""
-
-    experiment_name: str = 'experiment'
-    """Name of the experiment to label the run directory."""
-    runs_dir: Path = Path('runs')
-    """Main directory to organize all experiment run directories."""
-    run_dir: Path
-    """Path this particular experiment writes to (set automatically)."""
-    simulation_input_dir: Path
-    """Nested directory storing initial simulation start files,
-    e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might store
-    PDB files, topology files, etc needed to start the simulation
-    application."""
-    num_total_simulations: int
-    """Number of simulations before signalling to stop (more simulations
-    may be run)."""
-    duration_sec: float = float('inf')
-    """Maximum number of seconds to run workflow before signalling to stop
-    (more time may elapse)."""
-    simulations_per_train: int
-    """Number of simulation results to use between model training tasks."""
-    simulations_per_inference: int
-    """Number of simulation results to use between inference tasks."""
-
-    # Application settings (should be overridden)
-    simulation_settings: ApplicationSettings
-    train_settings: ApplicationSettings
-    inference_settings: ApplicationSettings
-
-    def configure_logging(self) -> None:
-        """Set up logging."""
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO,
-            handlers=[
-                logging.FileHandler(self.run_dir / 'runtime.log'),
-                logging.StreamHandler(sys.stdout),
-            ],
-        )
-
-    @root_validator(pre=True)
-    @classmethod
-    def create_output_dirs(cls, values: dict[str, Any]) -> dict[str, Any]:
-        """Generate unique run path within run_dirs with a timestamp."""
-        runs_dir = Path(values.get('runs_dir', 'runs')).resolve()
-        experiment_name = values.get('experiment_name', 'experiment')
-        timestamp = datetime.now().strftime('%d%m%y-%H%M%S')
-        run_dir = runs_dir / f'{experiment_name}-{timestamp}'
-        run_dir.mkdir(exist_ok=False, parents=True)
-        values['run_dir'] = run_dir
-        # Specify application output directories
-        for name in ['simulation', 'train', 'inference']:
-            values[f'{name}_settings']['output_dir'] = run_dir / name
-        return values
-
-    # validators
-    _simulation_input_dir_exists = path_validator('simulation_input_dir')
 
 
 # TODO: Add logger to Application which writes to file in workdir
@@ -346,7 +265,7 @@ class DeepDriveMDWorkflow(BaseThinker):
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        done_callbacks: list[DoneCallback],
+        done_callbacks: list[DoneCallback] | None,
         async_simulation: bool = False,
     ) -> None:
         """Initialize the DeepDriveMD workflow.
@@ -370,7 +289,7 @@ class DeepDriveMDWorkflow(BaseThinker):
 
         # Number of times a given task has been submitted
         self.task_counter: defaultdict[str, int] = defaultdict(int)
-        self.done_callbacks = done_callbacks
+        self.done_callbacks = done_callbacks or []
 
         # Communicate information between agents
         self.simulation_govenor = Semaphore()
