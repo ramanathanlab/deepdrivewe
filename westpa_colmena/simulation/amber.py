@@ -16,7 +16,7 @@ class AmberSimulation:
 
     amber_exe: Path
     md_input_file: Path
-    prmtop_file: Path
+    top_file: Path
 
     # This property is different for each simulation
     output_dir: Path
@@ -55,7 +55,7 @@ class AmberSimulation:
         # Setup the simulation
         command = f'{self.amber_exe} -O '
         f'-i {self.md_input_file} '
-        f'-p {self.prmtop_file} '
+        f'-p {self.top_file} '
         f'-c {self.checkpoint_file} '
         f'-r {self.restart_file} '
         f'-x {self.trajectory_file} '
@@ -79,7 +79,7 @@ class AmberConfig(BaseModel):
             'help': 'The input file for the Amber simulation.',
         },
     )
-    prmtop_file: Path = field(
+    top_file: Path = field(
         metadata={
             'help': 'The prmtop file for the Amber simulation.',
         },

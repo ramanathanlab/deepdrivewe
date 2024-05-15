@@ -1,0 +1,23 @@
+simulation_input_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/inputs
+output_dir: runs/naive_resampler_test_v1
+ensemble_members: 10
+basis_state_ext: .ncrst
+resume_checkpoint: null
+simulation_args:
+  amber_exe: TODO
+  md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/md.in
+  top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/nacl.parm7
+  # reference_pdb_file: Path = field(
+  #     metadata={
+  #         'help': 'The reference PDB file for cpptraj.',
+  #     },
+  # )
+  # cpp_traj_exe: Path = field(
+  #     metadata={
+  #         'help': 'The path to the cpptraj executable.',
+  #     },
+  # )
+
+# TODO: Download ambertools from conda. This example doesn't need reference_pdb_file
+
+compute_settings:

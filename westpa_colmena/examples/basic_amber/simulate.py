@@ -59,6 +59,8 @@ class SimulationResult:
     )
 
 
+# TODO: Adapt this for the nacl example (we may be able to make a
+# generic version of this)
 @dataclass
 class CppTrajAnalyzer:
     """Analyze Amber simulations using cpptraj."""
@@ -84,7 +86,7 @@ class CppTrajAnalyzer:
             align_file = tmp.name
 
             # Create the cpptraj input file
-            input_file = f'parm {sim.prmtop_file} \n'
+            input_file = f'parm {sim.top_file} \n'
             input_file += f'trajin {sim.checkpoint_file}\n'
             input_file += f'trajin {sim.trajectory_file}\n'
             input_file += f'reference {self.reference_pdb_file} [reference] \n'
@@ -118,7 +120,7 @@ class CppTrajAnalyzer:
             The atomic coordinates from the aligned trajectory.
         """
         # Load the trajectory using mdtraj
-        traj = md.load(sim.trajectory_file, top=sim.prmtop_file)
+        traj = md.load(sim.trajectory_file, top=sim.top_file)
 
         # Load the reference structure
         ref_traj = md.load(self.reference_pdb_file)
@@ -152,7 +154,7 @@ def run_simulation(
     simulation = AmberSimulation(
         amber_exe=args.amber_config.amber_exe,
         md_input_file=args.amber_config.md_input_file,
-        prmtop_file=args.amber_config.prmtop_file,
+        top_file=args.amber_config.top_file,
         output_dir=sim_output_dir,
         checkpoint_file=metadata.parent_restart_file,
     )

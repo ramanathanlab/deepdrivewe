@@ -236,7 +236,7 @@ if __name__ == '__main__':
     # Make the queues
     queues = PipeQueues(
         serialization_method='pickle',
-        topics=['simulation', 'train', 'inference'],
+        topics=['simulation', 'inference'],
         proxystore_name='file',
         proxystore_threshold=10000,
     )
