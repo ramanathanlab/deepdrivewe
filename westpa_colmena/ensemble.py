@@ -147,7 +147,8 @@ class WeightedEnsemble:
     def __init__(
         self,
         basis_states: BasisStates,
-        checkpoint_file: Path | None,
+        checkpoint_dir: Path | None = None,
+        resume_checkpoint: Path | None = None,
     ) -> None:
         """Initialize the weighted ensemble.
 
@@ -155,12 +156,21 @@ class WeightedEnsemble:
         ----------
         basis_states : BasisStates
             The basis states for the weighted ensemble.
+        checkpoint_dir : Path or None
+            The directory to save the weighted ensemble checkpoints.
+        resume_checkpoint : Path or None
+            The checkpoint file to resume the weighted ensemble from.
         """
         self.basis_states = basis_states
+        self.checkpoint_dir = checkpoint_dir
+
+        # Initialize the checkpoint dir
+        if checkpoint_dir is not None:
+            checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
         # If checkpoint file is provided, load the weighted ensemble
-        if checkpoint_file is not None:
-            self.load_checkpoint(checkpoint_file)
+        if resume_checkpoint is not None:
+            self.load_checkpoint(resume_checkpoint)
 
     def load_checkpoint(self, checkpoint_file: Path) -> None:
         """Load the weighted ensemble from a checkpoint file."""
@@ -201,6 +211,10 @@ class WeightedEnsemble:
         """
         # Create a list to store the new simulations for this iteration
         self.simulations.append(next_iteration)
+
+        # Save the weighted ensemble to a checkpoint file
+        if self.checkpoint_dir is not None:
+            self.save_checkpoint(self.checkpoint_dir)
 
 
 class Resampler(ABC):
@@ -433,14 +447,21 @@ class NaiveResampler(Resampler):
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(self.pcoord)
 
-        # Merge the simulations
-        if self.split_low:
-            indices = list(sorted_indices[-self.num_resamples :])
-        else:
-            indices = list(sorted_indices[: self.num_resamples])
+        # Number of merges is the number of resamples + 1
+        # since when we split the simulations we get self.num_resamlpes
+        # new simulations and merging them will give us 1 new simulation
+        # so we need to merge self.num_resamples + 1 simulations in order
+        # to maintain the number of simulations in the ensemble.
+        num_merges = self.num_resamples + 1
 
         # Merge the simulations
-        new_sims = self.merge_sims(simulations, [indices])
+        if self.split_low:
+            indices = list(sorted_indices[-num_merges:])
+        else:
+            indices = list(sorted_indices[:num_merges])
+
+        # Merge the simulations
+        new_sims = self.merge_sims(simulations, indices)
 
         return new_sims
 

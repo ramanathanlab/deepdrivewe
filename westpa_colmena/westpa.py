@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from argparse import ArgumentParser
 from functools import partial
 from functools import update_wrapper
@@ -98,9 +97,25 @@ def run_train(input_data: Any) -> None:
     ...
 
 
-def run_inference(input_data: list[SimulationResult]) -> None:
+def run_inference(
+    input_data: list[SimulationResult],
+) -> list[SimulationMetadata]:
     """Run inference on the input data."""
-    ...
+    from westpa_colmena.ensemble import NaiveResampler
+
+    # Extract the pcoord from the last frame of each simulation
+    pcoords = [sim_result.pcoord[-1] for sim_result in input_data]
+
+    # Extract the simulation metadata
+    current_iteration = [sim_result.metadata for sim_result in input_data]
+
+    # Resamlpe the ensemble
+    resampler = NaiveResampler(pcoord=pcoords)
+
+    # Get the next iteration of simulations
+    next_iteration = resampler.resample(current_iteration)
+
+    return next_iteration
 
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
@@ -137,12 +152,12 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # TODO: Update the inputs to support model weights, etc
         # Custom data structures
-        self.train_input: list[SimulationResult] = []
+        # self.train_input: list[SimulationResult] = []
         self.inference_input: list[SimulationResult] = []
 
         # Make sure there has been at least one training task
         # complete before running inference
-        self.model_weights_available = False
+        # self.model_weights_available = False
 
     @agent(startup=True)
     def start_simulations(self) -> None:
@@ -163,7 +178,8 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         Must call :meth:`submit_task` with ``topic='train'``.
         """
-        self.submit_task('train', self.train_input)
+        # self.submit_task('train', self.train_input)
+        pass
 
     def inference(self) -> None:
         """Start an inference task.
@@ -171,8 +187,8 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         Must call a :meth:`submit_task` with ``topic='infer'``.
         """
         # Inference must wait for a trained model to be available
-        while not self.model_weights_available:
-            time.sleep(1)
+        # while not self.model_weights_available:
+        #     time.sleep(1)
 
         self.submit_task('inference', self.inference_input)
         self.inference_input = []  # Clear batched data
@@ -191,7 +207,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
             Output to be processed
         """
         # Collect simulation results
-        self.train_input.append(output)
+        # self.train_input.append(output)
         self.inference_input.append(output)
 
         # Number of simulations in the current iteration
@@ -199,29 +215,30 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # Since we are not clearing the train/inference inputs, the
         # length will be the same as the ensemble members
-        if num_simulations % len(self.train_input) == 0:
-            self.run_training.set()
+        if num_simulations % len(self.inference_input) == 0:
+            # self.run_training.set()
             self.run_inference.set()
 
     def handle_train_output(self, output: Any) -> None:
         """Use the output from a training run to update the model."""
-        self.inference_input.model_weight_path = output.model_weight_path  # type: ignore[attr-defined]
-        self.model_weights_available = True
-        self.logger.info(
-            f'Updated model_weight_path to: {output.model_weight_path}',
-        )
+        # self.inference_input.model_weight_path = output.model_weight_path
+        # self.model_weights_available = True
+        # self.logger.info(
+        #     f'Updated model_weight_path to: {output.model_weight_path}',
+        # )
+        pass
 
-    def handle_inference_output(self, output: Any) -> None:
+    def handle_inference_output(
+        self,
+        output: list[SimulationMetadata],
+    ) -> None:
         """Handle the output of an inference run.
 
         Use the output from an inference run to update the list of
         available simulations.
         """
-        # Extract the next iteration of simulations starting points
-        next_iteration: list[SimulationMetadata] = output.next_iteration
-
         # Update the weighted ensemble with the next iteration
-        self.ensemble.advance_iteration(next_iteration)
+        self.ensemble.advance_iteration(next_iteration=output)
 
         # Submit the next iteration of simulations
         self.simulate()
@@ -237,7 +254,7 @@ class ExperimentSettings(DeepDriveMDSettings):
         default='.ncrst',
         description='Extension for the basis states.',
     )
-    checkpoint_file: Path | None = Field(
+    resume_checkpoint: Path | None = Field(
         default=None,
         description='Path to the checkpoint file.',
     )
@@ -306,7 +323,8 @@ if __name__ == '__main__':
     # Initialize the weighted ensemble
     ensemble = WeightedEnsemble(
         basis_states=basis_states,
-        checkpoint_file=cfg.checkpoint_file,
+        checkpoint_dir=cfg.run_dir / 'checkpoint',
+        resume_checkpoint=cfg.resume_checkpoint,
     )
 
     thinker = DeepDriveWESTPA(
