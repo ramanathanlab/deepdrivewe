@@ -44,7 +44,7 @@ class LocalSettings(BaseComputeSettings):
 
     name: Literal['local'] = 'local'  # type: ignore[assignment]
     max_workers: int = 1
-    cores_per_worker: float = 0.0001
+    cores_per_worker: float = 1.0
     worker_port_range: tuple[int, int] = (10000, 20000)
     label: str = 'htex'
 

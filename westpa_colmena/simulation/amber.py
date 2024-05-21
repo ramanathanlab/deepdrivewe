@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import subprocess
+from abc import ABC
+from abc import abstractmethod
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 
+import mdtraj as md
+import numpy as np
 from pydantic import BaseModel
 
 
@@ -14,7 +18,7 @@ from pydantic import BaseModel
 class AmberSimulation:
     """Run an Amber simulation."""
 
-    amber_exe: Path
+    amber_exe: str
     md_input_file: Path
     top_file: Path
 
@@ -69,7 +73,8 @@ class AmberSimulation:
 class AmberConfig(BaseModel):
     """Config for an Amber simulation."""
 
-    amber_exe: Path = field(
+    amber_exe: str = field(
+        default='sander',
         metadata={
             'help': 'The path to the Amber executable.',
         },
@@ -84,3 +89,53 @@ class AmberConfig(BaseModel):
             'help': 'The prmtop file for the Amber simulation.',
         },
     )
+
+
+@dataclass
+class AmberTrajAnalyzer(ABC):
+    """Strategy for analyzing Amber trajectories."""
+
+    reference_file: Path
+
+    @abstractmethod
+    def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
+        """Get the progress coordinate from the aligned trajectory.
+
+        Parameters
+        ----------
+        sim : AmberSimulation
+            The Amber simulation to analyze.
+
+        Returns
+        -------
+        np.ndarray
+            The progress coordinate from the aligned trajectory.
+        """
+        ...
+
+    def get_coords(self, sim: AmberSimulation) -> np.ndarray:
+        """Get the atomic coordinates from the aligned trajectory.
+
+        Parameters
+        ----------
+        sim : AmberSimulation
+            The Amber simulation to analyze.
+
+        Returns
+        -------
+        np.ndarray
+            The atomic coordinates from the aligned trajectory.
+        """
+        # Load the trajectory using mdtraj
+        traj = md.load(sim.trajectory_file, top=sim.top_file)
+
+        # Load the reference structure
+        ref_traj = md.load(self.reference_file)
+
+        # Align the trajectory to the reference structure
+        traj_aligned = traj.superpose(ref_traj)
+
+        # Get the atomic coordinates from the aligned trajectory
+        aligned_coordinates = traj_aligned.xyz
+
+        return aligned_coordinates

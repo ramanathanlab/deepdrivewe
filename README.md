@@ -10,6 +10,17 @@ cd westpa_colmena
 pip install -e .
 ```
 
+Full installation including dependencies:
+```bash
+git clone git@github.com:braceal/westpa_colmena.git
+cd westpa_colmena
+conda create -n westpa_colmena python=3.10 -y
+conda install omnia::ambertools -y
+pip install mdtraj==1.9.9
+pip install -e .
+```
+
+
 ## Contributing
 
 For development, it is recommended to use a virtual environment. The following

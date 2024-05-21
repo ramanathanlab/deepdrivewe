@@ -22,7 +22,6 @@ dependencies = [
     "parsl",
     "pyyaml==6.0",
     "numpy",
-    #"mdtraj==1.9.9",
 ]
 
 [project.urls]

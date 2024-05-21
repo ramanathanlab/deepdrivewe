@@ -3,10 +3,40 @@
 from __future__ import annotations
 
 import numpy as np
+from pydantic import BaseModel
+from pydantic import Field
 
 from westpa_colmena.ensemble import Resampler
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.examples.basic_amber.simulate import SimulationResult
+
+
+class InferenceConfig(BaseModel):
+    """Arguments for the naive resampler."""
+
+    num_resamples: int = Field(
+        default=1,
+        description='The number of resamples to perform (i.e., the number of'
+        ' splits and merges to perform in each iteration). Default is 1.',
+    )
+    n_split: int = Field(
+        default=2,
+        description='The number of simulations to split each simulation into.'
+        ' Default is 2.',
+    )
+    split_low: bool = Field(
+        default=True,
+        description='If True, split the simulation with the lowest progress'
+        ' coordinate and merge the simulations with the highest progress'
+        ' coordinate. If False, split the simulation with the highest'
+        ' progress coordinate and merge the simulations with the lowest'
+        ' progress coordinate. Default is True.',
+    )
+    target_threshold: float = Field(
+        default=0.5,
+        description='The target threshold for the progress coordinate to be'
+        ' considered in the target state. Default is 0.5.',
+    )
 
 
 class NaiveResampler(Resampler):
@@ -132,6 +162,7 @@ class NaiveResampler(Resampler):
 
 
 def run_inference(
+    config: InferenceConfig,
     input_data: list[SimulationResult],
 ) -> list[SimulationMetadata]:
     """Run inference on the input data."""
@@ -142,7 +173,13 @@ def run_inference(
     current_iteration = [sim_result.metadata for sim_result in input_data]
 
     # Resamlpe the ensemble
-    resampler = NaiveResampler(pcoord=pcoords)
+    resampler = NaiveResampler(
+        pcoord=pcoords,
+        num_resamples=config.num_resamples,
+        n_split=config.n_split,
+        split_low=config.split_low,
+        target_threshold=config.target_threshold,
+    )
 
     # Get the next iteration of simulations
     next_iteration = resampler.resample(current_iteration)

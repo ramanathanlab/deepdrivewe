@@ -29,9 +29,10 @@ from westpa_colmena.api import DoneCallback
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
+from westpa_colmena.examples.basic_amber.inference import InferenceConfig
 from westpa_colmena.examples.basic_amber.inference import run_inference
 from westpa_colmena.examples.basic_amber.simulate import run_simulation
-from westpa_colmena.examples.basic_amber.simulate import SimulationArgs
+from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
 from westpa_colmena.examples.basic_amber.simulate import SimulationResult
 from westpa_colmena.parsl import ComputeSettingsTypes
 
@@ -183,22 +184,25 @@ class ExperimentSettings(BaseModel):
         'store PDB files, topology files, etc needed to start the simulation '
         'application.',
     )
-    output_dir: Path = Field(
-        description='Directory in which to store the results.',
+    basis_state_ext: str = Field(
+        default='.ncrst',
+        description='Extension for the basis states.',
     )
     ensemble_members: int = Field(
         description='Number of simulations to start the weighted ensemble.',
     )
-    basis_state_ext: str = Field(
-        default='.ncrst',
-        description='Extension for the basis states.',
+    output_dir: Path = Field(
+        description='Directory in which to store the results.',
     )
     resume_checkpoint: Path | None = Field(
         default=None,
         description='Path to the checkpoint file.',
     )
-    simulation_args: SimulationArgs = Field(
+    simulation_config: SimulationConfig = Field(
         description='Arguments for the simulation.',
+    )
+    inference_config: InferenceConfig = Field(
+        description='Arguments for the inference.',
     )
     compute_settings: ComputeSettingsTypes = Field(
         description='Settings for the compute resources.',
@@ -255,9 +259,9 @@ if __name__ == '__main__':
     my_run_simulation = partial(
         run_simulation,
         output_dir=cfg.output_dir / 'simulation',
-        args=cfg.simulation_args,
+        config=cfg.simulation_config,
     )
-    my_run_inference = partial(run_inference)
+    my_run_inference = partial(run_inference, config=cfg.inference_config)
     update_wrapper(my_run_simulation, run_simulation)
     update_wrapper(my_run_inference, run_inference)
 

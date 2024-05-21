@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 
-import mdtraj as md
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
@@ -16,9 +15,10 @@ from pydantic import Field
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.simulation.amber import AmberConfig
 from westpa_colmena.simulation.amber import AmberSimulation
+from westpa_colmena.simulation.amber import AmberTrajAnalyzer
 
 
-class SimulationArgs(BaseModel):
+class SimulationConfig(BaseModel):
     """Arguments for the naive resampler."""
 
     amber_config: AmberConfig = Field(
@@ -26,12 +26,7 @@ class SimulationArgs(BaseModel):
             'help': 'The configuration for the Amber simulation.',
         },
     )
-    cpp_traj_exe: Path = Field(
-        metadata={
-            'help': 'The path to the cpptraj executable.',
-        },
-    )
-    reference_pdb_file: Path = Field(
+    reference_file: Path = Field(
         metadata={
             'help': 'The reference PDB file for the cpptraj analysis.',
         },
@@ -59,14 +54,8 @@ class SimulationResult:
     )
 
 
-# TODO: Adapt this for the nacl example (we may be able to make a
-# generic version of this)
-@dataclass
-class CppTrajAnalyzer:
+class BackboneRMSDAnalyzer(AmberTrajAnalyzer):
     """Analyze Amber simulations using cpptraj."""
-
-    cpp_traj_exe: Path
-    reference_pdb_file: Path
 
     def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
         """Get the progress coordinate from the aligned trajectory.
@@ -86,17 +75,17 @@ class CppTrajAnalyzer:
             align_file = tmp.name
 
             # Create the cpptraj input file
-            input_file = f'parm {sim.top_file} \n'
-            input_file += f'trajin {sim.checkpoint_file}\n'
-            input_file += f'trajin {sim.trajectory_file}\n'
-            input_file += f'reference {self.reference_pdb_file} [reference] \n'
-            input_file += (
+            input_file = (
+                f'parm {sim.top_file} \n'
+                f'trajin {sim.checkpoint_file}\n'
+                f'trajin {sim.trajectory_file}\n'
+                f'reference {self.reference_file} [reference] \n'
                 f'rms ALIGN @CA,C,O,N,H reference out {align_file} \n'
+                'go'
             )
-            input_file += 'go'
 
             # Run cpptraj
-            command = f'echo -e {input_file} | {self.cpp_traj_exe}'
+            command = f'echo -e {input_file} | cpptraj'
             subprocess.run(command, shell=True, check=True)
 
             # Parse the cpptraj output file (first line is a header)
@@ -106,8 +95,12 @@ class CppTrajAnalyzer:
 
         return np.array(pcoord)
 
-    def get_coords(self, sim: AmberSimulation) -> np.ndarray:
-        """Get the atomic coordinates from the aligned trajectory.
+
+class DistanceAnalyzer(AmberTrajAnalyzer):
+    """Analyze Amber simulations using cpptraj."""
+
+    def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
+        """Get the progress coordinate from the aligned trajectory.
 
         Parameters
         ----------
@@ -117,25 +110,35 @@ class CppTrajAnalyzer:
         Returns
         -------
         np.ndarray
-            The atomic coordinates from the aligned trajectory.
+            The progress coordinate from the aligned trajectory.
         """
-        # Load the trajectory using mdtraj
-        traj = md.load(sim.trajectory_file, top=sim.top_file)
+        # Make a temporary file to store the cpptraj outputs
+        with tempfile.NamedTemporaryFile() as tmp:
+            align_file = tmp.name
 
-        # Load the reference structure
-        ref_traj = md.load(self.reference_pdb_file)
+            # Create the cpptraj input file
+            input_file = (
+                f'parm {sim.top_file} \n'
+                f'trajin {sim.checkpoint_file}\n'
+                f'trajin {sim.trajectory_file}\n'
+                f'reference {self.reference_file} [reference] \n'
+                f'distance na-cl :1@Na+ :2@Cl- out {align_file} \n'
+                'go'
+            )
+            # Run cpptraj
+            command = f'echo -e {input_file} | cpptraj'
+            subprocess.run(command, shell=True, check=True)
 
-        # Align the trajectory to the reference structure
-        traj_aligned = traj.superpose(ref_traj)
+            # Parse the cpptraj output file (first line is a header)
+            lines = Path(align_file).read_text().splitlines()[1:]
+            # The second column is the progress coordinate
+            pcoord = [float(line.split()[1]) for line in lines if line]
 
-        # Get the atomic coordinates from the aligned trajectory
-        aligned_coordinates = traj_aligned.xyz
-
-        return aligned_coordinates
+        return np.array(pcoord)
 
 
 def run_simulation(
-    args: SimulationArgs,
+    config: SimulationConfig,
     output_dir: Path,
     metadata: SimulationMetadata,
 ) -> SimulationResult:
@@ -152,9 +155,9 @@ def run_simulation(
 
     # First run the simulation
     simulation = AmberSimulation(
-        amber_exe=args.amber_config.amber_exe,
-        md_input_file=args.amber_config.md_input_file,
-        top_file=args.amber_config.top_file,
+        amber_exe=config.amber_config.amber_exe,
+        md_input_file=config.amber_config.md_input_file,
+        top_file=config.amber_config.top_file,
         output_dir=sim_output_dir,
         checkpoint_file=metadata.parent_restart_file,
     )
@@ -163,10 +166,7 @@ def run_simulation(
     simulation.run()
 
     # Then run cpptraj to get the pcoord and coordinates
-    analyzer = CppTrajAnalyzer(
-        cpp_traj_exe=args.cpp_traj_exe,
-        reference_pdb_file=args.reference_pdb_file,
-    )
+    analyzer = DistanceAnalyzer(reference_file=config.reference_file)
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
 
