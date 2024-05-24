@@ -153,6 +153,9 @@ def run_simulation(
     )
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
+    # TODO: Copy input file and checkpoint file to this directory.
+    # TODO: Log the yaml config file to this directory
+
     # First run the simulation
     simulation = AmberSimulation(
         amber_exe=config.amber_config.amber_exe,
