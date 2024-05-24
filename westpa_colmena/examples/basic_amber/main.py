@@ -261,8 +261,8 @@ if __name__ == '__main__':
     # Assign constant settings to each task function
     my_run_simulation = partial(
         run_simulation,
-        output_dir=cfg.output_dir / 'simulation',
         config=cfg.simulation_config,
+        output_dir=cfg.output_dir / 'simulation',
     )
     my_run_inference = partial(run_inference, config=cfg.inference_config)
     update_wrapper(my_run_simulation, run_simulation)

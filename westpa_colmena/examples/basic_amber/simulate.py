@@ -138,9 +138,9 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
 
 
 def run_simulation(
+    metadata: SimulationMetadata,
     config: SimulationConfig,
     output_dir: Path,
-    metadata: SimulationMetadata,
 ) -> SimulationResult:
     """Run a simulation and return the pcoord and coordinates."""
     from westpa_colmena.simulation.amber import AmberSimulation
