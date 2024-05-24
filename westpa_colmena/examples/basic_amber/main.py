@@ -237,13 +237,13 @@ if __name__ == '__main__':
     store = Store(
         name='file-store',
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
-        # register=True,
+        register=True,
     )
 
     # Register the store
-    from proxystore.store import register_store
+    # from proxystore.store import register_store
 
-    register_store(store)
+    # register_store(store)
 
     # # Make the proxy store
     # from proxystore.store import get_store
