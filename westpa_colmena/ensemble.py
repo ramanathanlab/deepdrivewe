@@ -113,8 +113,11 @@ class BasisStates:
             range(self.ensemble_members),
             itertools.cycle(simulation_input_dirs),
         ):
+            # Define the glob pattern
+            pattern = f'*{self.basis_state_ext}'
+
             # Get the basis state file in the input directory
-            basis_state = next(input_dir.glob(self.basis_state_ext), None)
+            basis_state = next(input_dir.glob(pattern), None)
 
             # Raise an error if no basis state is found
             if basis_state is None:
