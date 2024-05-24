@@ -241,8 +241,9 @@ if __name__ == '__main__':
     )
 
     # Register the store
-    # from proxystore.store import register_store
-    # register_store(store)
+    from proxystore.store import register_store
+
+    register_store(store)
 
     # # Make the proxy store
     # from proxystore.store import get_store
