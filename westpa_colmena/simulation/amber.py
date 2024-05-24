@@ -6,12 +6,12 @@ import subprocess
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
-from dataclasses import field
 from pathlib import Path
 
 import mdtraj as md
 import numpy as np
 from pydantic import BaseModel
+from pydantic import Field
 
 
 @dataclass
@@ -73,21 +73,15 @@ class AmberSimulation:
 class AmberConfig(BaseModel):
     """Config for an Amber simulation."""
 
-    amber_exe: str = field(
+    amber_exe: str = Field(
         default='sander',
-        metadata={
-            'help': 'The path to the Amber executable.',
-        },
+        description='The path to the Amber executable.',
     )
-    md_input_file: Path = field(
-        metadata={
-            'help': 'The input file for the Amber simulation.',
-        },
+    md_input_file: Path = Field(
+        description='The input file for the Amber simulation.',
     )
-    top_file: Path = field(
-        metadata={
-            'help': 'The prmtop file for the Amber simulation.',
-        },
+    top_file: Path = Field(
+        description='The prmtop file for the Amber simulation.',
     )
 
 
