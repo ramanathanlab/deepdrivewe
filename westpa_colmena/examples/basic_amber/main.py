@@ -19,6 +19,7 @@ from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from colmena.thinker import agent
 from proxystore.connectors.file import FileConnector
+from proxystore.store import register_store
 from proxystore.store import Store
 from pydantic import Field
 from pydantic import validator
@@ -234,20 +235,14 @@ if __name__ == '__main__':
         ],
     )
 
+    # Make the store
     store = Store(
         name='file-store',
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
-        register=True,
     )
 
     # Register the store
-    # from proxystore.store import register_store
-
-    # register_store(store)
-
-    # # Make the proxy store
-    # from proxystore.store import get_store
-    # store = get_store('file-store')
+    register_store(store)
 
     # Make the queues
     queues = PipeQueues(
