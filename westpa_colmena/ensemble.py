@@ -88,6 +88,9 @@ class BasisStates:
         # Initialize the basis states
         self.basis_states = self._uniform_init(basis_files)
 
+        # Log the number of basis states
+        print(f'Loaded {len(self.basis_states)} basis states')
+
     def __len__(self) -> int:
         """Return the number of basis states."""
         return len(self.basis_states)
@@ -99,17 +102,29 @@ class BasisStates:
     def _load_basis_states(self) -> list[Path]:
         # Collect initial simulation directories, assumes they are in nested
         # subdirectories
-        simulation_input_dirs = itertools.cycle(
-            filter(lambda p: p.is_dir(), self.simulation_input_dir.glob('*')),
+        simulation_input_dirs = filter(
+            lambda p: p.is_dir(),
+            self.simulation_input_dir.glob('*'),
         )
 
         # Get the basis states by globbing the input directories
-        basis_states = [
-            next(p.glob(self.basis_state_ext)) for p in simulation_input_dirs
-        ]
+        basis_states = []
+        for _, input_dir in zip(
+            range(self.ensemble_members),
+            itertools.cycle(simulation_input_dirs),
+        ):
+            # Get the basis state file in the input directory
+            basis_state = next(input_dir.glob(self.basis_state_ext), None)
 
-        # Get the first `ensemble_members` basis states
-        basis_states = basis_states[: self.ensemble_members]
+            # Raise an error if no basis state is found
+            if basis_state is None:
+                raise ValueError(
+                    f'No basis state in {input_dir} found with'
+                    f' extension: {self.basis_state_ext}',
+                )
+
+            # Append the basis state to the list of basis states
+            basis_states.append(basis_state)
 
         # Return the basis states
         return basis_states
