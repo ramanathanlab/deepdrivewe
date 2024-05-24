@@ -310,8 +310,8 @@ if __name__ == '__main__':
     finally:
         queues.send_kill_signal()
 
-    # Wait for the task server to complete
-    doer.join()
+        # Wait for the task server to complete
+        doer.join()
 
-    # Clean up proxy store
-    store.close()
+        # Clean up proxy store
+        store.close()
