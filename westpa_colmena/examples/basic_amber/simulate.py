@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -9,9 +10,9 @@ from dataclasses import field
 from pathlib import Path
 
 import numpy as np
-from pydantic import BaseModel
 from pydantic import Field
 
+from westpa_colmena.api import BaseModel
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.simulation.amber import AmberConfig
 from westpa_colmena.simulation.amber import AmberSimulation
@@ -153,16 +154,21 @@ def run_simulation(
     )
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
-    # TODO: Copy input file and checkpoint file to this directory.
-    # TODO: Log the yaml config file to this directory
+    # Copy input files to the output directory
+    checkpoint_file = shutil.copy(metadata.parent_restart_file, sim_output_dir)
+    md_input = shutil.copy(config.amber_config.md_input_file, sim_output_dir)
+    top_file = shutil.copy(config.amber_config.top_file, sim_output_dir)
+
+    # Log the yaml config file to this directory
+    config.dump_yaml(sim_output_dir / 'config.yaml')
 
     # First run the simulation
     simulation = AmberSimulation(
         amber_exe=config.amber_config.amber_exe,
-        md_input_file=config.amber_config.md_input_file,
-        top_file=config.amber_config.top_file,
+        md_input_file=md_input,
+        top_file=top_file,
         output_dir=sim_output_dir,
-        checkpoint_file=metadata.parent_restart_file,
+        checkpoint_file=checkpoint_file,
     )
 
     # Run the simulation
