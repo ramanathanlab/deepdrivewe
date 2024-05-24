@@ -114,11 +114,11 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
             The progress coordinate from the aligned trajectory.
         """
         # Make a temporary file to store the cpptraj outputs
-        with tempfile.NamedTemporaryFile() as tmp:
-            align_file = tmp.name
+        with tempfile.TemporaryDirectory() as tmp:
+            align_file = Path(tmp) / 'cpptraj.dat'
 
             # Create the cpptraj input file
-            input_file = (
+            input_file_contents = (
                 f'parm {sim.top_file} \n'
                 f'trajin {sim.checkpoint_file}\n'
                 f'trajin {sim.trajectory_file}\n'
@@ -126,8 +126,13 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
                 f'distance na-cl :1@Na+ :2@Cl- out {align_file} \n'
                 'go'
             )
+
+            # Write the input file to a temporary file
+            input_file = Path(tmp) / 'cpptraj.in'
+            input_file.write_text(input_file_contents)
+
             # Run cpptraj
-            command = f'echo -e {input_file} | cpptraj'
+            command = f'cpptraj {input_file}'
             subprocess.run(command, shell=True, check=True)
 
             # Parse the cpptraj output file (first line is a header)
