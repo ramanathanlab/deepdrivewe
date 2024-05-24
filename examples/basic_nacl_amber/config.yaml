@@ -3,12 +3,28 @@ output_dir: runs/naive_resampler_test_v1
 ensemble_members: 10
 basis_state_ext: .ncrst
 resume_checkpoint: null
+
 simulation_config:
   amber_config:
     amber_exe: sander
     md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/md.in
     top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/nacl.parm7
   reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/inputs/bstates/bstate.rst
+
+inference_config:
+  # The number of resamples to perform (i.e., the number of
+  # splits and merges to perform in each iteration).
+  num_resamples: 1
+  # The number of simulations to split each simulation into.
+  n_split: 2
+  # If True, split the simulation with the lowest progress coordinate
+  # and merge the simulations with the highest progress coordinate.
+  # If False, split the simulation with the highest progress coordinate
+  # and merge the simulations with the lowest progress coordinate.
+  split_low: True
+  # The target threshold for the progress coordinate to be considered
+  # in the target state.
+  target_threshold: 0.5
 
 compute_settings:
   name: local
