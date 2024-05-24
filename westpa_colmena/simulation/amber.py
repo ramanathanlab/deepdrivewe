@@ -125,6 +125,10 @@ class AmberTrajAnalyzer(ABC):
         np.ndarray
             The atomic coordinates from the aligned trajectory.
         """
+        print(
+            f'Analyzing simulation traj file {sim.trajectory_file} and'
+            f' top file {sim.top_file}',
+        )
         # Load the trajectory using mdtraj
         traj = md.load(sim.trajectory_file, top=sim.top_file)
 

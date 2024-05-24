@@ -37,7 +37,8 @@ from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
 from westpa_colmena.examples.basic_amber.simulate import SimulationResult
 from westpa_colmena.parsl import ComputeSettingsTypes
 
-# TODO: We need to send a random seed for amber simulations
+# TODO: We need to send a random seed for amber simulations in the RAND section
+#       of the input file.
 
 # TODO: Next steps:
 # (1) Implement the run_inference function using the resampler.
