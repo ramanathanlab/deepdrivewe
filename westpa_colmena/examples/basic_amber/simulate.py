@@ -132,7 +132,7 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
             input_file.write_text(input_file_contents)
 
             # Run cpptraj
-            command = f'cpptraj {input_file}'
+            command = f'cat {input_file} | cpptraj'
             subprocess.run(command, shell=True, check=True)
 
             # Parse the cpptraj output file (first line is a header)
