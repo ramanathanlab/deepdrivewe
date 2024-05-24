@@ -6,6 +6,7 @@ import itertools
 import pickle
 from abc import ABC
 from abc import abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -186,8 +187,12 @@ class WeightedEnsemble:
         if checkpoint_dir is not None:
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-        # If checkpoint file is provided, load the weighted ensemble
-        if resume_checkpoint is not None:
+        # Initialize the weighted ensemble simulations
+        if resume_checkpoint is None:
+            # Initialize the ensemble with the basis states
+            self.simulations = [deepcopy(self.basis_states.basis_states)]
+        else:
+            # Load the weighted ensemble from the checkpoint file
             self.load_checkpoint(resume_checkpoint)
 
     def load_checkpoint(self, checkpoint_file: Path) -> None:
