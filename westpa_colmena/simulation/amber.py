@@ -60,11 +60,11 @@ class AmberSimulation:
         command = (
             f'{self.amber_exe} -O '
             f'-i {self.md_input_file} '
+            f'-o {self.log_file} '
             f'-p {self.top_file} '
             f'-c {self.checkpoint_file} '
             f'-r {self.restart_file} '
             f'-x {self.trajectory_file} '
-            f'-o {self.log_file} '
             f'-inf {self.info_file}'
         )
 
@@ -72,7 +72,7 @@ class AmberSimulation:
         print(command)
 
         # Run the simulation
-        subprocess.run(command, shell=True, check=True)
+        subprocess.run(command, shell=True, check=True, cwd=self.output_dir)
 
 
 class AmberConfig(BaseModel):
