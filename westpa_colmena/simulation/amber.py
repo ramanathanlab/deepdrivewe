@@ -57,14 +57,19 @@ class AmberSimulation:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Setup the simulation
-        command = f'{self.amber_exe} -O '
-        f'-i {self.md_input_file} '
-        f'-p {self.top_file} '
-        f'-c {self.checkpoint_file} '
-        f'-r {self.restart_file} '
-        f'-x {self.trajectory_file} '
-        f'-o {self.log_file} '
-        f'-inf {self.info_file}'
+        command = (
+            f'{self.amber_exe} -O '
+            f'-i {self.md_input_file} '
+            f'-p {self.top_file} '
+            f'-c {self.checkpoint_file} '
+            f'-r {self.restart_file} '
+            f'-x {self.trajectory_file} '
+            f'-o {self.log_file} '
+            f'-inf {self.info_file}'
+        )
+
+        # Log the command
+        print(command)
 
         # Run the simulation
         subprocess.run(command, shell=True, check=True)
