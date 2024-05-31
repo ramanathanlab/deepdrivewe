@@ -162,8 +162,8 @@ class NaiveResampler(Resampler):
 
 
 def run_inference(
-    config: InferenceConfig,
     input_data: list[SimulationResult],
+    config: InferenceConfig,
 ) -> list[SimulationMetadata]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
