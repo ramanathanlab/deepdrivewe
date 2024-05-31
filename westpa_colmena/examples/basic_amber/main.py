@@ -148,7 +148,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # Since we are not clearing the train/inference inputs, the
         # length will be the same as the ensemble members
-        if num_simulations % len(self.inference_input) == 0:
+        if len(self.inference_input) % num_simulations == 0:
             # self.run_training.set()
             self.run_inference.set()
 
