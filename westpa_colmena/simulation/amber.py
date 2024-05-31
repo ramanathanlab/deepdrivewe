@@ -21,6 +21,7 @@ class AmberSimulation:
     amber_exe: str
     md_input_file: Path
     top_file: Path
+    seed: int
 
     # This property is different for each simulation
     output_dir: Path
@@ -55,6 +56,10 @@ class AmberSimulation:
         """
         # Create the output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Populate the md_input_file with the random seed
+        command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
+        subprocess.run(command, check=False, shell=True)
 
         # Setup the simulation
         command = (
