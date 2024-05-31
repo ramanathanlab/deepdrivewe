@@ -38,18 +38,9 @@ from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
 from westpa_colmena.examples.basic_amber.simulate import SimulationResult
 from westpa_colmena.parsl import ComputeSettingsTypes
 
-# TODO: We need to send a random seed for amber simulations in the RAND section
-#       of the input file.
-
 # TODO: Next steps:
-# (1) Implement the run_inference function using the resampler.
-# (2) Define the input arguments and return results for the tasks.
-#       - Simulation results as a field within the metadata would do it.
-#       - Think about how to store simulation results (such as coordinates)
-#         in a way that can be proxied so that the thinker does not
-#         implicitly load all the data into memory.
-# (3) Test the resampler and weighted ensemble logic in pytest.
-# (4) Create a pytest for the WESTPA thinker.
+# (1) Test the resampler and weighted ensemble logic in pytest.
+# (2) Create a pytest for the WESTPA thinker.
 
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
@@ -246,6 +237,7 @@ if __name__ == '__main__':
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
     )
 
+    # TODO: This won't be needed in the next colmena release
     # Register the store
     register_store(store)
 
