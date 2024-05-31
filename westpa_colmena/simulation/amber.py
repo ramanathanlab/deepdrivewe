@@ -133,7 +133,7 @@ class AmberTrajAnalyzer(ABC):
         traj = md.load(sim.trajectory_file, top=sim.top_file)
 
         # Load the reference structure
-        ref_traj = md.load(self.reference_file)
+        ref_traj = md.load(self.reference_file, top=sim.top_file)
 
         # Align the trajectory to the reference structure
         traj_aligned = traj.superpose(ref_traj)
