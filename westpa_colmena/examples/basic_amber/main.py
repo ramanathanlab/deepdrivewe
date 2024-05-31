@@ -40,8 +40,9 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
-# (2) Test the resampler and weighted ensemble logic in pytest.
-# (3) Create a pytest for the WESTPA thinker.
+# (2) Pack outputs into HDF5 for westpa analysis.
+# (3) Test the resampler and weighted ensemble logic in pytest.
+# (4) Create a pytest for the WESTPA thinker.
 
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
