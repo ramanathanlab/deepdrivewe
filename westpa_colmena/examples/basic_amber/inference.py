@@ -88,9 +88,9 @@ class NaiveResampler(Resampler):
 
         # Split the simulations
         if self.split_low:
-            indices = list(sorted_indices[: self.num_resamples])
+            indices = sorted_indices[: self.num_resamples].tolist()
         else:
-            indices = list(sorted_indices[-self.num_resamples :])
+            indices = sorted_indices[-self.num_resamples :].tolist()
 
         # Split the simulations
         new_sims = self.split_sims(simulations, indices, self.n_split)
@@ -114,9 +114,9 @@ class NaiveResampler(Resampler):
 
         # Merge the simulations
         if self.split_low:
-            indices = sorted_indices[-num_merges:].tolist()
+            indices = [sorted_indices[-num_merges:].tolist()]
         else:
-            indices = sorted_indices[:num_merges].tolist()
+            indices = [sorted_indices[:num_merges].tolist()]
 
         # Merge the simulations
         new_sims = self.merge_sims(simulations, indices)
@@ -168,6 +168,9 @@ def run_inference(
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
     pcoords = [sim_result.pcoord[-1] for sim_result in input_data]
+
+    print(f'Progress coordinates: {pcoords}')
+    print(f'Num input simulations: {len(input_data)}')
 
     # Extract the simulation metadata
     current_iteration = [sim_result.metadata for sim_result in input_data]
