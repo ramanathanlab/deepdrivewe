@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import random
 import shutil
 import subprocess
-import sys
 import tempfile
 from dataclasses import dataclass
 from dataclasses import field
@@ -176,7 +174,6 @@ def run_simulation(
         top_file=top_file,
         output_dir=sim_output_dir,
         checkpoint_file=checkpoint_file,
-        seed=random.randint(0, sys.maxsize),
     )
 
     # Run the simulation

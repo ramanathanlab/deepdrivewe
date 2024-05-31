@@ -6,6 +6,7 @@ import subprocess
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 
 import mdtraj as md
@@ -21,11 +22,15 @@ class AmberSimulation:
     amber_exe: str
     md_input_file: Path
     top_file: Path
-    seed: int
 
     # This property is different for each simulation
     output_dir: Path
     checkpoint_file: Path
+
+    seed: int | None = field(
+        default=None,
+        metadata={'help': 'The random seed.'},
+    )
 
     @property
     def trajectory_file(self) -> Path:
@@ -56,6 +61,10 @@ class AmberSimulation:
         """
         # Create the output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Set the random seed
+        if self.seed is None:
+            self.seed = np.random.randint(0, 2**32 - 1)
 
         # Populate the md_input_file with the random seed
         command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
