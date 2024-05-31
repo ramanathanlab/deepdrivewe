@@ -2,7 +2,7 @@
 &cntrl
   ntx       = 5,
   irest     = 1,
-  ig        = RAND,
+  ig        = 42,
   dt        = 0.002,
   nstlim    = 1000,
   nscm      = 500,
@@ -15,8 +15,9 @@
   cut       = 10.0,
   ntpr      = 5,
   ntxo      = 2,
-  ntwr      = 2500,
+  ntwr      = 1000,
   ioutfm    = 1,
   ntwx      = 500,
   iwrap     = 0,
 &end
+
