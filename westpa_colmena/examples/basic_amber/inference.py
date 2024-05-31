@@ -170,6 +170,7 @@ def run_inference(
     pcoords = [sim_result.pcoord[-1] for sim_result in input_data]
 
     print(f'Progress coordinates: {pcoords}')
+    print(f'Best progress coordinate: {min(pcoords)}')
     print(f'Num input simulations: {len(input_data)}')
 
     # Extract the simulation metadata
