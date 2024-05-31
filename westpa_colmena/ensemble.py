@@ -376,8 +376,14 @@ class Resampler(ABC):
             # Get the weights of each simulation to merge
             weights = [sim.weight for sim in to_merge]
 
-            # Randomly select one of the simulations weighted by their weights
-            select: int = np.random.choice(len(to_merge), p=weights)
+            # Make sure the weights are normalized to sum to 1.
+            # Since the entire ensemble should have a total weight of 1
+            # any subset of the ensemble will have a total weight less than 1.
+            norm_weights = np.array(weights) / sum(weights)
+
+            # Randomly select one of the simulations with probability equal
+            # to the normalized weights
+            select: int = np.random.choice(len(to_merge), p=norm_weights)
 
             # Add the new simulation to the current iteration
             new_sim = self._add_new_simulation(to_merge[select], sum(weights))
