@@ -114,9 +114,9 @@ class NaiveResampler(Resampler):
 
         # Merge the simulations
         if self.split_low:
-            indices = list(sorted_indices[-num_merges:])
+            indices = sorted_indices[-num_merges:].tolist()
         else:
-            indices = list(sorted_indices[:num_merges])
+            indices = sorted_indices[:num_merges].tolist()
 
         # Merge the simulations
         new_sims = self.merge_sims(simulations, indices)
