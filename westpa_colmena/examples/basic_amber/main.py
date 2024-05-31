@@ -27,6 +27,7 @@ from pydantic import validator
 from westpa_colmena.api import BaseModel
 from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
+from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimulationMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
@@ -193,6 +194,9 @@ class ExperimentSettings(BaseModel):
     ensemble_members: int = Field(
         description='Number of simulations to start the weighted ensemble.',
     )
+    num_iterations: int = Field(
+        description='Number of iterations to run the weighted ensemble.',
+    )
     output_dir: Path = Field(
         description='Directory in which to store the results.',
     )
@@ -290,10 +294,16 @@ if __name__ == '__main__':
         resume_checkpoint=cfg.resume_checkpoint,
     )
 
+    # Add a callbacks to decide when to stop the thinker
+    done_callbacks = [
+        InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
+    ]
+
     thinker = DeepDriveWESTPA(
         queue=queues,
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
+        done_callbacks=done_callbacks,  # type: ignore[arg-type]
     )
     logging.info('Created the task server and task generator')
 
