@@ -210,7 +210,7 @@ class WeightedEnsemble:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Save the weighted ensemble to a checkpoint file
-        checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations)::06d}'
+        checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations):06d}'
         checkpoint_file = output_dir / f'{checkpoint_name}.pkl'
 
         # Save the weighted ensemble to the checkpoint file
