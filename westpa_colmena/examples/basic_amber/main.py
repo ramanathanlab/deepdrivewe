@@ -41,6 +41,9 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
 # (1.1) TODO: Figure out how to initialize basis state parent_pcoord
+# (1.2) TODO: Incorporate resampling logic for by-weight and adjust counts
+# https://github.com/westpa/westpa/blob/40fe71e4e393b47e0a231b178add25696e469405/src/westpa/core/we_driver.py#L521
+# (1.3) TODO: Test changes
 # (2) Pack outputs into HDF5 for westpa analysis.
 # (3) Test the resampler and weighted ensemble logic in pytest.
 # (4) Create a pytest for the WESTPA thinker.
