@@ -4,18 +4,14 @@ from __future__ import annotations
 
 import itertools
 import pickle
-from abc import ABC
-from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 
-import numpy as np
-
 
 @dataclass
-class SimulationMetadata:
+class SimMetadata:
     """Metadata for a simulation in the weighted ensemble."""
 
     weight: float = field(
@@ -38,7 +34,12 @@ class SimulationMetadata:
             'help': 'The restart file for the parent simulation.',
         },
     )
-    prev_simulation_id: int | None = field(
+    parent_pcoord: float = field(
+        metadata={
+            'help': 'The progress coordinate for the parent simulation.',
+        },
+    )
+    parent_simulation_id: int | None = field(
         default=None,
         metadata={
             'help': 'The ID of the previous simulation the current one is'
@@ -51,16 +52,23 @@ class SimulationMetadata:
             'help': 'The restart file for the simulation.',
         },
     )
+    pcoord: float | None = field(
+        default=None,
+        metadata={
+            'help': 'The progress coordinate for the simulation.',
+        },
+    )
 
     def __hash__(self) -> int:
         """Hash the simulation metadata to ensure that it is unique."""
         return hash((self.simulation_id, self.restart_file))
 
-    def copy(self) -> SimulationMetadata:
+    def copy(self) -> SimMetadata:
         """Return a copy of the simulation metadata."""
-        return SimulationMetadata(**self.__dict__)
+        return SimMetadata(**self.__dict__)
 
 
+# TODO: Figure out how to initialize basis state parent_pcoord
 class BasisStates:
     """Basis states for the weighted ensemble."""
 
@@ -96,7 +104,7 @@ class BasisStates:
         """Return the number of basis states."""
         return len(self.basis_states)
 
-    def __getitem__(self, idx: int) -> SimulationMetadata:
+    def __getitem__(self, idx: int) -> SimMetadata:
         """Return the basis state at the specified index."""
         return self.basis_states[idx]
 
@@ -136,20 +144,22 @@ class BasisStates:
     def _uniform_init(
         self,
         basis_files: list[Path],
-    ) -> list[SimulationMetadata]:
+    ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
         weight = 1.0 / self.ensemble_members
 
         # Create the metadata for each basis state to populate the
         # first iteration
         simulations = [
-            SimulationMetadata(
+            SimMetadata(
                 weight=weight,
                 simulation_id=idx,
-                prev_simulation_id=None,
                 iteration_id=0,
-                restart_file=None,
                 parent_restart_file=basis_file,
+                # TODO: Figure out how to initialize basis state parent_pcoord
+                # (the current implementation sets it to 0.0 which is
+                # incorrect)
+                parent_pcoord=0.0,
             )
             for idx, basis_file in enumerate(basis_files)
         ]
@@ -161,7 +171,7 @@ class WeightedEnsemble:
     """Weighted ensemble."""
 
     # The list of simulations for each iteration
-    simulations: list[list[SimulationMetadata]]
+    simulations: list[list[SimMetadata]]
 
     def __init__(
         self,
@@ -218,13 +228,13 @@ class WeightedEnsemble:
             pickle.dump(self, f)
 
     @property
-    def current_iteration(self) -> list[SimulationMetadata]:
+    def current_iteration(self) -> list[SimMetadata]:
         """Return the simulations for the current iteration."""
         return self.simulations[-1]
 
     def advance_iteration(
         self,
-        next_iteration: list[SimulationMetadata],
+        next_iteration: list[SimMetadata],
     ) -> None:
         """Advance the iteration of the weighted ensemble.
 
@@ -238,174 +248,3 @@ class WeightedEnsemble:
         # Save the weighted ensemble to a checkpoint file
         if self.checkpoint_dir is not None:
             self.save_checkpoint(self.checkpoint_dir)
-
-
-class Resampler(ABC):
-    """Resampler for the weighted ensemble."""
-
-    def __init__(self, basis_states: BasisStates) -> None:
-        """Initialize the resampler.
-
-        Parameters
-        ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        """
-        self.basis_states = basis_states
-
-        # Create a counter to keep track of the simulation IDs
-        self.index_counter = itertools.count()
-
-    def get_next_iteration(
-        self,
-        current_iteration: list[SimulationMetadata],
-    ) -> list[SimulationMetadata]:
-        """Return the simulations for the next iteration."""
-        # Reset the index counter
-        self.index_counter = itertools.count()
-
-        # Get the recycled simulation indices
-        recycle_indices = self.recycle(current_iteration)
-
-        # Create a list to store the new simulations for this iteration
-        simulations = []
-
-        for idx, sim in enumerate(current_iteration):
-            # Ensure that the simulation has a restart file, i.e., the `sim`
-            # object represents a simulation that has been run.
-            assert sim.restart_file is not None
-
-            # Check if the simulation should be recycled
-            if idx in recycle_indices:
-                # Choose a random basis state to restart the simulation from
-                basis_idx = np.random.choice(len(self.basis_states))
-                basis_state = self.basis_states[basis_idx]
-                # Set the parent restart file to the basis state
-                parent_restart_file = basis_state.parent_restart_file
-                # Set the prev simulation ID to the negative of previous
-                # simulation to indicate that the simulation is recycled
-                prev_simulation_id = -1 * sim.simulation_id
-            else:
-                # If the simulation is not recycled, set the parent restart
-                # file and simulation id to the restart file of the current
-                # simulation
-                parent_restart_file = sim.restart_file
-                prev_simulation_id = sim.simulation_id
-
-            # Create the metadata for the new simulation
-            new_sim = SimulationMetadata(
-                weight=sim.weight,
-                simulation_id=idx,
-                iteration_id=sim.iteration_id + 1,
-                prev_simulation_id=prev_simulation_id,
-                restart_file=None,
-                parent_restart_file=parent_restart_file,
-            )
-
-            # Add the new simulation to the current iteration
-            simulations.append(new_sim)
-
-        return simulations
-
-    def _add_new_simulation(
-        self,
-        sim: SimulationMetadata,
-        weight: float,
-    ) -> SimulationMetadata:
-        """Add a new simulation to the current iteration."""
-        # Create the metadata for the new simulation
-        return SimulationMetadata(
-            weight=weight,
-            simulation_id=next(self.index_counter),
-            iteration_id=sim.iteration_id,
-            prev_simulation_id=sim.prev_simulation_id,
-            restart_file=sim.restart_file,
-            parent_restart_file=sim.parent_restart_file,
-        )
-
-    def split_sims(
-        self,
-        sims: list[SimulationMetadata],
-        indices: list[int],
-        n_splits: int | list[int] = 2,
-    ) -> list[SimulationMetadata]:
-        """Split the simulation index into `n_split`."""
-        # Get the simulations to split
-        sims_to_split = [sims[idx] for idx in indices]
-
-        # Handle the case where `n_split` is a single integer
-        if isinstance(n_splits, int):
-            n_splits = [n_splits] * len(sims_to_split)
-
-        # Create a list to store the new simulations
-        new_sims: list[SimulationMetadata] = []
-
-        # Add back the simulations that will not be split
-        new_sims.extend(sims[i] for i in range(len(sims)) if i not in indices)
-
-        # Split the simulations using the specified number of splits
-        # and equal weights for the split simulations
-        for sim, n_split in zip(sims_to_split, n_splits):
-            for _ in range(n_split):
-                new_sim = self._add_new_simulation(sim, sim.weight / n_split)
-                new_sims.append(new_sim)
-
-        return new_sims
-
-    def merge_sims(
-        self,
-        sims: list[SimulationMetadata],
-        indices: list[list[int]],
-    ) -> list[SimulationMetadata]:
-        """Merge each group of simulation indices into a single simulation."""
-        # Get the indices of non-merged simulations
-        print(f'{indices=}', flush=True)
-        merge_idxs = [idx for index_group in indices for idx in index_group]
-        no_merge_idxs = [i for i in range(len(sims)) if i not in merge_idxs]
-
-        # Create a list to store the new simulations
-        new_sims: list[SimulationMetadata] = []
-
-        # Add back the simulations that will not be merged
-        new_sims.extend(sims[i] for i in no_merge_idxs)
-
-        for index_group in indices:
-            # Get the simulations to merge
-            to_merge = [sims[idx] for idx in index_group]
-
-            # Get the weights of each simulation to merge
-            weights = [sim.weight for sim in to_merge]
-
-            # Make sure the weights are normalized to sum to 1.
-            # Since the entire ensemble should have a total weight of 1
-            # any subset of the ensemble will have a total weight less than 1.
-            norm_weights = np.array(weights) / sum(weights)
-
-            # Randomly select one of the simulations with probability equal
-            # to the normalized weights
-            select: int = np.random.choice(len(to_merge), p=norm_weights)
-
-            # Add the new simulation to the current iteration
-            new_sim = self._add_new_simulation(to_merge[select], sum(weights))
-
-            # Add the new simulation to the list of new simulations
-            new_sims.append(new_sim)
-
-        # Return the new simulation
-        return new_sims
-
-    @abstractmethod
-    def resample(
-        self,
-        current_iteration: list[SimulationMetadata],
-    ) -> list[SimulationMetadata]:
-        """Resample the weighted ensemble."""
-        ...
-
-    @abstractmethod
-    def recycle(
-        self,
-        current_iteration: list[SimulationMetadata],
-    ) -> list[int]:
-        """Return a list of simulation indices to recycle."""
-        ...

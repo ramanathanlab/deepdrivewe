@@ -13,7 +13,7 @@ import numpy as np
 from pydantic import Field
 
 from westpa_colmena.api import BaseModel
-from westpa_colmena.ensemble import SimulationMetadata
+from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.simulation.amber import AmberConfig
 from westpa_colmena.simulation.amber import AmberSimulation
 from westpa_colmena.simulation.amber import AmberTrajAnalyzer
@@ -35,7 +35,7 @@ class SimulationConfig(BaseModel):
 
 
 @dataclass
-class SimulationResult:
+class SimResult:
     """Store the results of a single Amber simulation."""
 
     pcoord: np.ndarray = field(
@@ -48,7 +48,7 @@ class SimulationResult:
             'help': 'The atomic coordinates for the Amber simulation.',
         },
     )
-    metadata: SimulationMetadata = field(
+    metadata: SimMetadata = field(
         metadata={
             'help': 'The metadata for the Amber simulation.',
         },
@@ -144,10 +144,10 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
 
 
 def run_simulation(
-    metadata: SimulationMetadata,
+    metadata: SimMetadata,
     config: SimulationConfig,
     output_dir: Path,
-) -> SimulationResult:
+) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
     from westpa_colmena.simulation.amber import AmberSimulation
 
@@ -187,8 +187,9 @@ def run_simulation(
     # Update the simulation metadata
     metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
+    metadata.pcoord = pcoord[-1]
 
-    result = SimulationResult(
+    result = SimResult(
         pcoord=pcoord,
         coords=coords,
         metadata=metadata,

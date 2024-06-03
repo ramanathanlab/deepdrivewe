@@ -29,17 +29,18 @@ from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimulationMetadata
+from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.basic_amber.inference import InferenceConfig
 from westpa_colmena.examples.basic_amber.inference import run_inference
 from westpa_colmena.examples.basic_amber.simulate import run_simulation
+from westpa_colmena.examples.basic_amber.simulate import SimResult
 from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
-from westpa_colmena.examples.basic_amber.simulate import SimulationResult
 from westpa_colmena.parsl import ComputeSettingsTypes
 
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
+# (1.1) TODO: Figure out how to initialize basis state parent_pcoord
 # (2) Pack outputs into HDF5 for westpa analysis.
 # (3) Test the resampler and weighted ensemble logic in pytest.
 # (4) Create a pytest for the WESTPA thinker.
@@ -79,8 +80,8 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # TODO: Update the inputs to support model weights, etc
         # Custom data structures
-        # self.train_input: list[SimulationResult] = []
-        self.inference_input: list[SimulationResult] = []
+        # self.train_input: list[SimResult] = []
+        self.inference_input: list[SimResult] = []
 
         # Make sure there has been at least one training task
         # complete before running inference
@@ -121,7 +122,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self.inference_input = []  # Clear batched data
         self.logger.info('processed inference result')
 
-    def handle_simulation_output(self, output: SimulationResult) -> None:
+    def handle_simulation_output(self, output: SimResult) -> None:
         """Handle the output of a simulation.
 
         Stores a simulation output in the training set and define new
@@ -157,7 +158,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
     def handle_inference_output(
         self,
-        output: list[SimulationMetadata],
+        output: list[SimMetadata],
     ) -> None:
         """Handle the output of an inference run.
 
@@ -257,23 +258,6 @@ if __name__ == '__main__':
         cfg.output_dir / 'run-info',
     )
 
-    # Assign constant settings to each task function
-    my_run_simulation = partial(
-        run_simulation,
-        config=cfg.simulation_config,
-        output_dir=cfg.output_dir / 'simulation',
-    )
-    my_run_inference = partial(run_inference, config=cfg.inference_config)
-    update_wrapper(my_run_simulation, run_simulation)
-    update_wrapper(my_run_inference, run_inference)
-
-    # Create the task server
-    doer = ParslTaskServer(
-        [my_run_simulation, my_run_inference],
-        queues,
-        parsl_config,
-    )
-
     # Initialize the basis states
     basis_states = BasisStates(
         ensemble_members=cfg.ensemble_members,
@@ -286,6 +270,27 @@ if __name__ == '__main__':
         basis_states=basis_states,
         checkpoint_dir=cfg.output_dir / 'checkpoint',
         resume_checkpoint=cfg.resume_checkpoint,
+    )
+
+    # Assign constant settings to each task function
+    my_run_simulation = partial(
+        run_simulation,
+        config=cfg.simulation_config,
+        output_dir=cfg.output_dir / 'simulation',
+    )
+    my_run_inference = partial(
+        run_inference,
+        basis_states=basis_states,
+        config=cfg.inference_config,
+    )
+    update_wrapper(my_run_simulation, run_simulation)
+    update_wrapper(my_run_inference, run_inference)
+
+    # Create the task server
+    doer = ParslTaskServer(
+        [my_run_simulation, my_run_inference],
+        queues,
+        parsl_config,
     )
 
     # Add a callbacks to decide when to stop the thinker

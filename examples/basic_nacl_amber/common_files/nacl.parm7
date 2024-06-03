@@ -1,218 +1,218 @@
-%VERSION  VERSION_STAMP = V0001.000  DATE = 05/29/19  09:57:43                  
-%FLAG TITLE                                                                     
-%FORMAT(20a4)                                                                   
-default_name                                                                    
-%FLAG POINTERS                                                                  
-%FORMAT(10I8)                                                                   
+%VERSION  VERSION_STAMP = V0001.000  DATE = 05/29/19  09:57:43
+%FLAG TITLE
+%FORMAT(20a4)
+default_name
+%FLAG POINTERS
+%FORMAT(10I8)
     4010       4    4008       0       0       0       0       0       0       0
     5346    1338       0       0       0       2       0       0       4       0
        0       0       0       0       0       0       0       2       3       0
        0
-%FLAG ATOM_NAME                                                                 
-%FORMAT(20a4)                                                                   
-Na+ Cl- O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   
-H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  
-O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  
-H2  O   H1  H2  O   H1  H2  O   H1  H2  
-%FLAG CHARGE                                                                    
-%FORMAT(5E16.8)                                                                 
+%FLAG ATOM_NAME
+%FORMAT(20a4)
+Na+ Cl- O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O
+H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2
+O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1  H2  O   H1
+H2  O   H1  H2  O   H1  H2  O   H1  H2
+%FLAG CHARGE
+%FORMAT(5E16.8)
   1.82223000E+01 -1.82223000E+01 -1.51973982E+01  7.59869910E+00  7.59869910E+00
  -1.51973982E+01  7.59869910E+00  7.59869910E+00 -1.51973982E+01  7.59869910E+00
   7.59869910E+00 -1.51973982E+01  7.59869910E+00  7.59869910E+00 -1.51973982E+01
@@ -1015,8 +1015,8 @@ H2  O   H1  H2  O   H1  H2  O   H1  H2
  -1.51973982E+01  7.59869910E+00  7.59869910E+00 -1.51973982E+01  7.59869910E+00
   7.59869910E+00 -1.51973982E+01  7.59869910E+00  7.59869910E+00 -1.51973982E+01
   7.59869910E+00  7.59869910E+00 -1.51973982E+01  7.59869910E+00  7.59869910E+00
-%FLAG ATOMIC_NUMBER                                                             
-%FORMAT(10I8)                                                                   
+%FLAG ATOMIC_NUMBER
+%FORMAT(10I8)
       11      17       8       1       1       8       1       1       8       1
        1       8       1       1       8       1       1       8       1       1
        8       1       1       8       1       1       8       1       1       8
@@ -1418,8 +1418,8 @@ H2  O   H1  H2  O   H1  H2  O   H1  H2
        8       1       1       8       1       1       8       1       1       8
        1       1       8       1       1       8       1       1       8       1
        1       8       1       1       8       1       1       8       1       1
-%FLAG MASS                                                                      
-%FORMAT(5E16.8)                                                                 
+%FLAG MASS
+%FORMAT(5E16.8)
   2.29900000E+01  3.54500000E+01  1.60000000E+01  1.00800000E+00  1.00800000E+00
   1.60000000E+01  1.00800000E+00  1.00800000E+00  1.60000000E+01  1.00800000E+00
   1.00800000E+00  1.60000000E+01  1.00800000E+00  1.00800000E+00  1.60000000E+01
@@ -2222,8 +2222,8 @@ H2  O   H1  H2  O   H1  H2  O   H1  H2
   1.60000000E+01  1.00800000E+00  1.00800000E+00  1.60000000E+01  1.00800000E+00
   1.00800000E+00  1.60000000E+01  1.00800000E+00  1.00800000E+00  1.60000000E+01
   1.00800000E+00  1.00800000E+00  1.60000000E+01  1.00800000E+00  1.00800000E+00
-%FLAG ATOM_TYPE_INDEX                                                           
-%FORMAT(10I8)                                                                   
+%FLAG ATOM_TYPE_INDEX
+%FORMAT(10I8)
        1       2       3       4       4       3       4       4       3       4
        4       3       4       4       3       4       4       3       4       4
        3       4       4       3       4       4       3       4       4       3
@@ -2625,8 +2625,8 @@ H2  O   H1  H2  O   H1  H2  O   H1  H2
        3       4       4       3       4       4       3       4       4       3
        4       4       3       4       4       3       4       4       3       4
        4       3       4       4       3       4       4       3       4       4
-%FLAG NUMBER_EXCLUDED_ATOMS                                                     
-%FORMAT(10I8)                                                                   
+%FLAG NUMBER_EXCLUDED_ATOMS
+%FORMAT(10I8)
        1       1       2       1       1       2       1       1       2       1
        1       2       1       1       2       1       1       2       1       1
        2       1       1       2       1       1       2       1       1       2
@@ -3028,81 +3028,81 @@ H2  O   H1  H2  O   H1  H2  O   H1  H2
        2       1       1       2       1       1       2       1       1       2
        1       1       2       1       1       2       1       1       2       1
        1       2       1       1       2       1       1       2       1       1
-%FLAG NONBONDED_PARM_INDEX                                                      
-%FORMAT(10I8)                                                                   
+%FLAG NONBONDED_PARM_INDEX
+%FORMAT(10I8)
        1       2       4       7       2       3       5       8       4       5
        6       9       7       8       9      10
-%FLAG RESIDUE_LABEL                                                             
-%FORMAT(20a4)                                                                   
-Na+ Cl- WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT 
-%FLAG RESIDUE_POINTER                                                           
-%FORMAT(10I8)                                                                   
+%FLAG RESIDUE_LABEL
+%FORMAT(20a4)
+Na+ Cl- WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
+%FLAG RESIDUE_POINTER
+%FORMAT(10I8)
        1       2       3       6       9      12      15      18      21      24
       27      30      33      36      39      42      45      48      51      54
       57      60      63      66      69      72      75      78      81      84
@@ -3237,46 +3237,46 @@ WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
     3927    3930    3933    3936    3939    3942    3945    3948    3951    3954
     3957    3960    3963    3966    3969    3972    3975    3978    3981    3984
     3987    3990    3993    3996    3999    4002    4005    4008
-%FLAG BOND_FORCE_CONSTANT                                                       
-%FORMAT(5E16.8)                                                                 
+%FLAG BOND_FORCE_CONSTANT
+%FORMAT(5E16.8)
   5.53000000E+02  5.53000000E+02
-%FLAG BOND_EQUIL_VALUE                                                          
-%FORMAT(5E16.8)                                                                 
+%FLAG BOND_EQUIL_VALUE
+%FORMAT(5E16.8)
   9.57200000E-01  1.51360000E+00
-%FLAG ANGLE_FORCE_CONSTANT                                                      
-%FORMAT(5E16.8)                                                                 
+%FLAG ANGLE_FORCE_CONSTANT
+%FORMAT(5E16.8)
 
-%FLAG ANGLE_EQUIL_VALUE                                                         
-%FORMAT(5E16.8)                                                                 
+%FLAG ANGLE_EQUIL_VALUE
+%FORMAT(5E16.8)
 
-%FLAG DIHEDRAL_FORCE_CONSTANT                                                   
-%FORMAT(5E16.8)                                                                 
+%FLAG DIHEDRAL_FORCE_CONSTANT
+%FORMAT(5E16.8)
 
-%FLAG DIHEDRAL_PERIODICITY                                                      
-%FORMAT(5E16.8)                                                                 
+%FLAG DIHEDRAL_PERIODICITY
+%FORMAT(5E16.8)
 
-%FLAG DIHEDRAL_PHASE                                                            
-%FORMAT(5E16.8)                                                                 
+%FLAG DIHEDRAL_PHASE
+%FORMAT(5E16.8)
 
-%FLAG SCEE_SCALE_FACTOR                                                         
-%FORMAT(5E16.8)                                                                 
+%FLAG SCEE_SCALE_FACTOR
+%FORMAT(5E16.8)
 
-%FLAG SCNB_SCALE_FACTOR                                                         
-%FORMAT(5E16.8)                                                                 
+%FLAG SCNB_SCALE_FACTOR
+%FORMAT(5E16.8)
 
-%FLAG SOLTY                                                                     
-%FORMAT(5E16.8)                                                                 
+%FLAG SOLTY
+%FORMAT(5E16.8)
   0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
-%FLAG LENNARD_JONES_ACOEF                                                       
-%FORMAT(5E16.8)                                                                 
+%FLAG LENNARD_JONES_ACOEF
+%FORMAT(5E16.8)
   1.55205818E+04  6.53416059E+05  9.24719470E+06  1.04820861E+05  2.78932950E+06
   5.81935564E+05  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
-%FLAG LENNARD_JONES_BCOEF                                                       
-%FORMAT(5E16.8)                                                                 
+%FLAG LENNARD_JONES_BCOEF
+%FORMAT(5E16.8)
   7.36779156E+01  3.81844565E+02  1.14737423E+03  2.19857570E+02  9.05890802E+02
   5.94825035E+02  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
-%FLAG BONDS_INC_HYDROGEN                                                        
-%FORMAT(10I8)                                                                   
+%FLAG BONDS_INC_HYDROGEN
+%FORMAT(10I8)
        9       6       1      12       6       1      12       9       2      18
       15       1      21      15       1      21      18       2      27      24
        1      30      24       1      30      27       2      36      33       1
@@ -4480,23 +4480,23 @@ WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
    12009   12003       1   12009   12006       2   12015   12012       1   12018
    12012       1   12018   12015       2   12024   12021       1   12027   12021
        1   12027   12024       2
-%FLAG BONDS_WITHOUT_HYDROGEN                                                    
-%FORMAT(10I8)                                                                   
+%FLAG BONDS_WITHOUT_HYDROGEN
+%FORMAT(10I8)
 
-%FLAG ANGLES_INC_HYDROGEN                                                       
-%FORMAT(10I8)                                                                   
+%FLAG ANGLES_INC_HYDROGEN
+%FORMAT(10I8)
 
-%FLAG ANGLES_WITHOUT_HYDROGEN                                                   
-%FORMAT(10I8)                                                                   
+%FLAG ANGLES_WITHOUT_HYDROGEN
+%FORMAT(10I8)
 
-%FLAG DIHEDRALS_INC_HYDROGEN                                                    
-%FORMAT(10I8)                                                                   
+%FLAG DIHEDRALS_INC_HYDROGEN
+%FORMAT(10I8)
 
-%FLAG DIHEDRALS_WITHOUT_HYDROGEN                                                
-%FORMAT(10I8)                                                                   
+%FLAG DIHEDRALS_WITHOUT_HYDROGEN
+%FORMAT(10I8)
 
-%FLAG EXCLUDED_ATOMS_LIST                                                       
-%FORMAT(10I8)                                                                   
+%FLAG EXCLUDED_ATOMS_LIST
+%FORMAT(10I8)
        0       0       4       5       5       0       7       8       8       0
       10      11      11       0      13      14      14       0      16      17
       17       0      19      20      20       0      22      23      23       0
@@ -5032,423 +5032,423 @@ WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT WAT
     3992       0    3994    3995    3995       0    3997    3998    3998       0
     4000    4001    4001       0    4003    4004    4004       0    4006    4007
     4007       0    4009    4010    4010       0
-%FLAG HBOND_ACOEF                                                               
-%FORMAT(5E16.8)                                                                 
+%FLAG HBOND_ACOEF
+%FORMAT(5E16.8)
 
-%FLAG HBOND_BCOEF                                                               
-%FORMAT(5E16.8)                                                                 
+%FLAG HBOND_BCOEF
+%FORMAT(5E16.8)
 
-%FLAG HBCUT                                                                     
-%FORMAT(5E16.8)                                                                 
+%FLAG HBCUT
+%FORMAT(5E16.8)
 
-%FLAG AMBER_ATOM_TYPE                                                           
-%FORMAT(20a4)                                                                   
-Na+ Cl- OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  
-HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  
-HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  
-%FLAG TREE_CHAIN_CLASSIFICATION                                                 
-%FORMAT(20a4)                                                                   
-M   M   BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA 
-%FLAG JOIN_ARRAY                                                                
-%FORMAT(10I8)                                                                   
+%FLAG AMBER_ATOM_TYPE
+%FORMAT(20a4)
+Na+ Cl- OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW
+HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW  HW  OW  HW
+HW  OW  HW  HW  OW  HW  HW  OW  HW  HW
+%FLAG TREE_CHAIN_CLASSIFICATION
+%FORMAT(20a4)
+M   M   BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
+%FLAG JOIN_ARRAY
+%FORMAT(10I8)
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
@@ -5850,8 +5850,8 @@ BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
-%FLAG IROTAT                                                                    
-%FORMAT(10I8)                                                                   
+%FLAG IROTAT
+%FORMAT(10I8)
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
@@ -6253,11 +6253,11 @@ BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
        0       0       0       0       0       0       0       0       0       0
-%FLAG SOLVENT_POINTERS                                                          
-%FORMAT(3I8)                                                                    
+%FLAG SOLVENT_POINTERS
+%FORMAT(3I8)
        2    1338       3
-%FLAG ATOMS_PER_MOLECULE                                                        
-%FORMAT(10I8)                                                                   
+%FLAG ATOMS_PER_MOLECULE
+%FORMAT(10I8)
        1       1       3       3       3       3       3       3       3       3
        3       3       3       3       3       3       3       3       3       3
        3       3       3       3       3       3       3       3       3       3
@@ -6392,14 +6392,14 @@ BLA BLA BLA BLA BLA BLA BLA BLA BLA BLA
        3       3       3       3       3       3       3       3       3       3
        3       3       3       3       3       3       3       3       3       3
        3       3       3       3       3       3       3       3
-%FLAG BOX_DIMENSIONS                                                            
-%FORMAT(5E16.8)                                                                 
+%FLAG BOX_DIMENSIONS
+%FORMAT(5E16.8)
   1.09471219E+02  3.94930971E+01  3.94930971E+01  3.94930971E+01
-%FLAG RADIUS_SET                                                                
-%FORMAT(1a80)                                                                   
-modified Bondi radii (mbondi)                                                   
-%FLAG RADII                                                                     
-%FORMAT(5E16.8)                                                                 
+%FLAG RADIUS_SET
+%FORMAT(1a80)
+modified Bondi radii (mbondi)
+%FLAG RADII
+%FORMAT(5E16.8)
   1.50000000E+00  1.70000000E+00  1.50000000E+00  8.00000000E-01  8.00000000E-01
   1.50000000E+00  8.00000000E-01  8.00000000E-01  1.50000000E+00  8.00000000E-01
   8.00000000E-01  1.50000000E+00  8.00000000E-01  8.00000000E-01  1.50000000E+00
@@ -7202,8 +7202,8 @@ modified Bondi radii (mbondi)
   1.50000000E+00  8.00000000E-01  8.00000000E-01  1.50000000E+00  8.00000000E-01
   8.00000000E-01  1.50000000E+00  8.00000000E-01  8.00000000E-01  1.50000000E+00
   8.00000000E-01  8.00000000E-01  1.50000000E+00  8.00000000E-01  8.00000000E-01
-%FLAG SCREEN                                                                    
-%FORMAT(5E16.8)                                                                 
+%FLAG SCREEN
+%FORMAT(5E16.8)
   8.00000000E-01  8.00000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
   8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
   8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
@@ -8006,6 +8006,6 @@ modified Bondi radii (mbondi)
   8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
   8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
   8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01  8.50000000E-01
-%FLAG IPOL                                                                      
-%FORMAT(1I8)                                                                    
+%FLAG IPOL
+%FORMAT(1I8)
        0
