@@ -7,13 +7,13 @@ import pickle
 from abc import ABC
 from abc import abstractmethod
 from copy import deepcopy
-from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 
+from pydantic import BaseModel
 
-@dataclass
-class SimMetadata:
+
+class SimMetadata(BaseModel):
     """Metadata for a simulation in the weighted ensemble."""
 
     weight: float = field(
