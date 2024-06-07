@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
-import tempfile
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -72,30 +70,20 @@ class BackboneRMSDAnalyzer(AmberTrajAnalyzer):
         np.ndarray
             The progress coordinate from the aligned trajectory.
         """
-        # Make a temporary file to store the cpptraj outputs
-        with tempfile.NamedTemporaryFile() as tmp:
-            align_file = tmp.name
+        # Create the cpptraj command file
+        command = (
+            f'parm {sim.top_file} \n'
+            f'trajin {sim.checkpoint_file}\n'
+            f'trajin {sim.trajectory_file}\n'
+            f'reference {self.reference_file} [reference] \n'
+            'rms ALIGN @CA,C,O,N,H reference out {output_file} \n'
+            'go'
+        )
 
-            # Create the cpptraj input file
-            input_file = (
-                f'parm {sim.top_file} \n'
-                f'trajin {sim.checkpoint_file}\n'
-                f'trajin {sim.trajectory_file}\n'
-                f'reference {self.reference_file} [reference] \n'
-                f'rms ALIGN @CA,C,O,N,H reference out {align_file} \n'
-                'go'
-            )
+        # Run the command
+        pcoords = run_cpptraj(command)
 
-            # Run cpptraj
-            command = f'echo -e {input_file} | cpptraj'
-            subprocess.run(command, shell=True, check=True)
-
-            # Parse the cpptraj output file (first line is a header)
-            lines = Path(align_file).read_text().splitlines()[1:]
-            # The second column is the progress coordinate
-            pcoord = [float(line.split()[1]) for line in lines if line]
-
-        return np.array(pcoord)
+        return np.array(pcoords)
 
 
 class DistanceAnalyzer(AmberTrajAnalyzer):

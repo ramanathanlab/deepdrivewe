@@ -39,16 +39,16 @@ class SimMetadata(BaseModel):
         description='The progress coordinate for the parent simulation.',
     )
     parent_simulation_id: int | None = Field(
-        None,
+        default=None,
         description='The ID of the previous simulation the current one is'
         " split from, or None if it's a basis state.",
     )
     restart_file: Path | None = Field(
-        None,
+        default=None,
         description='The restart file for the simulation.',
     )
     pcoord: list[float] | None = Field(
-        None,
+        default=None,
         description='The progress coordinate for the simulation.',
     )
 
