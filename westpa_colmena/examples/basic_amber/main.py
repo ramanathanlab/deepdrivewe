@@ -196,7 +196,7 @@ class MyBasisStates(BasisStates):
             f'parm {self.sim_config.amber_config.top_file} \n'
             f'trajin {basis_file}\n'
             f'reference {self.sim_config.reference_file} [reference] \n'
-            'distance na-cl :1@Na+ :2@Cl- out {{output_file}} \n'
+            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
         return run_cpptraj(command)
