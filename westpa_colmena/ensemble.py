@@ -52,6 +52,7 @@ class SimMetadata(BaseModel):
         description='The progress coordinate for the simulation.',
     )
 
+    # TODO: Do we still need this?
     def __hash__(self) -> int:
         """Hash the simulation metadata to ensure that it is unique."""
         return hash((self.simulation_id, self.restart_file))

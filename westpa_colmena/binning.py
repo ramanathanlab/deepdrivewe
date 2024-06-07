@@ -30,6 +30,7 @@ class RectilinearBinner:
         self,
         resampler: Resampler,
         bins: list[float],
+        pcoord_idx: int = 0,
     ) -> None:
         """Initialize the binner.
 
@@ -37,12 +38,15 @@ class RectilinearBinner:
         ----------
         resampler : Resampler
             The resampler to use for the binning.
-
         bins : list[float]
             The bin edges for the progress coordinate.
+        pcoord_idx : int
+            The index of the progress coordinate to use for binning.
+            Default is 0.
         """
         self.resampler = resampler
         self.bins = bins
+        self.pcoord_idx = pcoord_idx
 
     def assign(
         self,
@@ -50,7 +54,7 @@ class RectilinearBinner:
     ) -> list[list[SimMetadata]]:
         """Bin the progress coordinate."""
         # Extract the progress coordinates
-        pcoords = [sim.parent_pcoord for sim in sims]
+        pcoords = [sim.parent_pcoord[self.pcoord_idx] for sim in sims]
 
         # Bin the progress coordinates
         sim_assignments = np.digitize(pcoords, self.bins)
