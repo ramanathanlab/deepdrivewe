@@ -75,7 +75,7 @@ class AmberSimulation:
 
         # Set the random seed
         if self.seed is None:
-            self.seed = np.random.randint(0, 2**32 - 1)
+            self.seed = np.random.randint(0, 2**16)
 
         # Populate the md_input_file with the random seed
         command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
