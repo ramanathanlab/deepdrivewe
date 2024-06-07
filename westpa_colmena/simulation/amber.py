@@ -134,7 +134,7 @@ def run_cpptraj(command: str) -> list[float]:
         # Create the cpptraj output file
         output_file = Path(tmp) / 'cpptraj.dat'
         # Format the cpptraj input file contents
-        command.format(output_file=output_file)
+        command = command.format(output_file=output_file)
 
         # Write the cpptraj input file to a temporary file
         input_file = Path(tmp) / 'cpptraj.in'
