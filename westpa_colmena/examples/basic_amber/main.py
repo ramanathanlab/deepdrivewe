@@ -186,8 +186,8 @@ class MyBasisStates(BasisStates):
         **kwargs: Any,
     ) -> None:
         """Initialize the basis states."""
-        super().__init__(*args, **kwargs)
         self.sim_config = sim_config
+        super().__init__(*args, **kwargs)
 
     def init_basis_pcoord(self, basis_file: Path) -> list[float]:
         """Initialize the basis state parent coordinates."""
