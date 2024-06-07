@@ -162,7 +162,7 @@ def run_simulation(
     # Update the simulation metadata
     metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
-    metadata.pcoord = pcoord[-1]
+    metadata.pcoord = [pcoord[-1]]
 
     result = SimResult(
         pcoord=pcoord,

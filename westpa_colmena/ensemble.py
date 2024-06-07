@@ -56,10 +56,6 @@ class SimMetadata(BaseModel):
         """Hash the simulation metadata to ensure that it is unique."""
         return hash((self.simulation_id, self.restart_file))
 
-    def copy(self) -> SimMetadata:
-        """Return a copy of the simulation metadata."""
-        return SimMetadata(**self.__dict__)
-
 
 class BasisStates(ABC):
     """Basis states for the weighted ensemble."""
