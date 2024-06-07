@@ -7,58 +7,49 @@ import pickle
 from abc import ABC
 from abc import abstractmethod
 from copy import deepcopy
-from dataclasses import field
 from pathlib import Path
 
 from pydantic import BaseModel
+from pydantic import Field
 
 
 class SimMetadata(BaseModel):
     """Metadata for a simulation in the weighted ensemble."""
 
-    weight: float = field(
-        metadata={
-            'help': 'The weight of the simulation.',
-        },
+    weight: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description='The weight of the simulation.',
     )
-    simulation_id: int = field(
-        metadata={
-            'help': 'The ID of the simulation.',
-        },
+    simulation_id: int = Field(
+        ...,
+        description='The ID of the simulation.',
     )
-    iteration_id: int = field(
-        metadata={
-            'help': 'The ID of the iteration the simulation is in.',
-        },
+    iteration_id: int = Field(
+        ...,
+        description='The ID of the iteration the simulation is in.',
     )
-    parent_restart_file: Path = field(
-        metadata={
-            'help': 'The restart file for the parent simulation.',
-        },
+    parent_restart_file: Path = Field(
+        ...,
+        description='The restart file for the parent simulation.',
     )
-    parent_pcoord: list[float] = field(
-        metadata={
-            'help': 'The progress coordinate for the parent simulation.',
-        },
+    parent_pcoord: list[float] = Field(
+        ...,
+        description='The progress coordinate for the parent simulation.',
     )
-    parent_simulation_id: int | None = field(
-        default=None,
-        metadata={
-            'help': 'The ID of the previous simulation the current one is'
-            " split from, or None if it's a basis state.",
-        },
+    parent_simulation_id: int | None = Field(
+        None,
+        description='The ID of the previous simulation the current one is'
+        " split from, or None if it's a basis state.",
     )
-    restart_file: Path | None = field(
-        default=None,
-        metadata={
-            'help': 'The restart file for the simulation.',
-        },
+    restart_file: Path | None = Field(
+        None,
+        description='The restart file for the simulation.',
     )
-    pcoord: list[float] | None = field(
-        default=None,
-        metadata={
-            'help': 'The progress coordinate for the simulation.',
-        },
+    pcoord: list[float] | None = Field(
+        None,
+        description='The progress coordinate for the simulation.',
     )
 
     def __hash__(self) -> int:
