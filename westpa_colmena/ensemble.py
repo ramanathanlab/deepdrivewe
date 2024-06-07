@@ -70,7 +70,6 @@ class SimMetadata(BaseModel):
         return SimMetadata(**self.__dict__)
 
 
-# TODO: Figure out how to initialize basis state parent_pcoord
 class BasisStates(ABC):
     """Basis states for the weighted ensemble."""
 

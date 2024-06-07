@@ -296,6 +296,9 @@ if __name__ == '__main__':
         basis_state_ext=cfg.basis_state_ext,
     )
 
+    # Print the basis states
+    logging.info(f'Basis states: {basis_states.basis_states}')
+
     # Initialize the weighted ensemble
     ensemble = WeightedEnsemble(
         basis_states=basis_states,
