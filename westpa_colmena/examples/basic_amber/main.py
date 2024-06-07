@@ -37,6 +37,7 @@ from westpa_colmena.examples.basic_amber.simulate import run_simulation
 from westpa_colmena.examples.basic_amber.simulate import SimResult
 from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
 from westpa_colmena.parsl import ComputeSettingsTypes
+from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
@@ -175,6 +176,32 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self.simulate()
 
 
+class MyBasisStates(BasisStates):
+    """Custom basis state initialization."""
+
+    def __init__(
+        self,
+        sim_config: SimulationConfig,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the basis states."""
+        super().__init__(*args, **kwargs)
+        self.sim_config = sim_config
+
+    def init_basis_pcoord(self, basis_file: Path) -> list[float]:
+        """Initialize the basis state parent coordinates."""
+        # Create the cpptraj command file
+        command = (
+            f'parm {self.sim_config.amber_config.top_file} \n'
+            f'trajin {basis_file}\n'
+            f'reference {self.sim_config.reference_file} [reference] \n'
+            'distance na-cl :1@Na+ :2@Cl- out {{output_file}} \n'
+            'go'
+        )
+        return run_cpptraj(command)
+
+
 class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
@@ -262,7 +289,8 @@ if __name__ == '__main__':
     )
 
     # Initialize the basis states
-    basis_states = BasisStates(
+    basis_states = MyBasisStates(
+        sim_config=cfg.simulation_config,
         ensemble_members=cfg.ensemble_members,
         simulation_input_dir=cfg.simulation_input_dir,
         basis_state_ext=cfg.basis_state_ext,

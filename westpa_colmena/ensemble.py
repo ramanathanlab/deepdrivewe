@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import itertools
 import pickle
+from abc import ABC
+from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
@@ -34,7 +36,7 @@ class SimMetadata:
             'help': 'The restart file for the parent simulation.',
         },
     )
-    parent_pcoord: float = field(
+    parent_pcoord: list[float] = field(
         metadata={
             'help': 'The progress coordinate for the parent simulation.',
         },
@@ -52,7 +54,7 @@ class SimMetadata:
             'help': 'The restart file for the simulation.',
         },
     )
-    pcoord: float | None = field(
+    pcoord: list[float] | None = field(
         default=None,
         metadata={
             'help': 'The progress coordinate for the simulation.',
@@ -69,7 +71,7 @@ class SimMetadata:
 
 
 # TODO: Figure out how to initialize basis state parent_pcoord
-class BasisStates:
+class BasisStates(ABC):
     """Basis states for the weighted ensemble."""
 
     def __init__(
@@ -94,8 +96,13 @@ class BasisStates:
         # Load the basis states
         basis_files = self._load_basis_states()
 
+        # Compute the pcoord for each basis state
+        basis_pcoords = [
+            self.init_basis_pcoord(basis_file) for basis_file in basis_files
+        ]
+
         # Initialize the basis states
-        self.basis_states = self._uniform_init(basis_files)
+        self.basis_states = self._uniform_init(basis_files, basis_pcoords)
 
         # Log the number of basis states
         print(f'Loaded {len(self.basis_states)} basis states')
@@ -144,27 +151,31 @@ class BasisStates:
     def _uniform_init(
         self,
         basis_files: list[Path],
+        basis_pcoords: list[list[float]],
     ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
         weight = 1.0 / self.ensemble_members
 
         # Create the metadata for each basis state to populate the
         # first iteration
-        simulations = [
-            SimMetadata(
-                weight=weight,
-                simulation_id=idx,
-                iteration_id=0,
-                parent_restart_file=basis_file,
-                # TODO: Figure out how to initialize basis state parent_pcoord
-                # (the current implementation sets it to 0.0 which is
-                # incorrect)
-                parent_pcoord=0.0,
+        simulations = []
+        for idx, (f, p) in enumerate(zip(basis_files, basis_pcoords)):
+            simulations.append(
+                SimMetadata(
+                    weight=weight,
+                    simulation_id=idx,
+                    iteration_id=0,
+                    parent_restart_file=f,
+                    parent_pcoord=p,
+                ),
             )
-            for idx, basis_file in enumerate(basis_files)
-        ]
 
         return simulations
+
+    @abstractmethod
+    def init_basis_pcoord(self, basis_file: Path) -> list[float]:
+        """Initialize the progress coordinate for a basis state."""
+        ...
 
 
 class WeightedEnsemble:

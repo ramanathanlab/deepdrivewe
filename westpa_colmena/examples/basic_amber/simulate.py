@@ -17,6 +17,7 @@ from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.simulation.amber import AmberConfig
 from westpa_colmena.simulation.amber import AmberSimulation
 from westpa_colmena.simulation.amber import AmberTrajAnalyzer
+from westpa_colmena.simulation.amber import run_cpptraj
 
 
 class SimulationConfig(BaseModel):
@@ -113,34 +114,20 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
         np.ndarray
             The progress coordinate from the aligned trajectory.
         """
-        # Make a temporary file to store the cpptraj outputs
-        with tempfile.TemporaryDirectory() as tmp:
-            align_file = Path(tmp) / 'cpptraj.dat'
+        # Create the cpptraj command file
+        command = (
+            f'parm {sim.top_file} \n'
+            f'trajin {sim.checkpoint_file}\n'
+            f'trajin {sim.trajectory_file}\n'
+            f'reference {self.reference_file} [reference] \n'
+            'distance na-cl :1@Na+ :2@Cl- out {{output_file}} \n'
+            'go'
+        )
 
-            # Create the cpptraj input file
-            input_file_contents = (
-                f'parm {sim.top_file} \n'
-                f'trajin {sim.checkpoint_file}\n'
-                f'trajin {sim.trajectory_file}\n'
-                f'reference {self.reference_file} [reference] \n'
-                f'distance na-cl :1@Na+ :2@Cl- out {align_file} \n'
-                'go'
-            )
+        # Run the command
+        pcoords = run_cpptraj(command)
 
-            # Write the input file to a temporary file
-            input_file = Path(tmp) / 'cpptraj.in'
-            input_file.write_text(input_file_contents)
-
-            # Run cpptraj
-            command = f'cat {input_file} | cpptraj'
-            subprocess.run(command, shell=True, check=True)
-
-            # Parse the cpptraj output file (first line is a header)
-            lines = Path(align_file).read_text().splitlines()[1:]
-            # The second column is the progress coordinate
-            pcoord = [float(line.split()[1]) for line in lines if line]
-
-        return np.array(pcoord)
+        return np.array(pcoords)
 
 
 def run_simulation(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+import tempfile
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -19,13 +20,23 @@ from pydantic import Field
 class AmberSimulation:
     """Run an Amber simulation."""
 
-    amber_exe: str
-    md_input_file: Path
-    top_file: Path
+    amber_exe: str = field(
+        metadata={'help': 'The path to the Amber executable.'},
+    )
+    md_input_file: Path = field(
+        metadata={'help': 'The input file for the Amber simulation.'},
+    )
+    top_file: Path = field(
+        metadata={'help': 'The prmtop file for the Amber simulation.'},
+    )
 
-    # This property is different for each simulation
-    output_dir: Path
-    checkpoint_file: Path
+    # These properties are different for each simulation
+    output_dir: Path = field(
+        metadata={'help': 'The output directory for the Amber simulation.'},
+    )
+    checkpoint_file: Path = field(
+        metadata={'help': 'The checkpoint file for the Amber simulation.'},
+    )
 
     seed: int | None = field(
         default=None,
@@ -102,6 +113,43 @@ class AmberConfig(BaseModel):
     top_file: Path = Field(
         description='The prmtop file for the Amber simulation.',
     )
+
+
+def run_cpptraj(command: str) -> list[float]:
+    """Run cpptraj with the command and return the progress coordinate.
+
+    Parameters
+    ----------
+    command : str
+        The cpptraj command instructions to run (these get written to a
+        cpptraj input file).
+
+    Returns
+    -------
+    list[float]
+        The progress coordinate from the cpptraj output.
+    """
+    # Make a temporary directory to store the cpptraj inputs and outputs
+    with tempfile.TemporaryDirectory() as tmp:
+        # Create the cpptraj output file
+        output_file = Path(tmp) / 'cpptraj.dat'
+        # Format the cpptraj input file contents
+        command.format(output_file)
+
+        # Write the cpptraj input file to a temporary file
+        input_file = Path(tmp) / 'cpptraj.in'
+        input_file.write_text(command)
+
+        # Run cpptraj
+        _command = f'cat {input_file} | cpptraj'
+        subprocess.run(_command, shell=True, check=True)
+
+        # Parse the cpptraj output file (first line is a header)
+        lines = Path(output_file).read_text().splitlines()[1:]
+        # The second column is the progress coordinate
+        pcoord = [float(line.split()[1]) for line in lines if line]
+
+    return pcoord
 
 
 @dataclass
