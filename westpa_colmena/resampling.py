@@ -153,7 +153,7 @@ class Resampler(ABC):
             # Get the weights of each simulation to merge
             weights = [sim.weight for sim in to_merge]
 
-            # Make sure the weights are normalized to sum to 1.
+            # Make sure the weights are normalized to sum to 1 for randomizing.
             # Since the entire ensemble should have a total weight of 1
             # any subset of the ensemble will have a total weight less than 1.
             norm_weights = np.array(weights) / sum(weights)
@@ -170,6 +170,104 @@ class Resampler(ABC):
 
         # Return the new simulation
         return new_sims
+
+    def split_by_weight(
+        self,
+        sims: list[SimMetadata],
+        ideal_weight: float,
+    ) -> list[SimMetadata]:
+        """Split overweight sims."""
+        # Get the weights of the sorted simulations
+        weights = np.array([sim.weight for sim in sims])
+        # Find the walkers that need to be split
+        sims_to_split = weights > ideal_weight
+        # Calculate the number of splits for each walker
+        num_splits = np.ceil(weights[sims_to_split] / ideal_weight).astype(int)
+
+        # Split the simulations
+        sims = self.split_sims(sims, sims_to_split, num_splits)
+
+        return sims
+
+    def merge_by_weight(
+        self,
+        sims: list[SimMetadata],
+        ideal_weight: float,
+    ) -> list[SimMetadata]:
+        """Merge underweight sims."""
+        while True:
+            # Sort the simulations by weight
+            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            # Get the weights of the sorted simulations
+            weights = np.array([sim.weight for sim in sorted_sims])
+            # Accumulate the weights
+            cumul_weight = np.add.accumulate(weights)
+
+            to_merge = cumul_weight <= ideal_weight
+
+            if len(to_merge) < 2:  # noqa: PLR2004
+                return sims
+
+            # Merge the simulations
+            sims = self.merge_sims(sorted_sims, [to_merge])
+
+    def _adjust_count(self, sims: list[SimMetadata], target_count: int):
+        """Adjust the number of sims to match the target count."""
+        # Case 1: Too many sims
+        while len(sims) < target_count:
+            # Sort the sims by weight
+            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            # Split the highest weight sim in two
+            sims = self.split_sims(sorted_sims, [-1], 2)
+
+            # Break the loop if the target count is reached
+            if len(sims) == target_count:
+                break
+
+        # Case 2: Too few sims
+        while len(sims) > target_count:
+            # Sort the sims by weight
+            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            # Merge the two lowest weight sims
+            sims = self.merge_sims(sorted_sims, [[0, 1]])
+
+            # Break the loop if the target count is reached
+            if len(bin) == target_count:
+                break
+
+    def merge_by_threshold(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+        """Merge the sims by threshold."""
+        while True:
+            # Sort the simulations by weight
+            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            # Get the weights of the sorted simulations
+            weights = np.array([sim.weight for sim in sorted_sims])
+
+            # TODO: Implement the merging  threshold
+            # Find the walkers that need to be merged
+            to_merge = weights < self.smallest_allowed_weight
+            if len(to_merge) < 2:  # noqa: PLR2004
+                return sims
+
+            # Merge the simulations
+            sims = self.merge_sims(sorted_sims, [to_merge])
+
+    def split_by_threshold(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+        """Split the sims by threshold."""
+        # Get the weights of the simulations
+        weights = np.array([sim.weight for sim in sims])
+        # TODO: Implement the splitting threshold
+        # Find the walkers that need to be split
+        sims_to_split = weights > self.largest_allowed_weight
+        # Calculate the number of splits for each walker
+        num_splits = np.ceil(
+            weights[sims_to_split] / self.largest_allowed_weight,
+        ).astype(int)
+
+        # Split the simulations
+        sims = self.split_sims(sims, sims_to_split, num_splits)
+
+        return sims
 
     def get_pcoords(
         self,
