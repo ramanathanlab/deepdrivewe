@@ -211,7 +211,11 @@ class Resampler(ABC):
             # Merge the simulations
             sims = self.merge_sims(sorted_sims, [to_merge])
 
-    def _adjust_count(self, sims: list[SimMetadata], target_count: int):
+    def _adjust_count(
+        self,
+        sims: list[SimMetadata],
+        target_count: int,
+    ) -> list[SimMetadata]:
         """Adjust the number of sims to match the target count."""
         # Case 1: Too many sims
         while len(sims) < target_count:
@@ -222,7 +226,7 @@ class Resampler(ABC):
 
             # Break the loop if the target count is reached
             if len(sims) == target_count:
-                break
+                return sims
 
         # Case 2: Too few sims
         while len(sims) > target_count:
@@ -233,7 +237,7 @@ class Resampler(ABC):
 
             # Break the loop if the target count is reached
             if len(bin) == target_count:
-                break
+                return sims
 
     def merge_by_threshold(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Merge the sims by threshold."""
@@ -245,7 +249,7 @@ class Resampler(ABC):
 
             # TODO: Implement the merging  threshold
             # Find the walkers that need to be merged
-            to_merge = weights < self.smallest_allowed_weight
+            to_merge = weights < self.min_allowed_weight
             if len(to_merge) < 2:  # noqa: PLR2004
                 return sims
 
@@ -258,11 +262,11 @@ class Resampler(ABC):
         weights = np.array([sim.weight for sim in sims])
         # TODO: Implement the splitting threshold
         # Find the walkers that need to be split
-        sims_to_split = weights > self.largest_allowed_weight
+        sims_to_split = weights > self.max_weight
+        # Get the weights for walkers that need to be split
+        split_weights = weights[sims_to_split]
         # Calculate the number of splits for each walker
-        num_splits = np.ceil(
-            weights[sims_to_split] / self.largest_allowed_weight,
-        ).astype(int)
+        num_splits = np.ceil(split_weights / self.max_weight).astype(int)
 
         # Split the simulations
         sims = self.split_sims(sims, sims_to_split, num_splits)
