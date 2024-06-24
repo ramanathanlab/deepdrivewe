@@ -8,7 +8,7 @@ from pydantic import Field
 from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.examples.basic_amber.simulate import SimResult
+from westpa_colmena.examples.amber_split_low.simulate import SimResult
 from westpa_colmena.resampling import SplitLowResampler
 
 

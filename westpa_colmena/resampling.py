@@ -254,7 +254,7 @@ class Resampler(ABC):
             # Merge the simulations
             sims = self.merge_sims(sorted_sims, [to_merge])
 
-    def _adjust_count(
+    def adjust_count(
         self,
         sims: list[SimMetadata],
         target_count: int,
@@ -593,3 +593,96 @@ class SplitHighResampler(Resampler):
 
         # Recycle the simulations
         return [i for i, p in enumerate(pcoords) if p > self.target_threshold]
+
+
+class HuberKimResampler(Resampler):
+    """
+    Run Huber and Kim resampling.
+
+    The resampling procedure is outlined in Huber, Kim 1996:
+        https://doi.org/10.1016/S0006-3495(96)79552-8
+
+    This resampler is designed to be used with bins and follows 3 steps:
+        1. Resample based on weight
+        2. Adjust the number of simulations in each bin
+        3. Split and merge to keep simulations inside weight thresholds
+    """
+
+    def __init__(  # noqa: PLR0913
+        self,
+        basis_states: BasisStates,
+        sims_per_bin: int = 5,
+        max_allowed_weight: float = 0.25,
+        min_allowed_weight: float = 10e-40,
+        target_threshold: float = 0.5,
+        pcoord_idx: int = 0,
+    ) -> None:
+        """Initialize the resampler.
+
+        Parameters
+        ----------
+        basis_states : BasisStates
+            The basis states for the weighted ensemble.
+        sims_per_bin : int
+            The number of simulations to have in each bin. Default is 5.
+        max_allowed_weight : float
+            The maximum allowed weight for each simulation. If the weight of a
+            simulation exceeds this value, it will be split. Default is 0.25.
+        min_allowed_weight : float
+            The minimum allowed weight for each simulation. All the simulations
+            with a weight less than this value will be merged into a single
+            simulation walker. Default is 10e-40.
+        target_threshold : float
+            The target threshold for the progress coordinate to be considered
+            in the target state. Default is 0.5.
+        pcoord_idx : int
+            The index of the progress coordinate to use for splitting and
+            merging. Only applicable if a multi-dimensional pcoord is used,
+            will choose the specified index of the pcoord for spitting and
+            merging. Default is 0.
+        """
+        super().__init__(basis_states)
+        self.sims_per_bin = sims_per_bin
+        self.max_allowed_weight = max_allowed_weight
+        self.min_allowed_weight = min_allowed_weight
+        self.target_threshold = target_threshold
+        self.pcoord_idx = pcoord_idx
+
+    def resample(
+        self,
+        sims: list[SimMetadata],
+    ) -> list[SimMetadata]:
+        """Resample the weighted ensemble."""
+        # Get the weight of the simulations
+        weights = [sim.weight for sim in sims]
+
+        # Calculate the ideal weight
+        ideal_weight = sum(weights) / self.sims_per_bin
+
+        # Split the simulations by weight
+        sims = self.split_by_weight(sims, ideal_weight)
+
+        # Merge the simulations by weight
+        sims = self.merge_by_weight(sims, ideal_weight)
+
+        # Adjust the number of simulations in each bin
+        sims = self.adjust_count(sims, self.sims_per_bin)
+
+        # Split the simulations by threshold
+        sims = self.split_by_threshold(sims, self.max_allowed_weight)
+
+        # Merge the simulations by threshold
+        sims = self.merge_by_threshold(sims, self.min_allowed_weight)
+
+        return sims
+
+    def recycle(
+        self,
+        sims: list[SimMetadata],
+    ) -> list[int]:
+        """Return a list of simulations to recycle."""
+        # Extract the progress coordinates
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+
+        # Recycle the simulations
+        return [i for i, p in enumerate(pcoords) if p < self.target_threshold]

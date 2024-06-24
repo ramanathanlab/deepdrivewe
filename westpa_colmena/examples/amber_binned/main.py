@@ -31,11 +31,11 @@ from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
-from westpa_colmena.examples.basic_amber.inference import InferenceConfig
-from westpa_colmena.examples.basic_amber.inference import run_inference
-from westpa_colmena.examples.basic_amber.simulate import run_simulation
-from westpa_colmena.examples.basic_amber.simulate import SimResult
-from westpa_colmena.examples.basic_amber.simulate import SimulationConfig
+from westpa_colmena.examples.amber_binned.inference import InferenceConfig
+from westpa_colmena.examples.amber_binned.inference import run_inference
+from westpa_colmena.examples.amber_binned.simulate import run_simulation
+from westpa_colmena.examples.amber_binned.simulate import SimResult
+from westpa_colmena.examples.amber_binned.simulate import SimulationConfig
 from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.simulation.amber import run_cpptraj
 

@@ -1,0 +1,28 @@
+simulation_input_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/inputs
+output_dir: runs/naive_resampler_test_v1
+ensemble_members: 10
+num_iterations: 4
+basis_state_ext: .ncrst
+resume_checkpoint: null
+
+simulation_config:
+  amber_config:
+    amber_exe: sander
+    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/md.in
+    top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/common_files/nacl.parm7
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/basic_nacl_amber/inputs/bstates/bstate.ncrst
+
+inference_config:
+  # The number of simulations to maintain per bin
+  sims_per_bin: 5
+  # Maximum weight allowed for a single simulation
+  max_allowed_weight: 0.25
+  # Minimum weight allowed for a single simulation
+  min_allowed_weight: 10e-40
+  # The target threshold for the progress coordinate to be considered
+  # in the target state.
+  target_threshold: 2.6
+
+compute_settings:
+  name: local
+  max_workers: 10
