@@ -31,19 +31,17 @@ from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import WeightedEnsemble
-from westpa_colmena.examples.amber_binned.inference import InferenceConfig
-from westpa_colmena.examples.amber_binned.inference import run_inference
-from westpa_colmena.examples.amber_binned.simulate import run_simulation
-from westpa_colmena.examples.amber_binned.simulate import SimResult
-from westpa_colmena.examples.amber_binned.simulate import SimulationConfig
+from westpa_colmena.examples.amber_hk.inference import InferenceConfig
+from westpa_colmena.examples.amber_hk.inference import run_inference
+from westpa_colmena.examples.amber_hk.simulate import run_simulation
+from westpa_colmena.examples.amber_hk.simulate import SimResult
+from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
 from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
-# (1.1) TODO: Incorporate resampling logic for by-weight and adjust counts
-# https://github.com/westpa/westpa/blob/40fe71e4e393b47e0a231b178add25696e469405/src/westpa/core/we_driver.py#L521
-# (1.2) TODO: Test changes. We can set the target state closer to the basis
+# (1.1) TODO: Test changes. We can set the target state closer to the basis
 # state to see if the recycle logic is working.
 # (2) Pack outputs into HDF5 for westpa analysis.
 # (3) Test the resampler and weighted ensemble logic using ntl9.

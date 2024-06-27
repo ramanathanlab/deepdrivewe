@@ -8,7 +8,7 @@ from pydantic import Field
 from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.examples.amber_binned.simulate import SimResult
+from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.resampling import HuberKimResampler
 
 
@@ -22,12 +22,12 @@ class InferenceConfig(BaseModel):
     )
     max_allowed_weight: float = Field(
         default=0.25,
-        description='The maximum allowed weight a simulation can have. Default '
+        description='The maximum allowed weight for a simulation. Default '
         'is 0.25.',
     )
     min_allowed_weight: float = Field(
         default=10e-40,
-        description='The minimum allowed weight a simulation can have. Default '
+        description='The minimum allowed weight for a simulation. Default '
         'is 10e-40.',
     )
 
