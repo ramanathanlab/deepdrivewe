@@ -213,7 +213,7 @@ class ExperimentSettings(BaseModel):
         default='.ncrst',
         description='Extension for the basis states.',
     )
-    ensemble_members: int = Field(
+    initial_ensemble_members: int = Field(
         description='Number of simulations to start the weighted ensemble.',
     )
     num_iterations: int = Field(
@@ -289,7 +289,7 @@ if __name__ == '__main__':
     # Initialize the basis states
     basis_states = MyBasisStates(
         sim_config=cfg.simulation_config,
-        ensemble_members=cfg.ensemble_members,
+        initial_ensemble_members=cfg.initial_ensemble_members,
         simulation_input_dir=cfg.simulation_input_dir,
         basis_state_ext=cfg.basis_state_ext,
     )

@@ -65,7 +65,7 @@ class BasisStates(ABC):
         self,
         simulation_input_dir: Path,
         basis_state_ext: str,
-        ensemble_members: int,
+        initial_ensemble_members: int,
     ) -> None:
         """Initialize the basis states.
 
@@ -78,7 +78,7 @@ class BasisStates(ABC):
         """
         self.simulation_input_dir = simulation_input_dir
         self.basis_state_ext = basis_state_ext
-        self.ensemble_members = ensemble_members
+        self.initial_ensemble_members = initial_ensemble_members
 
         # Load the basis states
         basis_files = self._load_basis_states()
@@ -113,7 +113,7 @@ class BasisStates(ABC):
         # Get the basis states by globbing the input directories
         basis_states = []
         for _, input_dir in zip(
-            range(self.ensemble_members),
+            range(self.initial_ensemble_members),
             itertools.cycle(simulation_input_dirs),
         ):
             # Define the glob pattern
@@ -141,7 +141,7 @@ class BasisStates(ABC):
         basis_pcoords: list[list[float]],
     ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
-        weight = 1.0 / self.ensemble_members
+        weight = 1.0 / self.initial_ensemble_members
 
         # Create the metadata for each basis state to populate the
         # first iteration

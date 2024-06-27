@@ -17,7 +17,7 @@ class InferenceConfig(BaseModel):
     """Arguments for the naive resampler."""
 
     sims_per_bin: int = Field(
-        default=1,
+        default=5,
         description='The number of simulations maintain in each bin.'
         ' Default is 5.',
     )
@@ -31,7 +31,6 @@ class InferenceConfig(BaseModel):
         description='The minimum allowed weight for a simulation. Default '
         'is 10e-40.',
     )
-
     target_threshold: float = Field(
         default=0.5,
         description='The target threshold for the progress coordinate to be'
