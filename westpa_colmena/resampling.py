@@ -129,6 +129,8 @@ class Resampler(ABC):
         # Get the recycled simulation indices
         recycle_indices = self.recycler.recycle(current_iteration)
 
+        print(f'{recycle_indices=}', flush=True)
+
         # Create a list to store the new simulations for this iteration
         simulations = []
 
@@ -167,6 +169,9 @@ class Resampler(ABC):
                 parent_restart_file=parent_restart_file,
                 parent_pcoord=parent_pcoord,
             )
+
+            if idx in recycle_indices:
+                print(f'Recycling simulation {new_sim}', flush=True)
 
             # Add the new simulation to the current iteration
             simulations.append(new_sim)
