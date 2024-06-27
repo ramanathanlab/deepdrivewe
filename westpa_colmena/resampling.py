@@ -13,29 +13,36 @@ from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 
 
-def get_pcoords(
-    sims: list[SimMetadata],
-    pcoord_idx: int = 0,
-) -> list[float]:
-    """Extract the progress coordinates from the simulations.
-
-    Parameters
-    ----------
-    sims : list[SimMetadata]
-        The list of simulation metadata.
-    pcoord_idx : int
-        The index of the progress coordinate to extract. Default is 0.
-
-    Returns
-    -------
-    list[float]
-        The progress coordinates for the simulations.
-    """
-    return [sim.parent_pcoord[pcoord_idx] for sim in sims]
-
-
 class Recycler(ABC):
     """Recycler for the weighted ensemble."""
+
+    def get_pcoords(
+        self,
+        sims: list[SimMetadata],
+        pcoord_idx: int = 0,
+    ) -> list[float]:
+        """Extract the progress coordinate from the simulations.
+
+        Parameters
+        ----------
+        sims : list[SimMetadata]
+            The list of simulation metadata.
+        pcoord_idx : int
+            The index of the progress coordinate to extract. Default is 0.
+
+        Returns
+        -------
+        list[float]
+            The progress coordinates for the simulations.
+        """
+        # Extract the progress coordinates
+        pcoords = []
+        for sim in sims:
+            # Ensure that the simulation has a progress coordinate
+            assert sim.pcoord is not None
+            # We only extract the progress coordinate at the specified index
+            pcoords.append(sim.pcoord[pcoord_idx])
+        return pcoords
 
     @abstractmethod
     def recycle(self, sims: list[SimMetadata]) -> list[int]:
@@ -65,7 +72,7 @@ class LowRecycler(Recycler):
     def recycle(self, sims: list[SimMetadata]) -> list[int]:
         """Return a list of simulations to recycle."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Recycle the simulations
         return [i for i, p in enumerate(pcoords) if p < self.target_threshold]
@@ -93,7 +100,7 @@ class HighRecycler(Recycler):
     def recycle(self, sims: list[SimMetadata]) -> list[int]:
         """Return a list of simulations to recycle."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Recycle the simulations
         return [i for i, p in enumerate(pcoords) if p > self.target_threshold]
@@ -457,6 +464,27 @@ class Resampler(ABC):
             # Merge the simulations
             sims = self.merge_sims(sorted_sims, [to_merge])
 
+    def get_pcoords(
+        self,
+        sims: list[SimMetadata],
+        pcoord_idx: int = 0,
+    ) -> list[float]:
+        """Extract the progress coordinates from the simulations.
+
+        Parameters
+        ----------
+        sims : list[SimMetadata]
+            The list of simulation metadata.
+        pcoord_idx : int
+            The index of the progress coordinate to extract. Default is 0.
+
+        Returns
+        -------
+        list[float]
+            The progress coordinates for the simulations.
+        """
+        return [sim.parent_pcoord[pcoord_idx] for sim in sims]
+
     @abstractmethod
     def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
@@ -503,7 +531,7 @@ class SplitLowResampler(Resampler):
     def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the lowest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the lowest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -519,7 +547,7 @@ class SplitLowResampler(Resampler):
     def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -589,7 +617,7 @@ class SplitHighResampler(Resampler):
     def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -605,7 +633,7 @@ class SplitHighResampler(Resampler):
     def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
