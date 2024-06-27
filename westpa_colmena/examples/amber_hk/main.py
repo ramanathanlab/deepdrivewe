@@ -46,7 +46,6 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (2) Pack outputs into HDF5 for westpa analysis.
 # (3) Test the resampler and weighted ensemble logic using ntl9.
 # (4) Create a pytest for the WESTPA thinker.
-# (5) Print out which iteration we are on in the WESTPA thinker.
 
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
@@ -173,6 +172,11 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # Submit the next iteration of simulations
         self.simulate()
+
+        # Log the current iteration
+        self.logger.info(
+            f'Current iteration: {len(self.ensemble.simulations)}',
+        )
 
 
 class MyBasisStates(BasisStates):
