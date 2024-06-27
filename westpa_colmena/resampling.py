@@ -238,7 +238,6 @@ class Resampler(ABC):
     ) -> list[SimMetadata]:
         """Merge each group of simulation indices into a single simulation."""
         # Get the indices of non-merged simulations
-        print(f'{indices=}', flush=True)
         merge_idxs = [idx for index_group in indices for idx in index_group]
         no_merge_idxs = [i for i in range(len(sims)) if i not in merge_idxs]
 
