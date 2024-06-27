@@ -46,6 +46,8 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (2) Pack outputs into HDF5 for westpa analysis.
 # (3) Test the resampler and weighted ensemble logic using ntl9.
 # (4) Create a pytest for the WESTPA thinker.
+# (5) Implement a cleaner thinker backend
+# (6) Send cpptraj output to a separate log file to avoid polluting the main
 
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
