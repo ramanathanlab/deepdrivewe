@@ -13,18 +13,107 @@ from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 
 
+def get_pcoords(
+    sims: list[SimMetadata],
+    pcoord_idx: int = 0,
+) -> list[float]:
+    """Extract the progress coordinates from the simulations.
+
+    Parameters
+    ----------
+    sims : list[SimMetadata]
+        The list of simulation metadata.
+    pcoord_idx : int
+        The index of the progress coordinate to extract. Default is 0.
+
+    Returns
+    -------
+    list[float]
+        The progress coordinates for the simulations.
+    """
+    return [sim.parent_pcoord[pcoord_idx] for sim in sims]
+
+
+class Recycler(ABC):
+    """Recycler for the weighted ensemble."""
+
+    @abstractmethod
+    def recycle(self, sims: list[SimMetadata]) -> list[int]:
+        """Return a list of simulation indices to recycle."""
+        ...
+
+
+class LowRecycler(Recycler):
+    """Recylcle simulations under a certain progress coordinate threshold."""
+
+    def __init__(self, target_threshold: float, pcoord_idx: int = 0) -> None:
+        """Initialize the recycler.
+
+        Parameters
+        ----------
+        target_threshold : float
+            The target threshold for the progress coordinate to be considered
+            in the target state.
+        pcoord_idx : int
+            The index of the progress coordinate to use for recycling. Only
+            applicable if a multi-dimensional pcoord is used, will choose the
+            specified index of the pcoord for recycling. Default is 0.
+        """
+        self.target_threshold = target_threshold
+        self.pcoord_idx = pcoord_idx
+
+    def recycle(self, sims: list[SimMetadata]) -> list[int]:
+        """Return a list of simulations to recycle."""
+        # Extract the progress coordinates
+        pcoords = get_pcoords(sims, self.pcoord_idx)
+
+        # Recycle the simulations
+        return [i for i, p in enumerate(pcoords) if p < self.target_threshold]
+
+
+class HighRecycler(Recycler):
+    """Recylcle simulations above a certain progress coordinate threshold."""
+
+    def __init__(self, target_threshold: float, pcoord_idx: int = 0) -> None:
+        """Initialize the recycler.
+
+        Parameters
+        ----------
+        target_threshold : float
+            The target threshold for the progress coordinate to be considered
+            in the target state.
+        pcoord_idx : int
+            The index of the progress coordinate to use for recycling. Only
+            applicable if a multi-dimensional pcoord is used, will choose the
+            specified index of the pcoord for recycling. Default is 0.
+        """
+        self.target_threshold = target_threshold
+        self.pcoord_idx = pcoord_idx
+
+    def recycle(self, sims: list[SimMetadata]) -> list[int]:
+        """Return a list of simulations to recycle."""
+        # Extract the progress coordinates
+        pcoords = get_pcoords(sims, self.pcoord_idx)
+
+        # Recycle the simulations
+        return [i for i, p in enumerate(pcoords) if p > self.target_threshold]
+
+
 class Resampler(ABC):
     """Resampler for the weighted ensemble."""
 
-    def __init__(self, basis_states: BasisStates) -> None:
+    def __init__(self, basis_states: BasisStates, recycler: Recycler) -> None:
         """Initialize the resampler.
 
         Parameters
         ----------
         basis_states : BasisStates
             The basis states for the weighted ensemble.
+        recycler : Recycler
+            The recycler for the weighted ensemble.
         """
         self.basis_states = basis_states
+        self.recycler = recycler
 
         # Create a counter to keep track of the simulation IDs
         self.index_counter = itertools.count()
@@ -38,7 +127,7 @@ class Resampler(ABC):
         self.index_counter = itertools.count()
 
         # Get the recycled simulation indices
-        recycle_indices = self.recycle(current_iteration)
+        recycle_indices = self.recycler.recycle(current_iteration)
 
         # Create a list to store the new simulations for this iteration
         simulations = []
@@ -363,25 +452,9 @@ class Resampler(ABC):
             # Merge the simulations
             sims = self.merge_sims(sorted_sims, [to_merge])
 
-    def get_pcoords(
-        self,
-        sims: list[SimMetadata],
-        pcoord_idx: int = 0,
-    ) -> list[float]:
-        """Return the `pcoord_idx` progress coordinate for the simulations."""
-        return [sim.parent_pcoord[pcoord_idx] for sim in sims]
-
     @abstractmethod
-    def resample(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
-        ...
-
-    @abstractmethod
-    def recycle(self, sims: list[SimMetadata]) -> list[int]:
-        """Return a list of simulation indices to recycle."""
         ...
 
 
@@ -391,24 +464,25 @@ class SplitLowResampler(Resampler):
     def __init__(  # noqa: PLR0913
         self,
         basis_states: BasisStates,
+        recycler: Recycler,
         num_resamples: int = 1,
         n_split: int = 2,
-        target_threshold: float = 0.5,
         pcoord_idx: int = 0,
     ) -> None:
         """Initialize the resampler.
 
         Parameters
         ----------
+        basis_states : BasisStates
+            The basis states for the weighted ensemble.
+        recycler : Recycler
+            The recycler for the weighted ensemble.
         num_resamples : int
             The number of resamples to perform (i.e., the number of splits
             and merges to perform in each iteration). Default is 1.
         n_split : int
             The number of simulations to split each simulation into.
             Default is 2.
-        target_threshold : float
-            The target threshold for the progress coordinate to be considered
-            in the target state. Default is 0.5.
         pcoord_idx : int
             The index of the progress coordinate to use for splitting and
             merging. Only applicable if a multi-dimensional pcoord is used,
@@ -416,19 +490,15 @@ class SplitLowResampler(Resampler):
             merging. Default is 0.
 
         """
-        super().__init__(basis_states)
+        super().__init__(basis_states, recycler)
         self.num_resamples = num_resamples
         self.n_split = n_split
-        self.target_threshold = target_threshold
         self.pcoord_idx = pcoord_idx
 
-    def split(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the lowest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the lowest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -441,13 +511,10 @@ class SplitLowResampler(Resampler):
 
         return new_sims
 
-    def merge(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -467,10 +534,7 @@ class SplitLowResampler(Resampler):
 
         return new_sims
 
-    def resample(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
         # Split the simulations
         simulations = self.split(sims)
@@ -480,17 +544,6 @@ class SplitLowResampler(Resampler):
 
         return simulations
 
-    def recycle(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[int]:
-        """Return a list of simulations to recycle."""
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        return [i for i, p in enumerate(pcoords) if p < self.target_threshold]
-
 
 class SplitHighResampler(Resampler):
     """Split the simulation with the highest progress coordinate."""
@@ -498,43 +551,40 @@ class SplitHighResampler(Resampler):
     def __init__(  # noqa: PLR0913
         self,
         basis_states: BasisStates,
+        recycler: Recycler,
         num_resamples: int = 1,
         n_split: int = 2,
-        target_threshold: float = 0.5,
         pcoord_idx: int = 0,
     ) -> None:
         """Initialize the resampler.
 
         Parameters
         ----------
+        basis_states : BasisStates
+            The basis states for the weighted ensemble.
+        recycler : Recycler
+            The recycler for the weighted ensemble.
         num_resamples : int
             The number of resamples to perform (i.e., the number of splits
             and merges to perform in each iteration). Default is 1.
         n_split : int
             The number of simulations to split each simulation into.
             Default is 2.
-        target_threshold : float
-            The target threshold for the progress coordinate to be considered
-            in the target state. Default is 0.5.
         pcoord_idx : int
             The index of the progress coordinate to use for splitting and
             merging. Only applicable if a multi-dimensional pcoord is used,
             will choose the specified index of the pcoord for spitting and
             merging. Default is 0.
         """
-        super().__init__(basis_states)
+        super().__init__(basis_states, recycler)
         self.num_resamples = num_resamples
         self.n_split = n_split
-        self.target_threshold = target_threshold
         self.pcoord_idx = pcoord_idx
 
-    def split(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -550,7 +600,7 @@ class SplitHighResampler(Resampler):
     def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = get_pcoords(sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -570,10 +620,7 @@ class SplitHighResampler(Resampler):
 
         return new_sims
 
-    def resample(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
         # Split the simulations
         simulations = self.split(sims)
@@ -582,17 +629,6 @@ class SplitHighResampler(Resampler):
         simulations = self.merge(simulations)
 
         return simulations
-
-    def recycle(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[int]:
-        """Return a list of simulations to recycle."""
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        return [i for i, p in enumerate(pcoords) if p > self.target_threshold]
 
 
 class HuberKimResampler(Resampler):
@@ -611,11 +647,10 @@ class HuberKimResampler(Resampler):
     def __init__(  # noqa: PLR0913
         self,
         basis_states: BasisStates,
+        recycler: Recycler,
         sims_per_bin: int = 5,
         max_allowed_weight: float = 0.25,
         min_allowed_weight: float = 10e-40,
-        target_threshold: float = 0.5,
-        pcoord_idx: int = 0,
     ) -> None:
         """Initialize the resampler.
 
@@ -623,6 +658,8 @@ class HuberKimResampler(Resampler):
         ----------
         basis_states : BasisStates
             The basis states for the weighted ensemble.
+        recycler : Recycler
+            The recycler for the weighted ensemble.
         sims_per_bin : int
             The number of simulations to have in each bin. Default is 5.
         max_allowed_weight : float
@@ -632,26 +669,13 @@ class HuberKimResampler(Resampler):
             The minimum allowed weight for each simulation. All the simulations
             with a weight less than this value will be merged into a single
             simulation walker. Default is 10e-40.
-        target_threshold : float
-            The target threshold for the progress coordinate to be considered
-            in the target state. Default is 0.5.
-        pcoord_idx : int
-            The index of the progress coordinate to use for splitting and
-            merging. Only applicable if a multi-dimensional pcoord is used,
-            will choose the specified index of the pcoord for spitting and
-            merging. Default is 0.
         """
-        super().__init__(basis_states)
+        super().__init__(basis_states, recycler)
         self.sims_per_bin = sims_per_bin
         self.max_allowed_weight = max_allowed_weight
         self.min_allowed_weight = min_allowed_weight
-        self.target_threshold = target_threshold
-        self.pcoord_idx = pcoord_idx
 
-    def resample(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
         # Get the weight of the simulations
         weights = [sim.weight for sim in sims]
@@ -675,14 +699,3 @@ class HuberKimResampler(Resampler):
         sims = self.merge_by_threshold(sims, self.min_allowed_weight)
 
         return sims
-
-    def recycle(
-        self,
-        sims: list[SimMetadata],
-    ) -> list[int]:
-        """Return a list of simulations to recycle."""
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        return [i for i, p in enumerate(pcoords) if p < self.target_threshold]

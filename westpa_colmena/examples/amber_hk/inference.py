@@ -10,6 +10,7 @@ from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.resampling import HuberKimResampler
+from westpa_colmena.resampling import LowRecycler
 
 
 class InferenceConfig(BaseModel):
@@ -54,13 +55,16 @@ def run_inference(
     # Extract the simulation metadata
     current_iteration = [sim_result.metadata for sim_result in input_data]
 
+    # Define the recycling policy
+    recycler = LowRecycler(target_threshold=config.target_threshold)
+
     # Resamlpe the ensemble
     resampler = HuberKimResampler(
         basis_states=basis_states,
+        recycler=recycler,
         sims_per_bin=config.sims_per_bin,
         max_allowed_weight=config.max_allowed_weight,
         min_allowed_weight=config.min_allowed_weight,
-        target_threshold=config.target_threshold,
     )
 
     # Get the next iteration

@@ -9,6 +9,7 @@ from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.examples.amber_split_low.simulate import SimResult
+from westpa_colmena.resampling import LowRecycler
 from westpa_colmena.resampling import SplitLowResampler
 
 
@@ -48,12 +49,15 @@ def run_inference(
     # Extract the simulation metadata
     current_iteration = [sim_result.metadata for sim_result in input_data]
 
+    # Define the recycling policy
+    recycler = LowRecycler(target_threshold=config.target_threshold)
+
     # Resamlpe the ensemble
     resampler = SplitLowResampler(
         basis_states=basis_states,
+        recycler=recycler,
         num_resamples=config.num_resamples,
         n_split=config.n_split,
-        target_threshold=config.target_threshold,
     )
 
     # Get the next iteration
