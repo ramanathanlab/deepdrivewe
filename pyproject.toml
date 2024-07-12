@@ -7,7 +7,8 @@ name = "westpa_colmena"
 version = "0.1.0"
 authors = [
     {name = "Alexander Brace", email = "abrace@anl.gov"},
-    {name = "Nicolas Frazee", email = "ncf26@pitt.edu"}
+    {name = "Nicolas Frazee", email = "ncf26@pitt.edu"},
+    {name = "Jeremy Leung", email = "jml230@pitt.edu"},
 ]
 description = "Implementation of WESTPA using Colmena."
 readme = "README.md"
@@ -23,6 +24,7 @@ dependencies = [
     "parsl",
     "pyyaml==6.0",
     "numpy",
+    "h5py==3.11.0"
 ]
 
 [project.urls]

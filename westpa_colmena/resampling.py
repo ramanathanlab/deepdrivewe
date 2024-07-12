@@ -6,139 +6,25 @@ import itertools
 import math
 from abc import ABC
 from abc import abstractmethod
+from copy import deepcopy
 
 import numpy as np
 
-from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
-
-
-class Recycler(ABC):
-    """Recycler for the weighted ensemble."""
-
-    def get_pcoords(
-        self,
-        sims: list[SimMetadata],
-        pcoord_idx: int = 0,
-    ) -> list[float]:
-        """Extract the progress coordinate from the simulations.
-
-        Parameters
-        ----------
-        sims : list[SimMetadata]
-            The list of simulation metadata.
-        pcoord_idx : int
-            The index of the progress coordinate to extract. Default is 0.
-
-        Returns
-        -------
-        list[float]
-            The progress coordinates for the simulations.
-        """
-        # Extract the progress coordinates
-        pcoords = []
-        for sim in sims:
-            # Ensure that the simulation has a progress coordinate
-            assert sim.pcoord is not None
-            # We only extract the progress coordinate at the specified index
-            pcoords.append(sim.pcoord[pcoord_idx])
-        return pcoords
-
-    @abstractmethod
-    def recycle(self, sims: list[SimMetadata]) -> list[int]:
-        """Return a list of simulation indices to recycle."""
-        ...
-
-
-class LowRecycler(Recycler):
-    """Recylcle simulations under a certain progress coordinate threshold."""
-
-    def __init__(self, target_threshold: float, pcoord_idx: int = 0) -> None:
-        """Initialize the recycler.
-
-        Parameters
-        ----------
-        target_threshold : float
-            The target threshold for the progress coordinate to be considered
-            in the target state.
-        pcoord_idx : int
-            The index of the progress coordinate to use for recycling. Only
-            applicable if a multi-dimensional pcoord is used, will choose the
-            specified index of the pcoord for recycling. Default is 0.
-        """
-        self.target_threshold = target_threshold
-        self.pcoord_idx = pcoord_idx
-
-    def recycle(self, sims: list[SimMetadata]) -> list[int]:
-        """Return a list of simulations to recycle."""
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        return [i for i, p in enumerate(pcoords) if p < self.target_threshold]
-
-
-class HighRecycler(Recycler):
-    """Recylcle simulations above a certain progress coordinate threshold."""
-
-    def __init__(self, target_threshold: float, pcoord_idx: int = 0) -> None:
-        """Initialize the recycler.
-
-        Parameters
-        ----------
-        target_threshold : float
-            The target threshold for the progress coordinate to be considered
-            in the target state.
-        pcoord_idx : int
-            The index of the progress coordinate to use for recycling. Only
-            applicable if a multi-dimensional pcoord is used, will choose the
-            specified index of the pcoord for recycling. Default is 0.
-        """
-        self.target_threshold = target_threshold
-        self.pcoord_idx = pcoord_idx
-
-    def recycle(self, sims: list[SimMetadata]) -> list[int]:
-        """Return a list of simulations to recycle."""
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        return [i for i, p in enumerate(pcoords) if p > self.target_threshold]
 
 
 class Resampler(ABC):
     """Resampler for the weighted ensemble."""
 
-    def __init__(self, basis_states: BasisStates, recycler: Recycler) -> None:
-        """Initialize the resampler.
-
-        Parameters
-        ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        recycler : Recycler
-            The recycler for the weighted ensemble.
-        """
-        self.basis_states = basis_states
-        self.recycler = recycler
-
-        # Create a counter to keep track of the simulation IDs
-        self.index_counter = itertools.count()
+    def __init__(self) -> None:
+        """Initialize the resampler."""
+        self._index_counter = itertools.count()
 
     def get_next_iteration(
         self,
         current_iteration: list[SimMetadata],
     ) -> list[SimMetadata]:
         """Return the simulations for the next iteration."""
-        # Reset the index counter
-        self.index_counter = itertools.count()
-
-        # Get the recycled simulation indices
-        recycle_indices = self.recycler.recycle(current_iteration)
-
-        # Log the recycled indices
-        print(f'{recycle_indices=}', flush=True)
-
         # Create a list to store the new simulations for this iteration
         simulations = []
 
@@ -146,41 +32,17 @@ class Resampler(ABC):
             # Ensure that the simulation has a restart file, i.e., the `sim`
             # object represents a simulation that has been run.
             assert sim.restart_file is not None
-
-            # Check if the simulation should be recycled
-            if idx in recycle_indices:
-                # Choose a random basis state to restart the simulation from
-                basis_idx = np.random.choice(len(self.basis_states))
-                basis_state = self.basis_states[basis_idx]
-                # Set the parent restart file to the basis state
-                parent_restart_file = basis_state.parent_restart_file
-                # Set the prev simulation ID to the negative of previous
-                # simulation to indicate that the simulation is recycled
-                parent_simulation_id = -1 * sim.simulation_id
-                parent_pcoord = basis_state.parent_pcoord
-            else:
-                # If the simulation is not recycled, set the parent restart
-                # file and simulation id to the restart file of the current
-                # simulation
-                assert sim.restart_file is not None
-                assert sim.pcoord is not None
-                parent_restart_file = sim.restart_file
-                parent_simulation_id = sim.simulation_id
-                parent_pcoord = sim.pcoord
+            assert sim.pcoord is not None
 
             # Create the metadata for the new simulation
             new_sim = SimMetadata(
                 weight=sim.weight,
                 simulation_id=idx,
                 iteration_id=sim.iteration_id + 1,
-                parent_simulation_id=parent_simulation_id,
-                parent_restart_file=parent_restart_file,
-                parent_pcoord=parent_pcoord,
+                parent_simulation_id=sim.simulation_id,
+                parent_restart_file=sim.restart_file,
+                parent_pcoord=sim.pcoord,
             )
-
-            # Log the recycled simulation
-            if idx in recycle_indices:
-                print(f'Recycling simulation {new_sim}', flush=True)
 
             # Add the new simulation to the current iteration
             simulations.append(new_sim)
@@ -196,7 +58,7 @@ class Resampler(ABC):
         # Create the metadata for the new simulation
         return SimMetadata(
             weight=weight,
-            simulation_id=next(self.index_counter),
+            simulation_id=next(self._index_counter),
             iteration_id=sim.iteration_id,
             parent_simulation_id=sim.parent_simulation_id,
             restart_file=sim.restart_file,
@@ -495,10 +357,8 @@ class Resampler(ABC):
 class SplitLowResampler(Resampler):
     """Split the simulation with the lowest progress coordinate."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        basis_states: BasisStates,
-        recycler: Recycler,
         num_resamples: int = 1,
         n_split: int = 2,
         pcoord_idx: int = 0,
@@ -507,10 +367,6 @@ class SplitLowResampler(Resampler):
 
         Parameters
         ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        recycler : Recycler
-            The recycler for the weighted ensemble.
         num_resamples : int
             The number of resamples to perform (i.e., the number of splits
             and merges to perform in each iteration). Default is 1.
@@ -522,9 +378,8 @@ class SplitLowResampler(Resampler):
             merging. Only applicable if a multi-dimensional pcoord is used,
             will choose the specified index of the pcoord for spitting and
             merging. Default is 0.
-
         """
-        super().__init__(basis_states, recycler)
+        super().__init__()
         self.num_resamples = num_resamples
         self.n_split = n_split
         self.pcoord_idx = pcoord_idx
@@ -582,10 +437,8 @@ class SplitLowResampler(Resampler):
 class SplitHighResampler(Resampler):
     """Split the simulation with the highest progress coordinate."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        basis_states: BasisStates,
-        recycler: Recycler,
         num_resamples: int = 1,
         n_split: int = 2,
         pcoord_idx: int = 0,
@@ -594,10 +447,6 @@ class SplitHighResampler(Resampler):
 
         Parameters
         ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        recycler : Recycler
-            The recycler for the weighted ensemble.
         num_resamples : int
             The number of resamples to perform (i.e., the number of splits
             and merges to perform in each iteration). Default is 1.
@@ -610,7 +459,7 @@ class SplitHighResampler(Resampler):
             will choose the specified index of the pcoord for spitting and
             merging. Default is 0.
         """
-        super().__init__(basis_states, recycler)
+        super().__init__()
         self.num_resamples = num_resamples
         self.n_split = n_split
         self.pcoord_idx = pcoord_idx
@@ -678,10 +527,8 @@ class HuberKimResampler(Resampler):
         3. Split and merge to keep simulations inside weight thresholds
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        basis_states: BasisStates,
-        recycler: Recycler,
         sims_per_bin: int = 5,
         max_allowed_weight: float = 0.25,
         min_allowed_weight: float = 10e-40,
@@ -690,10 +537,6 @@ class HuberKimResampler(Resampler):
 
         Parameters
         ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        recycler : Recycler
-            The recycler for the weighted ensemble.
         sims_per_bin : int
             The number of simulations to have in each bin. Default is 5.
         max_allowed_weight : float
@@ -704,32 +547,35 @@ class HuberKimResampler(Resampler):
             with a weight less than this value will be merged into a single
             simulation walker. Default is 10e-40.
         """
-        super().__init__(basis_states, recycler)
+        super().__init__()
         self.sims_per_bin = sims_per_bin
         self.max_allowed_weight = max_allowed_weight
         self.min_allowed_weight = min_allowed_weight
 
     def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
         """Resample the weighted ensemble."""
+        # Make a copy of the simulations
+        _sims = deepcopy(sims)
+
         # Get the weight of the simulations
-        weights = [sim.weight for sim in sims]
+        weights = [sim.weight for sim in _sims]
 
         # Calculate the ideal weight
         ideal_weight = sum(weights) / self.sims_per_bin
 
         # Split the simulations by weight
-        sims = self.split_by_weight(sims, ideal_weight)
+        _sims = self.split_by_weight(_sims, ideal_weight)
 
         # Merge the simulations by weight
-        sims = self.merge_by_weight(sims, ideal_weight)
+        _sims = self.merge_by_weight(_sims, ideal_weight)
 
         # Adjust the number of simulations in each bin
-        sims = self.adjust_count(sims, self.sims_per_bin)
+        _sims = self.adjust_count(_sims, self.sims_per_bin)
 
         # Split the simulations by threshold
-        sims = self.split_by_threshold(sims, self.max_allowed_weight)
+        _sims = self.split_by_threshold(_sims, self.max_allowed_weight)
 
         # Merge the simulations by threshold
-        sims = self.merge_by_threshold(sims, self.min_allowed_weight)
+        _sims = self.merge_by_threshold(_sims, self.min_allowed_weight)
 
-        return sims
+        return _sims

@@ -21,7 +21,9 @@ inference_config:
   min_allowed_weight: 10e-40
   # The target threshold for the progress coordinate to be considered
   # in the target state.
-  target_threshold: 2.6
+  target_states:
+      - label: bound_state
+        pcoord: [2.6]
 
 compute_settings:
   name: local

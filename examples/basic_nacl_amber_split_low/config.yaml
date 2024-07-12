@@ -25,7 +25,9 @@ inference_config:
   split_low: True
   # The target threshold for the progress coordinate to be considered
   # in the target state.
-  target_threshold: 0.5
+  target_states:
+    - label: target_state
+      pcoord: [0.5]
 
 compute_settings:
   name: local

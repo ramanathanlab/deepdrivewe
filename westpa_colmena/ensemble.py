@@ -8,9 +8,23 @@ from abc import ABC
 from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
+from typing import Iterator
 
 from pydantic import BaseModel
 from pydantic import Field
+
+
+class TargetState(BaseModel):
+    """Target state for the weighted ensemble."""
+
+    label: str = Field(
+        '',
+        description='The label for the target state.',
+    )
+    pcoord: list[float] = Field(
+        ...,
+        description='The progress coordinate for the target state.',
+    )
 
 
 class SimMetadata(BaseModel):
@@ -50,6 +64,18 @@ class SimMetadata(BaseModel):
     pcoord: list[float] | None = Field(
         default=None,
         description='The progress coordinate for the simulation.',
+    )
+    binner_hash: str = Field(
+        default='',
+        description='The hash of the binner used to assign simulations.',
+    )
+    binner_pickle: bytes = Field(
+        default='',
+        description='The pickled binner used to assign simulations.',
+    )
+    auxref: str = Field(
+        default='',
+        description='Auxiliary reference information for the simulation.',
     )
 
     # TODO: Do we still need this?
@@ -101,6 +127,10 @@ class BasisStates(ABC):
     def __getitem__(self, idx: int) -> SimMetadata:
         """Return the basis state at the specified index."""
         return self.basis_states[idx]
+
+    def __iter__(self) -> Iterator[SimMetadata]:
+        """Return an iterator over the basis states."""
+        return iter(self.basis_states)
 
     def _load_basis_states(self) -> list[Path]:
         # Collect initial simulation directories, assumes they are in nested
@@ -165,6 +195,7 @@ class BasisStates(ABC):
         ...
 
 
+# TODO: Unify this with the westh5 file since that is the checkpoint
 class WeightedEnsemble:
     """Weighted ensemble."""
 

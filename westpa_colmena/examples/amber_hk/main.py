@@ -30,6 +30,7 @@ from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
+from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
 from westpa_colmena.examples.amber_hk.inference import run_inference
@@ -99,7 +100,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
     def simulate(self) -> None:
         """Start simulation task(s).
 
-        Must call :meth:`submit_task` with ``topic='simulation'``
+        Must call :meth:`submit_task` with ``topic='simulation'``.
         """
         # Submit the next iteration of simulations
         for sim in self.ensemble.current_iteration:
@@ -162,15 +163,18 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
     def handle_inference_output(
         self,
-        output: list[SimMetadata],
+        output: tuple[list[SimMetadata], list[list[SimMetadata]]],
     ) -> None:
         """Handle the output of an inference run.
 
         Use the output from an inference run to update the list of
         available simulations.
         """
+        # Unpack the output
+        next_iteration, binned_sims = output
+
         # Update the weighted ensemble with the next iteration
-        self.ensemble.advance_iteration(next_iteration=output)
+        self.ensemble.advance_iteration(next_iteration=next_iteration)
 
         # Submit the next iteration of simulations
         self.simulate()
@@ -238,6 +242,10 @@ class ExperimentSettings(BaseModel):
     )
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
+    )
+    target_states: list[TargetState] = Field(
+        description='The target threshold for the progress coordinate to be'
+        ' considered in the target state.',
     )
     compute_settings: ComputeSettingsTypes = Field(
         description='Settings for the compute resources.',
@@ -320,6 +328,7 @@ if __name__ == '__main__':
     my_run_inference = partial(
         run_inference,
         basis_states=basis_states,
+        target_states=cfg.target_states,
         config=cfg.inference_config,
     )
     update_wrapper(my_run_simulation, run_simulation)
