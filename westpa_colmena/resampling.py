@@ -39,9 +39,10 @@ class Resampler(ABC):
                 weight=sim.weight,
                 simulation_id=idx,
                 iteration_id=sim.iteration_id + 1,
-                parent_simulation_id=sim.simulation_id,
                 parent_restart_file=sim.restart_file,
                 parent_pcoord=sim.pcoord,
+                parent_simulation_id=sim.simulation_id,
+                wtg_parent_ids=[sim.simulation_id],
             )
 
             # Add the new simulation to the current iteration
@@ -53,6 +54,7 @@ class Resampler(ABC):
         self,
         sim: SimMetadata,
         weight: float,
+        wtg_parent_ids: list[int],
     ) -> SimMetadata:
         """Add a new simulation to the current iteration."""
         # Create the metadata for the new simulation
@@ -60,10 +62,11 @@ class Resampler(ABC):
             weight=weight,
             simulation_id=next(self._index_counter),
             iteration_id=sim.iteration_id,
-            parent_simulation_id=sim.parent_simulation_id,
             restart_file=sim.restart_file,
             parent_restart_file=sim.parent_restart_file,
             parent_pcoord=sim.parent_pcoord,
+            parent_simulation_id=sim.parent_simulation_id,
+            wtg_parent_ids=wtg_parent_ids,
         )
 
     def split_sims(
@@ -90,48 +93,92 @@ class Resampler(ABC):
         # and equal weights for the split simulations
         for sim, n_split in zip(sims_to_split, n_splits):
             for _ in range(n_split):
-                new_sim = self._add_new_simulation(sim, sim.weight / n_split)
+                # NOTE: The split simulation is assigned a weight equal to
+                # the original weight divided by the number of splits. It
+                # also inherits the previous wtg_parent_ids.
+                new_sim = self._add_new_simulation(
+                    sim,
+                    sim.weight / n_split,
+                    sim.wtg_parent_ids,
+                )
                 new_sims.append(new_sim)
 
         return new_sims
 
     def merge_sims(
         self,
-        sims: list[SimMetadata],
-        indices: list[list[int]],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+        indices: list[int],
     ) -> list[SimMetadata]:
-        """Merge each group of simulation indices into a single simulation."""
-        # Get the indices of non-merged simulations
-        merge_idxs = [idx for index_group in indices for idx in index_group]
-        no_merge_idxs = [i for i in range(len(sims)) if i not in merge_idxs]
+        """Merge each group of simulation indices into a single simulation.
+
+        NOTE: This method modifies cur sims in place to set the endpoint type.
+
+        Parameters
+        ----------
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
+            The list of next simulations in a particular bin to merge.
+        indices : list[int]
+            The indices of the next simulations to merge.
+
+        Returns
+        -------
+        list[SimMetadata]
+            The list of new simulations after merging.
+        """
+        # Get the simulations to merge
+        to_merge = [next_sims[idx] for idx in indices]
+
+        # Get the weights of each simulation to merge
+        weights = [sim.weight for sim in to_merge]
+
+        # Make sure the weights are normalized to sum to 1 for randomizing.
+        # Since the entire ensemble should have a total weight of 1
+        # any subset of the ensemble will have a total weight less than 1.
+        norm_weights = np.array(weights) / sum(weights)
+
+        # Randomly select one of the simulations with probability equal
+        # to the normalized weights
+        select: int = np.random.choice(len(to_merge), p=norm_weights)
+
+        # Compute the union of all the wtg_parent_ids
+        all_wtg_parent_ids = [set(sim.wtg_parent_ids) for sim in to_merge]
+        wtg_parent_ids = list(set.union(*all_wtg_parent_ids))
+
+        # Add the new simulation to the current iteration
+        new_sim = self._add_new_simulation(
+            to_merge[select],
+            sum(weights),
+            wtg_parent_ids,
+        )
 
         # Create a list to store the new simulations
         new_sims: list[SimMetadata] = []
 
+        # Get the indices of non-merged simulations
+        no_merge_idxs = [i for i in range(len(next_sims)) if i not in indices]
+
         # Add back the simulations that will not be merged
-        new_sims.extend(sims[i] for i in no_merge_idxs)
+        new_sims.extend(next_sims[i] for i in no_merge_idxs)
 
-        for index_group in indices:
-            # Get the simulations to merge
-            to_merge = [sims[idx] for idx in index_group]
+        # Add the new simulation to the list of new simulations
+        new_sims.append(new_sim)
 
-            # Get the weights of each simulation to merge
-            weights = [sim.weight for sim in to_merge]
+        # Get the parent simulation IDs of all the merged simulations
+        merged_parents = {x.parent_simulation_id for x in to_merge}
+        # Remove the parent simulation id of the new merged simulation
+        merged_parents.remove(new_sim.parent_simulation_id)
 
-            # Make sure the weights are normalized to sum to 1 for randomizing.
-            # Since the entire ensemble should have a total weight of 1
-            # any subset of the ensemble will have a total weight less than 1.
-            norm_weights = np.array(weights) / sum(weights)
-
-            # Randomly select one of the simulations with probability equal
-            # to the normalized weights
-            select: int = np.random.choice(len(to_merge), p=norm_weights)
-
-            # Add the new simulation to the current iteration
-            new_sim = self._add_new_simulation(to_merge[select], sum(weights))
-
-            # Add the new simulation to the list of new simulations
-            new_sims.append(new_sim)
+        # Set the endpoint type for the merged simulations (except the new sim)
+        for sim in cur_sims:
+            # sim.simulation_id >= 0 ensures that the simulation has not
+            # been recycled (i.e., it is not a negative index)
+            if sim.simulation_id >= 0 and sim.simulation_id in merged_parents:
+                # Set the endpoint type to 2 if the simulation is merged
+                sim.endpoint_type = 2
 
         # Return the new simulation
         return new_sims
@@ -156,7 +203,7 @@ class Resampler(ABC):
         Returns
         -------
         list[SimMetadata]
-            The list of simulations after splitting.
+            The list of new simulations after splitting.
         """
         # Get the weights of the simulations
         weights = np.array([sim.weight for sim in sims])
@@ -175,14 +222,17 @@ class Resampler(ABC):
 
     def merge_by_weight(
         self,
-        sims: list[SimMetadata],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
         ideal_weight: float,
     ) -> list[SimMetadata]:
         """Merge underweight sims.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
             The list of simulations in a particular bin to merge.
         ideal_weight : float
             The ideal weight for each simulation, defined as the total (sum)
@@ -197,7 +247,7 @@ class Resampler(ABC):
         """
         while True:
             # Sort the simulations by weight
-            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            sorted_sims = sorted(next_sims, key=lambda sim: sim.weight)
 
             # Get the weights of the sorted simulations
             weights = np.array([sim.weight for sim in sorted_sims])
@@ -206,28 +256,31 @@ class Resampler(ABC):
             cumul_weight = np.add.accumulate(weights)
 
             # Get the simulation indices
-            indices = np.arange(len(sims))
+            indices = np.arange(len(next_sims))
 
             # Find the walkers that need to be merged
             to_merge = indices[cumul_weight <= ideal_weight].tolist()
 
             # Break the loop if no walkers need to be merged
             if len(to_merge) < 2:  # noqa: PLR2004
-                return sims
+                return next_sims
 
             # Merge the simulations
-            sims = self.merge_sims(sorted_sims, [to_merge])
+            next_sims = self.merge_sims(cur_sims, sorted_sims, to_merge)
 
     def adjust_count(
         self,
-        sims: list[SimMetadata],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
         target_count: int,
     ) -> list[SimMetadata]:
         """Adjust the number of sims to match the target count.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
             The list of simulations in a particular bin to adjust.
         target_count : int
             The number of simulations to have in the bin.
@@ -238,33 +291,33 @@ class Resampler(ABC):
             The list of simulations after adjusting.
         """
         # Case 1: Too few sims
-        while len(sims) < target_count:
+        while len(next_sims) < target_count:
             # Get the index of the largest weight simulation
-            index = int(np.argmax([sim.weight for sim in sims]))
+            index = int(np.argmax([sim.weight for sim in next_sims]))
 
             # Split the highest weight sim in two
-            sims = self.split_sims(sims, [index], 2)
+            next_sims = self.split_sims(next_sims, [index], 2)
 
             # Break the loop if the target count is reached
-            if len(sims) == target_count:
+            if len(next_sims) == target_count:
                 break
 
         # Case 2: Too many sims
-        while len(sims) > target_count:
+        while len(next_sims) > target_count:
             # Sort the simulation indices by weight
-            sorted_indices = np.argsort([sim.weight for sim in sims])
+            sorted_indices = np.argsort([sim.weight for sim in next_sims])
 
             # Get the two lowest weight indices to merge
             indices = sorted_indices[:2].tolist()
 
             # Merge the two lowest weight sims
-            sims = self.merge_sims(sims, [indices])
+            next_sims = self.merge_sims(cur_sims, next_sims, indices)
 
             # Break the loop if the target count is reached
-            if len(sims) == target_count:
+            if len(next_sims) == target_count:
                 break
 
-        return sims
+        return next_sims
 
     def split_by_threshold(
         self,
@@ -290,15 +343,18 @@ class Resampler(ABC):
 
     def merge_by_threshold(
         self,
-        sims: list[SimMetadata],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
         min_allowed_weight: float,
     ) -> list[SimMetadata]:
-        """Merge the sims by threshold.
+        """Merge all simulations under a given threshold into a single sim.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
-            The list of simulations to merge.
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
+            The list of simulations in a particular bin to merge.
         min_allowed_weight : float
             The minimum allowed weight for each simulation. All the simulations
             with a weight less than this value will be merged into a single
@@ -311,32 +367,32 @@ class Resampler(ABC):
         """
         while True:
             # Sort the simulations by weight
-            sorted_sims = sorted(sims, key=lambda sim: sim.weight)
+            sorted_sims = sorted(next_sims, key=lambda sim: sim.weight)
 
             # Get the weights of the sorted simulations
             weights = np.array([sim.weight for sim in sorted_sims])
 
             # Get the simulation indices
-            indices = np.arange(len(sims))
+            indices = np.arange(len(next_sims))
 
             # Find the walkers that need to be merged
             to_merge = indices[weights < min_allowed_weight].tolist()
             if len(to_merge) < 2:  # noqa: PLR2004
-                return sims
+                return next_sims
 
             # Merge the simulations
-            sims = self.merge_sims(sorted_sims, [to_merge])
+            next_sims = self.merge_sims(cur_sims, sorted_sims, to_merge)
 
     def get_pcoords(
         self,
-        sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
         pcoord_idx: int = 0,
     ) -> list[float]:
         """Extract the progress coordinates from the simulations.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
+        next_sims : list[SimMetadata]
             The list of simulation metadata.
         pcoord_idx : int
             The index of the progress coordinate to extract. Default is 0.
@@ -346,10 +402,14 @@ class Resampler(ABC):
         list[float]
             The progress coordinates for the simulations.
         """
-        return [sim.parent_pcoord[pcoord_idx] for sim in sims]
+        return [sim.parent_pcoord[pcoord_idx] for sim in next_sims]
 
     @abstractmethod
-    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def resample(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[list[SimMetadata], list[SimMetadata]]:
         """Resample the weighted ensemble."""
         ...
 
@@ -384,10 +444,10 @@ class SplitLowResampler(Resampler):
         self.n_split = n_split
         self.pcoord_idx = pcoord_idx
 
-    def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def split(self, next_sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the lowest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(next_sims, self.pcoord_idx)
 
         # Find the simulations with the lowest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -396,14 +456,18 @@ class SplitLowResampler(Resampler):
         indices = sorted_indices[: self.num_resamples].tolist()
 
         # Split the simulations
-        new_sims = self.split_sims(sims, indices, self.n_split)
+        new_sims = self.split_sims(next_sims, indices, self.n_split)
 
         return new_sims
 
-    def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def merge(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(next_sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -416,22 +480,30 @@ class SplitLowResampler(Resampler):
         num_merges = self.num_resamples + 1
 
         # Merge the simulations
-        indices = [sorted_indices[-num_merges:].tolist()]
+        indices = sorted_indices[-num_merges:].tolist()
 
         # Merge the simulations
-        new_sims = self.merge_sims(sims, indices)
+        new_sims = self.merge_sims(cur_sims, next_sims, indices)
 
         return new_sims
 
-    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def resample(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[list[SimMetadata], list[SimMetadata]]:
         """Resample the weighted ensemble."""
+        # Make a copy of the simulations
+        cur = deepcopy(cur_sims)
+        _next = deepcopy(next_sims)
+
         # Split the simulations
-        simulations = self.split(sims)
+        _next = self.split(_next)
 
         # Merge the simulations
-        simulations = self.merge(simulations)
+        _next = self.merge(cur, _next)
 
-        return simulations
+        return cur, _next
 
 
 class SplitHighResampler(Resampler):
@@ -464,10 +536,10 @@ class SplitHighResampler(Resampler):
         self.n_split = n_split
         self.pcoord_idx = pcoord_idx
 
-    def split(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def split(self, next_sims: list[SimMetadata]) -> list[SimMetadata]:
         """Split the simulation with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(next_sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -476,14 +548,18 @@ class SplitHighResampler(Resampler):
         indices = sorted_indices[-self.num_resamples :].tolist()
 
         # Split the simulations
-        new_sims = self.split_sims(sims, indices, self.n_split)
+        new_sims = self.split_sims(next_sims, indices, self.n_split)
 
         return new_sims
 
-    def merge(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def merge(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
         # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
+        pcoords = self.get_pcoords(next_sims, self.pcoord_idx)
 
         # Find the simulations with the highest progress coordinate
         sorted_indices = np.argsort(pcoords)
@@ -496,22 +572,30 @@ class SplitHighResampler(Resampler):
         num_merges = self.num_resamples + 1
 
         # Merge the simulations
-        indices = [sorted_indices[:num_merges].tolist()]
+        indices = sorted_indices[:num_merges].tolist()
 
         # Merge the simulations
-        new_sims = self.merge_sims(sims, indices)
+        new_sims = self.merge_sims(cur_sims, next_sims, indices)
 
         return new_sims
 
-    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def resample(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[list[SimMetadata], list[SimMetadata]]:
         """Resample the weighted ensemble."""
+        # Make a copy of the simulations
+        cur = deepcopy(cur_sims)
+        _next = deepcopy(next_sims)
+
         # Split the simulations
-        simulations = self.split(sims)
+        _next = self.split(_next)
 
         # Merge the simulations
-        simulations = self.merge(simulations)
+        _next = self.merge(cur, _next)
 
-        return simulations
+        return cur, _next
 
 
 class HuberKimResampler(Resampler):
@@ -552,30 +636,35 @@ class HuberKimResampler(Resampler):
         self.max_allowed_weight = max_allowed_weight
         self.min_allowed_weight = min_allowed_weight
 
-    def resample(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def resample(
+        self,
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[list[SimMetadata], list[SimMetadata]]:
         """Resample the weighted ensemble."""
         # Make a copy of the simulations
-        _sims = deepcopy(sims)
+        cur = deepcopy(cur_sims)
+        _next = deepcopy(next_sims)
 
         # Get the weight of the simulations
-        weights = [sim.weight for sim in _sims]
+        weights = [sim.weight for sim in _next]
 
         # Calculate the ideal weight
         ideal_weight = sum(weights) / self.sims_per_bin
 
         # Split the simulations by weight
-        _sims = self.split_by_weight(_sims, ideal_weight)
+        _next = self.split_by_weight(_next, ideal_weight)
 
         # Merge the simulations by weight
-        _sims = self.merge_by_weight(_sims, ideal_weight)
+        _next = self.merge_by_weight(cur, _next, ideal_weight)
 
         # Adjust the number of simulations in each bin
-        _sims = self.adjust_count(_sims, self.sims_per_bin)
+        _next = self.adjust_count(cur, _next, self.sims_per_bin)
 
         # Split the simulations by threshold
-        _sims = self.split_by_threshold(_sims, self.max_allowed_weight)
+        _next = self.split_by_threshold(_next, self.max_allowed_weight)
 
         # Merge the simulations by threshold
-        _sims = self.merge_by_threshold(_sims, self.min_allowed_weight)
+        _next = self.merge_by_threshold(cur, _next, self.min_allowed_weight)
 
-        return _sims
+        return cur, _next

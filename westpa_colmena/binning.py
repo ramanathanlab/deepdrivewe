@@ -6,6 +6,8 @@ import hashlib
 import pickle
 from abc import ABC
 from abc import abstractmethod
+from collections import defaultdict
+from copy import deepcopy
 
 import numpy as np
 
@@ -80,43 +82,104 @@ class Binner(ABC):
         binhash = hashlib.sha256(pkldat)
         return (pkldat, binhash.hexdigest())
 
+    def _get_bin_stats(
+        self,
+        bin_assignments: dict[int, list[int]],
+        cur_sims: list[SimMetadata],
+    ) -> tuple[float, float]:
+        """Compute the bin statistics.
+
+        Parameters
+        ----------
+        bin_assignments : dict[int, list[int]]
+            A dictionary of the bin assignments. The keys are the bin
+            indices and the values are the indices of the simulations
+            assigned to that bin.
+
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+
+        Returns
+        -------
+        tuple[float, float]
+            The minimum and maximum bin probabilities.
+        """
+        # Compute the probability of each bin by summing the weights
+        bin_probs = []
+
+        # Iterate over the bin assignments
+        for sim_indices in bin_assignments.values():
+            # Extract the simulations in the bin
+            binned_sims = [cur_sims[i] for i in sim_indices]
+
+            # Compute the probability of the bin
+            bin_prob = sum(x.weight for x in binned_sims)
+
+            # Append the bin probability
+            bin_probs.append(bin_prob)
+
+        # Compute the min and max bin probabilities
+        min_bin_prob = min(bin_probs)
+        max_bin_prob = max(bin_probs)
+
+        return min_bin_prob, max_bin_prob
+
     def bin_simulations(
         self,
-        sims: list[SimMetadata],
-    ) -> list[list[SimMetadata]]:
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[dict[int, list[int]], list[SimMetadata]]:
         """Assign the simulations to bins.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
-            The simulations to bin.
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
+            The list of next simulations.
 
         Returns
         -------
-        list[list[SimMetadata]]
-            The binned simulations.
-        """
-        # Add the binner pickle and hash metadata to the simulations
-        for sim in sims:
-            sim.binner_pickle, sim.binner_hash = self.pickle_and_hash()
+        dict[int, list[int]]
+            A dictionary of the bin assignments. The keys are the bin
+            indices and the values are the indices of the simulations
+            assigned to that bin.
 
-        # Extract the pcoords
-        pcoords = np.array([sim.parent_pcoord for sim in sims])
+        list[SimMetadata]
+            The updated current simulations with metadata added.
+        """
+        # Make a deep copy of the simulations to prevent side effects
+        _cur_sims = deepcopy(cur_sims)
+
+        # Extract the pcoords using the parent pcoords since
+        # they are they have already been recycled.
+        pcoords = np.array([sim.parent_pcoord for sim in next_sims])
 
         # Find the bin assignment indices
         assignments = self.assign_bins(pcoords)
 
-        # Set up container for binned sims
-        binned_sims: list[list[SimMetadata]] = [[] for _ in range(self.nbins)]
+        # Collect a dictionary of the bin assignments
+        bin_assignments = defaultdict(list)
 
-        # Assign the sims to the bins
-        for sim, bin_index in zip(sims, assignments):
-            binned_sims[bin_index].append(sim)
+        # Check that the number of assignments is the same as the simulations
+        assert len(assignments) == len(next_sims)
 
-        # Remove empty bins
-        binned_sims = [i for i in binned_sims if i]
+        # Assign the simulations to the bins
+        for sim_idx, bin_idx in enumerate(assignments):
+            bin_assignments[bin_idx].append(sim_idx)
 
-        return binned_sims
+        # Update the current simulation metadata
+        for sim in _cur_sims:
+            # Add the binner pickle and hash metadata to the simulations
+            sim.binner_pickle, sim.binner_hash = self.pickle_and_hash()
+
+            # Add the bin statistics to the simulations
+            sim.min_bin_prob, sim.max_bin_prob = self._get_bin_stats(
+                bin_assignments,
+                _cur_sims,
+            )
+
+        return bin_assignments, _cur_sims
 
 
 class RectilinearBinner(Binner):
@@ -146,10 +209,18 @@ class RectilinearBinner(Binner):
         return len(self.bins) - 1
 
     def assign_bins(self, pcoords: np.ndarray) -> np.ndarray:
-        """Bin the progress coordinate."""
-        # Extract the progress coordinates
-        pcoord_1d = [pcoord[self.pcoord_idx] for pcoord in pcoords]
+        """Bin the progress coordinate.
 
+        Parameters
+        ----------
+        pcoords : np.ndarray
+            The progress coordinates to bin. Shape: (n_simulations, n_dims).
+
+        Returns
+        -------
+        np.ndarray
+            The bin assignments for each simulation. Shape: (n_simulations,)
+        """
         # Bin the progress coordinates (make sure the target state
         # boundary is included in the target state bin).
-        return np.digitize(pcoord_1d, self.bins, right=True)
+        return np.digitize(pcoords[:, self.pcoord_idx], self.bins, right=True)

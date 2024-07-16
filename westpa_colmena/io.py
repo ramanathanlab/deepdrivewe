@@ -119,6 +119,39 @@ binning_index_dtype = np.dtype(
     [('hash', binhash_dtype), ('pickle_len', np.uint32)],
 )
 
+seg_status_dtype = np.uint8
+seg_endpoint_dtype = np.uint8
+
+# The HDF5 file tracks two distinct, but related, histories:
+#    (1) the evolution of the trajectory, which requires only an identifier
+#        of where a segment's initial state comes from (the "history graph");
+#        this is stored as the parent_id field of the seg index
+#    (2) the flow of probability due to splits, merges, and recycling events,
+#        which can be thought of as an adjacency list (the "weight graph")
+# segment ID is implied by the row in the index table, and so is not stored
+# initpoint_type remains implicitly stored as negative IDs (if parent_id < 0,
+# then init_state_id = -(parent_id+1)
+seg_index_dtype = np.dtype(
+    [
+        # Statistical weight of this segment
+        ('weight', weight_dtype),
+        # ID of parent (for trajectory history)
+        ('parent_id', seg_id_dtype),
+        # number of parents this segment has in the weight transfer graph
+        ('wtg_n_parents', np.uint),
+        # offset into the weight transfer graph dataset
+        ('wtg_offset', np.uint),
+        # CPU time used in propagating this segment
+        ('cputime', utime_dtype),
+        # Wallclock time used in propagating this segment
+        ('walltime', utime_dtype),
+        # Endpoint type (will continue, merged, or recycled)
+        ('endpoint_type', seg_endpoint_dtype),
+        # Status of propagation of this segment
+        ('status', seg_status_dtype),
+    ],
+)
+
 
 class WestpaH5File:
     """Utility class for writing WESTPA HDF5 files."""
@@ -155,26 +188,23 @@ class WestpaH5File:
         self,
         h5_file: h5py.File,
         n_iter: int,
-        next_iteration: list[SimMetadata],
-        binned_sims: list[list[SimMetadata]],
+        cur_iteration: list[SimMetadata],
     ) -> None:
         """Create a row for the summary table."""
+        # TODO: We may need to update this to be current iteration instead
+        # of next iteration to make sure we are logging completed simulations.
         # Create a row for the summary table
         summary_row = np.zeros((1,), dtype=summary_table_dtype)
         # The number of simulation segments in this iteration
-        summary_row['n_particles'] = len(next_iteration)
+        summary_row['n_particles'] = len(cur_iteration)
         # Compute the total weight of all segments (should be close to 1.0)
-        summary_row['norm'] = sum(x.weight for x in next_iteration)
+        summary_row['norm'] = sum(x.weight for x in cur_iteration)
         # Compute the min and max weight over all segments
-        summary_row['min_seg_prob'] = min(x.weight for x in next_iteration)
-        summary_row['max_seg_prob'] = max(x.weight for x in next_iteration)
+        summary_row['min_seg_prob'] = min(x.weight for x in cur_iteration)
+        summary_row['max_seg_prob'] = max(x.weight for x in cur_iteration)
         # Compute the min and max weight of each bin
-        summary_row['min_bin_prob'] = min(
-            sum(x.weight for x in sims) for sims in binned_sims
-        )
-        summary_row['max_bin_prob'] = max(
-            sum(x.weight for x in sims) for sims in binned_sims
-        )
+        summary_row['min_bin_prob'] = cur_iteration[0].min_bin_prob
+        summary_row['max_bin_prob'] = cur_iteration[0].max_bin_prob
 
         # TODO: Set the cputime which measures the total CPU time for
         # this iteration
@@ -184,7 +214,7 @@ class WestpaH5File:
         summary_row['walltime'] = 0.0
 
         # Save a hex string identifying the binning used in this iteration
-        summary_row['binhash'] = next_iteration[0].binner_hash
+        summary_row['binhash'] = cur_iteration[0].binner_hash
 
         # Create a table of summary information about each iteration
         summary_table = h5_file['summary']
@@ -302,7 +332,7 @@ class WestpaH5File:
     def append_bin_mapper(self, h5_file: h5py.File, sim: SimMetadata) -> None:
         """Append the bin mapper to the HDF5 file."""
         # Create the group used to store bin mapper
-        group = h5_file.require_group('/bin_topologies')
+        group = h5_file.require_group('bin_topologies')
 
         # Extract the bin mapper data
         pickle_data = sim.binner_pickle
@@ -345,24 +375,23 @@ class WestpaH5File:
 
     def append(
         self,
-        next_iteration: list[SimMetadata],
-        binned_sims: list[list[SimMetadata]],
+        cur_iteration: list[SimMetadata],
         basis_states: BasisStates,
         target_states: list[TargetState],
     ) -> None:
         """Append the next iteration to the HDF5 file."""
         # Make sure at least one simulation is provided
-        if not next_iteration:
-            raise ValueError('next_iteration must not be empty')
+        if not cur_iteration:
+            raise ValueError('cur_iteration must not be empty')
 
         # Get a sim metadata object to extract metadata from
-        sim = next_iteration[0]
+        sim = cur_iteration[0]
         # Ensure we have a list for guaranteed ordering
         n_iter = sim.iteration_id
 
         with h5py.File(self.h5file, mode='a') as f:
             # Append the summary table row
-            self.append_summary(f, n_iter, next_iteration, binned_sims)
+            self.append_summary(f, n_iter, cur_iteration)
 
             # Append the basis states if we are on the first iteration
             if n_iter:
@@ -373,7 +402,7 @@ class WestpaH5File:
                 self.append_tstates(f, n_iter, target_states)
 
             # Append the bin mapper if we are on the first iteration
-            # NOTE: this assumes the binning scheme is constant
+            # NOTE: this assumes the binning scheme does not change.
             if n_iter:
                 self.append_bin_mapper(f, sim)
 
@@ -385,14 +414,65 @@ class WestpaH5File:
             #       the iterations/iter_ group.
 
             # Create the iteration group
-            iter_group = f.require_group(
+            iter_group: h5py.Group = f.require_group(
                 '/iterations/iter_{:0{prec}d}'.format(
-                    int(n_iter),
+                    int(n_iter) + 1,  # WESTPA is 1-indexed
                     prec=self.config.west_iter_prec,
                 ),
             )
             iter_group.attrs['n_iter'] = n_iter
 
+            for linkname in ('seg_index', 'pcoord', 'wtgraph'):
+                if linkname in iter_group:
+                    del iter_group[linkname]
+
+            seg_index_table_ds = iter_group.create_dataset(
+                'seg_index',
+                shape=(len(cur_iteration),),
+                dtype=seg_index_dtype,
+            )
+
+            # unfortunately, h5py doesn't like in-place modification of
+            # individual fields; it expects tuples. So, construct everything in
+            # a numpy array and then dump the whole thing into hdf5. In fact,
+            # this appears to be an h5py best practice (collect as much in ram
+            #  as possible and then dump)
+            seg_index_table = seg_index_table_ds[...]
+
+            total_parents = 0
+            for idx, sim in enumerate(cur_iteration):
+                # We set status to 2 to indicate the sim is complete
+                seg_index_table[idx]['status'] = 2
+                seg_index_table[idx]['weight'] = sim.weight
+                seg_index_table[idx]['parent_id'] = sim.parent_simulation_id
+                seg_index_table[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
+                seg_index_table[idx]['wtg_offset'] = total_parents
+                total_parents += len(sim.wtg_parent_ids)
+
+            # Write the wtgraph dataset
+            wtg_parent_ids = []
+            for sim in cur_iteration:
+                wtg_parent_ids.extend(list(sim.wtg_parent_ids))
+            wtg_parent_ids = np.array(wtg_parent_ids, dtype=seg_id_dtype)
+
+            iter_group.create_dataset('wtgraph', data=wtg_parent_ids)
+
+            # Extract the pcoords from the next iteration with shape
+            # (n_particles, pcoord_len, pcoord_ndim)
+            pcoords = np.array(
+                [[x.parent_pcoord, x.pcoord] for x in cur_iteration],
+            )
+
+            # TODO: Create may not be compatible with appends. See
+            #       require_dataset instead.
+
+            # Create the pcoord dataset
+            iter_group.create_dataset('pcoord', data=pcoords)
+            # pcoord_ds = iter_group.require_dataset('pcoord', **opts)
+
             # TODO: Once we are finished implementing each component,
             #       revisit the westpa analog of this function to make
             #       sure everything is complete.
+
+            # TODO: When we log the results to HDF5 we want the current
+            #       iteration before recycling.

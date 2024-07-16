@@ -39,7 +39,7 @@ def run_inference(
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
-) -> tuple[list[SimMetadata], list[list[SimMetadata]]]:
+) -> tuple[list[SimMetadata], list[SimMetadata]]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
     pcoords = [sim_result.metadata.pcoord for sim_result in input_data]
@@ -49,7 +49,7 @@ def run_inference(
     print(f'Num input simulations: {len(input_data)}')
 
     # Extract the simulation metadata
-    current_iteration = [sim_result.metadata for sim_result in input_data]
+    cur_sims = [sim_result.metadata for sim_result in input_data]
 
     # Create the binner
     binner = RectilinearBinner(
@@ -93,21 +93,25 @@ def run_inference(
         min_allowed_weight=config.min_allowed_weight,
     )
 
-    # TODO: When we log the results to HDF5 we want the current iteration
-    #       before recycling.
+    # Get the next iteration of simulation metadata
+    next_sims = resampler.get_next_iteration(cur_sims)
 
     # Recycle the current iteration
-    current_iteration = recycler.recycle(current_iteration)
-
-    # Get the next iteration of simulation metadata
-    next_iteration = resampler.get_next_iteration(current_iteration)
+    cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
 
     # Assign the simulations to bins
-    binned_sims = binner.bin_simulations(next_iteration)
+    bin_assignments, cur_sims = binner.bin_simulations(cur_sims, next_sims)
 
-    # Resample the next iteration
+    # Resample the simulations in each bin
     new_sims = []
-    for sims in binned_sims:
-        new_sims.extend(resampler.resample(sims))
+    for bin_sims in bin_assignments.values():
+        # Get the simulations in the bin
+        binned_sims = [next_sims[sim_idx] for sim_idx in bin_sims]
 
-    return new_sims, binned_sims
+        # Resample the bin and add them to the new simulations
+        cur_sims, resampled_sims = resampler.resample(cur_sims, binned_sims)
+
+        # Add the resampled simulations to the new simulations
+        new_sims.extend(resampled_sims)
+
+    return cur_sims, new_sims

@@ -27,6 +27,11 @@ class TargetState(BaseModel):
     )
 
 
+# TODO: We might want a IterationMetadata class to store the metadata for each
+# iteration. This would include the binner_hash, binner_pickle, min_bin_prob,
+# and max_bin_prob. Since currently they are copied to each SimMetadata object.
+
+
 class SimMetadata(BaseModel):
     """Metadata for a simulation in the weighted ensemble."""
 
@@ -57,6 +62,11 @@ class SimMetadata(BaseModel):
         description='The ID of the previous simulation the current one is'
         " split from, or None if it's a basis state.",
     )
+    wtg_parent_ids: list[int] = Field(
+        default_factory=list,
+        description='The IDs of the parent simulation(s) to compute the '
+        'weight graph. This accounts for merged simulations.',
+    )
     restart_file: Path | None = Field(
         default=None,
         description='The restart file for the simulation.',
@@ -76,6 +86,25 @@ class SimMetadata(BaseModel):
     auxref: str = Field(
         default='',
         description='Auxiliary reference information for the simulation.',
+    )
+    endpoint_type: int = Field(
+        default=1,
+        description='The type of endpoint for the simulation. Default is 1.'
+        '1 indicates the simulation should continue, 2 indicates the '
+        'simulation ended in a merge, and 3 indicates the simulation '
+        'ended by recycling.',
+    )
+    min_bin_prob: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description='The minimum bin probability for an iteration.',
+    )
+    max_bin_prob: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description='The maximum bin probability for an iteration.',
     )
 
     # TODO: Do we still need this?
@@ -184,6 +213,12 @@ class BasisStates(ABC):
                     iteration_id=0,
                     parent_restart_file=f,
                     parent_pcoord=p,
+                    # Set the parent simulation ID to the negative of the
+                    # index to indicate that the simulation is a basis state
+                    # (note we add 1 to the index to avoid a parent ID of 0)
+                    parent_simulation_id=-(idx + 1),
+                    # TODO: Can we double check this is correct?
+                    wtg_parent_ids=[-(idx + 1)],
                 ),
             )
 

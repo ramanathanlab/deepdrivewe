@@ -25,59 +25,43 @@ class Recycler(ABC):
         """
         self.basis_states = basis_states
 
-    def get_pcoords(
-        self,
-        sims: list[SimMetadata],
-        pcoord_idx: int = 0,
-    ) -> list[float]:
-        """Extract the progress coordinate from the simulations.
-
-        Parameters
-        ----------
-        sims : list[SimMetadata]
-            The list of simulation metadata.
-        pcoord_idx : int
-            The index of the progress coordinate to extract. Default is 0.
-
-        Returns
-        -------
-        list[float]
-            The progress coordinates for the simulations.
-        """
-        # Extract the progress coordinates
-        pcoords = []
-        for sim in sims:
-            # Ensure that the simulation has a progress coordinate
-            assert sim.pcoord is not None
-            # We only extract the progress coordinate at the specified index
-            pcoords.append(sim.pcoord[pcoord_idx])
-        return pcoords
-
     def recycle_simulations(
         self,
-        sims: list[SimMetadata],
-        recycle_indices: list[int],
-    ) -> list[SimMetadata]:
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+    ) -> tuple[list[SimMetadata], list[SimMetadata]]:
         """Recycle the simulations.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
-            The list of simulations to recycle.
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        next_sims : list[SimMetadata]
+            The list of next simulations.
 
         Returns
         -------
         list[SimMetadata]
-            The list of recycled simulations.
+            The updated list of current simulations.
+        list[SimMetadata]
+            The updated list of next simulations.
         """
+        # Extract the progress coordinates from the current simulations
+        pcoords = np.array([sim.pcoord for sim in cur_sims])
+
+        # Get the recycled indices
+        recycle_inds = self.recycle(pcoords)
+
         # Log the recycled indices
-        print(f'{recycle_indices=}', flush=True)
+        print(f'{recycle_inds=}', flush=True)
 
         # Create a deep copy of the simulations to prevent modification
-        recycled_sims = deepcopy(sims)
+        _next_sims = deepcopy(next_sims)
+        _cur_sims = deepcopy(cur_sims)
 
-        for idx in recycle_indices:
-            sim = recycled_sims[idx]
+        for idx in recycle_inds:
+            # Extract the simulation to recycle
+            sim = _next_sims[idx]
 
             # Choose a random basis state to restart the simulation from
             basis_state = np.random.choice(self.basis_states)
@@ -85,27 +69,34 @@ class Recycler(ABC):
             # Create the metadata for the new simulation
             new_sim = SimMetadata(
                 weight=sim.weight,
-                simulation_id=idx,
-                iteration_id=sim.iteration_id + 1,
-                # Set the prev simulation ID to the negative of previous
-                # simulation to indicate that the simulation is recycled
-                parent_simulation_id=sim.simulation_id * -1,
+                simulation_id=sim.simulation_id,
+                iteration_id=sim.iteration_id,
                 # Set the parent restart file to the basis state
                 parent_restart_file=basis_state.parent_restart_file,
                 # Set the parent progress coordinate to the basis state
                 parent_pcoord=basis_state.parent_pcoord,
+                # Set the prev simulation ID to the negative of previous
+                # simulation to indicate that the simulation is recycled.
+                # Add 1 to the simulation ID to avoid negative zero.
+                parent_simulation_id=-(sim.simulation_id + 1),
+                # TODO: Can we double check this is correct?
+                wtg_parent_ids=sim.wtg_parent_ids,
             )
 
             # Log the recycled simulation
             print(f'Recycling simulation {new_sim}', flush=True)
 
             # Add the new simulation to the current iteration
-            recycled_sims[idx] = new_sim
+            _next_sims[idx] = new_sim
 
-        return recycled_sims
+            # Update the endpoint_type of the current simulation
+            # to indicate that it was recycled
+            _cur_sims[idx].endpoint_type = 3
+
+        return _cur_sims, _next_sims
 
     @abstractmethod
-    def recycle(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def recycle(self, pcoords: np.ndarray) -> np.ndarray:
         """Return a list of simulation indices to recycle."""
         ...
 
@@ -137,28 +128,21 @@ class LowRecycler(Recycler):
         self.target_threshold = target_threshold
         self.pcoord_idx = pcoord_idx
 
-    def recycle(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def recycle(self, pcoords: np.ndarray) -> np.ndarray:
         """Recycle the simulations under the target threshold.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
-            The list of simulations to recycle.
+        pcoords : np.ndarray
+            The progress coordinates for the simulations.
+            Shape: (n_simulations, n_dims).
 
         Returns
         -------
-        list[SimMetadata]
-            The list of recycled simulations.
+        np.ndarray
+            The list of simulation indices to recycle. Shape: (n_recycled,)
         """
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        recycle_indices = [
-            i for i, p in enumerate(pcoords) if p < self.target_threshold
-        ]
-
-        return self.recycle_simulations(sims, recycle_indices)
+        return np.where(pcoords[:, self.pcoord_idx] < self.target_threshold)[0]
 
 
 class HighRecycler(Recycler):
@@ -188,25 +172,18 @@ class HighRecycler(Recycler):
         self.target_threshold = target_threshold
         self.pcoord_idx = pcoord_idx
 
-    def recycle(self, sims: list[SimMetadata]) -> list[SimMetadata]:
+    def recycle(self, pcoords: np.ndarray) -> np.ndarray:
         """Recycle the simulations above the target threshold.
 
         Parameters
         ----------
-        sims : list[SimMetadata]
-            The list of simulations to recycle.
+        pcoords : np.ndarray
+            The progress coordinates for the simulations.
+            Shape: (n_simulations, n_dims).
 
         Returns
         -------
-        list[SimMetadata]
-            The list of recycled simulations.
+        np.ndarray
+            The list of simulation indices to recycle. Shape: (n_recycled,)
         """
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(sims, self.pcoord_idx)
-
-        # Recycle the simulations
-        recycle_indices = [
-            i for i, p in enumerate(pcoords) if p > self.target_threshold
-        ]
-
-        return self.recycle_simulations(sims, recycle_indices)
+        return np.where(pcoords[:, self.pcoord_idx] > self.target_threshold)[0]

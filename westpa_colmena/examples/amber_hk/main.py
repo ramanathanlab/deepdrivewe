@@ -163,7 +163,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
     def handle_inference_output(
         self,
-        output: tuple[list[SimMetadata], list[list[SimMetadata]]],
+        output: tuple[list[SimMetadata], list[SimMetadata]],
     ) -> None:
         """Handle the output of an inference run.
 
@@ -171,10 +171,10 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         available simulations.
         """
         # Unpack the output
-        next_iteration, binned_sims = output
+        current_sims, next_sims = output
 
         # Update the weighted ensemble with the next iteration
-        self.ensemble.advance_iteration(next_iteration=next_iteration)
+        self.ensemble.advance_iteration(next_iteration=next_sims)
 
         # Submit the next iteration of simulations
         self.simulate()
