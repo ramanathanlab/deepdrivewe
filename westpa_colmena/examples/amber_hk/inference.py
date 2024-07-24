@@ -78,6 +78,7 @@ def run_inference(
             15.0,
             float('inf'),
         ],
+        bin_target_counts=config.sims_per_bin,
     )
 
     # Define the recycling policy

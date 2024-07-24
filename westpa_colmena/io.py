@@ -184,6 +184,33 @@ class WestpaH5File:
             # Create the iterations group
             f.create_group('iterations')
 
+    def _find_multi_iter_group(
+        self,
+        h5_file: h5py.File,
+        n_iter: int,
+        group_name: str,
+    ) -> h5py.Group | None:
+        """Find the group for the specified iteration.
+
+        This function is borrowed from the WESTPA codebase and is used to
+        read the group for the specified iteration out of the HDF5 file.
+        """
+        group = h5_file[group_name]
+        index = group['index'][...]
+        set_id = np.digitize([n_iter], index['iter_valid']) - 1
+        group_ref = index[set_id]['group_ref']
+
+        # Check if reference is Null
+        if not bool(group_ref):
+            return None
+
+        # This extra [0] is to work around a bug in h5py
+        try:
+            group = h5_file[group_ref]
+        except (TypeError, AttributeError):
+            group = h5_file[group_ref[0]]
+        return group
+
     def append_summary(
         self,
         h5_file: h5py.File,
@@ -312,6 +339,7 @@ class WestpaH5File:
             state_table = np.empty((len(target_states),), dtype=tstate_dtype)
             for i, state in enumerate(target_states):
                 state_table[i]['label'] = state.label
+
             # Collect the pcoords for the target states
             state_pcoords = np.array([x.pcoord for x in target_states])
 
@@ -468,7 +496,28 @@ class WestpaH5File:
 
             # Create the pcoord dataset
             iter_group.create_dataset('pcoord', data=pcoords)
-            # pcoord_ds = iter_group.require_dataset('pcoord', **opts)
+
+            # Create the bin_target_counts dataset
+            iter_group.create_dataset(
+                'bin_target_counts',
+                data=np.array(sim.bin_target_counts),
+            )
+
+            # Create the ibstates datasets for the current iteration
+            iter_group['ibstates'] = self._find_multi_iter_group(
+                f,
+                n_iter,
+                'ibstates',
+            )
+
+            # Create the tstates datasets for the current iteration
+            tstate_group = self._find_multi_iter_group(
+                f,
+                n_iter,
+                'tstates',
+            )
+            if tstate_group is not None:
+                iter_group['tstates'] = tstate_group
 
             # TODO: Once we are finished implementing each component,
             #       revisit the westpa analog of this function to make

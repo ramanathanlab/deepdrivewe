@@ -106,6 +106,10 @@ class SimMetadata(BaseModel):
         le=1.0,
         description='The maximum bin probability for an iteration.',
     )
+    bin_target_counts: list[int] = Field(
+        default_factory=list,
+        description='The target counts for each bin.',
+    )
 
     # TODO: Do we still need this?
     def __hash__(self) -> int:
