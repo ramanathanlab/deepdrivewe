@@ -31,6 +31,12 @@ To kill all the workers, run the following command:
 ps -e | grep -E 'sander|python|process_worker|parsl' | awk '{print $1}' | xargs kill
 ```
 
+To check if any errors occurred in simulations or inference:
+```bash
+cat runs/naive_resampler_test_v2/result/inference.json | grep '"success": false'
+cat runs/naive_resampler_test_v2/result/simulation.json | grep '"success": false'
+```
+
 
 ## Contributing
 
