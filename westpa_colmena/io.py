@@ -211,15 +211,13 @@ class WestpaH5File:
             group = h5_file[group_ref[0]]
         return group
 
-    def append_summary(
+    def _append_summary(
         self,
         h5_file: h5py.File,
         n_iter: int,
         cur_iteration: list[SimMetadata],
     ) -> None:
         """Create a row for the summary table."""
-        # TODO: We may need to update this to be current iteration instead
-        # of next iteration to make sure we are logging completed simulations.
         # Create a row for the summary table
         summary_row = np.zeros((1,), dtype=summary_table_dtype)
         # The number of simulation segments in this iteration
@@ -253,7 +251,7 @@ class WestpaH5File:
         # Update the summary table
         summary_table[n_iter - 1] = summary_row
 
-    def append_ibstates(
+    def _append_ibstates(
         self,
         h5_file: h5py.File,
         n_iter: int,
@@ -305,7 +303,7 @@ class WestpaH5File:
         # Update the index dataset
         index[set_id] = index_row
 
-    def append_tstates(
+    def _append_tstates(
         self,
         h5_file: h5py.File,
         n_iter: int,
@@ -357,14 +355,18 @@ class WestpaH5File:
         # Update the index dataset
         index[set_id] = index_row
 
-    def append_bin_mapper(self, h5_file: h5py.File, sim: SimMetadata) -> None:
+    def _append_bin_mapper(
+        self,
+        h5_file: h5py.File,
+        cur_iteration: list[SimMetadata],
+    ) -> None:
         """Append the bin mapper to the HDF5 file."""
         # Create the group used to store bin mapper
         group = h5_file.require_group('bin_topologies')
 
         # Extract the bin mapper data
-        pickle_data = sim.binner_pickle
-        hashval = sim.binner_hash
+        pickle_data = cur_iteration[0].binner_pickle
+        hashval = cur_iteration[0].binner_hash
 
         if 'index' in group and 'pickles' in group:
             # Resize the index and pickle_ds datasets to add a new row
@@ -401,6 +403,115 @@ class WestpaH5File:
         index[ind] = index_row
         pickle_ds[ind, : len(pickle_data)] = memoryview(pickle_data)
 
+    def _append_seg_index_table(
+        self,
+        iter_group: h5py.Group,
+        cur_iteration: list[SimMetadata],
+    ) -> None:
+        """Append the seg_index table to the HDF5 file."""
+        # Create the seg_index dataset
+        seg_index_table_ds = iter_group.create_dataset(
+            'seg_index',
+            shape=(len(cur_iteration),),
+            dtype=seg_index_dtype,
+        )
+
+        # Unfortunately, h5py doesn't like in-place modification of
+        # individual fields; it expects tuples. So, construct everything in
+        # a numpy array and then dump the whole thing into hdf5. In fact,
+        # this appears to be an h5py best practice (collect as much in ram
+        # as possible and then dump)
+        seg_index_table = seg_index_table_ds[...]
+
+        total_parents = 0
+        for idx, sim in enumerate(cur_iteration):
+            # We set status to 2 to indicate the sim is complete
+            seg_index_table[idx]['status'] = 2
+            seg_index_table[idx]['weight'] = sim.weight
+            seg_index_table[idx]['parent_id'] = sim.parent_simulation_id
+            seg_index_table[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
+            seg_index_table[idx]['wtg_offset'] = total_parents
+            total_parents += len(sim.wtg_parent_ids)
+
+        # Write the wtgraph dataset
+        wtg_parent_ids = []
+        for sim in cur_iteration:
+            wtg_parent_ids.extend(list(sim.wtg_parent_ids))
+        wtg_parent_ids = np.array(wtg_parent_ids, dtype=seg_id_dtype)
+
+        iter_group.create_dataset('wtgraph', data=wtg_parent_ids)
+
+    def _append_pcoords(
+        self,
+        iter_group: h5py.Group,
+        cur_iteration: list[SimMetadata],
+    ) -> None:
+        """Append the pcoords to the HDF5 file."""
+        # Extract the pcoords from the next iteration with shape
+        # (n_particles, pcoord_len, pcoord_ndim)
+        pcoords = np.array(
+            [[x.parent_pcoord, x.pcoord] for x in cur_iteration],
+        )
+
+        # Create the pcoord dataset
+        iter_group.create_dataset('pcoord', data=pcoords)
+
+    def _append_bin_target_counts(
+        self,
+        iter_group: h5py.Group,
+        cur_iteration: list[SimMetadata],
+    ) -> None:
+        """Append the bin_target_counts to the HDF5 file."""
+        # Create the bin_target_counts dataset
+        iter_group.create_dataset(
+            'bin_target_counts',
+            data=np.array(cur_iteration[0].bin_target_counts),
+        )
+
+    def _append_iter_ibstates(
+        self,
+        hf_file: h5py.File,
+        iter_group: h5py.Group,
+        n_iter: int,
+    ) -> None:
+        """Append the ibstates datasets for the current iteration."""
+        # Create the ibstates datasets for the current iteration
+        iter_group['ibstates'] = self._find_multi_iter_group(
+            hf_file,
+            n_iter,
+            'ibstates',
+        )
+
+    def _append_iter_tstates(
+        self,
+        hf_file: h5py.File,
+        iter_group: h5py.Group,
+        n_iter: int,
+    ) -> None:
+        """Append the tstates datasets for the current iteration."""
+        # Create the tstates datasets for the current iteration
+        tstate_group = self._find_multi_iter_group(
+            hf_file,
+            n_iter,
+            'tstates',
+        )
+        if tstate_group is not None:
+            iter_group['tstates'] = tstate_group
+
+    def _append_auxdata(
+        self,
+        iter_group: h5py.Group,
+        cur_iteration: list[SimMetadata],
+    ) -> None:
+        """Append the auxdata datasets for the current iteration."""
+        # Create the auxdata datasets for the current iteration
+        for name in cur_iteration[0].auxdata:
+            # Concatenate the auxdata from all the simulations
+            auxdata = np.array([x.auxdata[name] for x in cur_iteration])
+
+            # Create the dataset
+            iter_group.create_dataset(f'auxdata/{name}', data=auxdata)
+
     def append(
         self,
         cur_iteration: list[SimMetadata],
@@ -412,34 +523,28 @@ class WestpaH5File:
         if not cur_iteration:
             raise ValueError('cur_iteration must not be empty')
 
-        # Get a sim metadata object to extract metadata from
-        sim = cur_iteration[0]
-        # Ensure we have a list for guaranteed ordering
-        n_iter = sim.iteration_id
+        # Get the current iteration number
+        n_iter = cur_iteration[0].iteration_id
 
         with h5py.File(self.h5file, mode='a') as f:
             # Append the summary table row
-            self.append_summary(f, n_iter, cur_iteration)
+            self._append_summary(f, n_iter, cur_iteration)
 
             # Append the basis states if we are on the first iteration
             if n_iter:
-                self.append_ibstates(f, n_iter, basis_states)
+                self._append_ibstates(f, n_iter, basis_states)
 
             # Append the target states if we are on the first iteration
             if n_iter:
-                self.append_tstates(f, n_iter, target_states)
+                self._append_tstates(f, n_iter, target_states)
 
             # Append the bin mapper if we are on the first iteration
             # NOTE: this assumes the binning scheme does not change.
             if n_iter:
-                self.append_bin_mapper(f, sim)
+                self._append_bin_mapper(f, cur_iteration)
 
             # TODO: We may need to add istate_index, istate_pcoord into the
             #       ibstates group. But for now, we are not.
-
-            # TODO: Note that in the westpa code the bin mapper append function
-            #       also updates the iter_group.attrs['binhash'] field within
-            #       the iterations/iter_ group.
 
             # Create the iteration group
             iter_group: h5py.Group = f.require_group(
@@ -450,78 +555,20 @@ class WestpaH5File:
             )
             iter_group.attrs['n_iter'] = n_iter
 
-            for linkname in ('seg_index', 'pcoord', 'wtgraph'):
-                if linkname in iter_group:
-                    del iter_group[linkname]
+            # Append the seg_index table
+            self._append_seg_index_table(iter_group, cur_iteration)
 
-            seg_index_table_ds = iter_group.create_dataset(
-                'seg_index',
-                shape=(len(cur_iteration),),
-                dtype=seg_index_dtype,
-            )
+            # Append the pcoords
+            self._append_pcoords(iter_group, cur_iteration)
 
-            # unfortunately, h5py doesn't like in-place modification of
-            # individual fields; it expects tuples. So, construct everything in
-            # a numpy array and then dump the whole thing into hdf5. In fact,
-            # this appears to be an h5py best practice (collect as much in ram
-            #  as possible and then dump)
-            seg_index_table = seg_index_table_ds[...]
+            # Append the bin_target_counts
+            self._append_bin_target_counts(iter_group, cur_iteration)
 
-            total_parents = 0
-            for idx, sim in enumerate(cur_iteration):
-                # We set status to 2 to indicate the sim is complete
-                seg_index_table[idx]['status'] = 2
-                seg_index_table[idx]['weight'] = sim.weight
-                seg_index_table[idx]['parent_id'] = sim.parent_simulation_id
-                seg_index_table[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
-                seg_index_table[idx]['wtg_offset'] = total_parents
-                total_parents += len(sim.wtg_parent_ids)
+            # Append the ibstates datasets for the current iteration
+            self._append_iter_ibstates(f, iter_group, n_iter)
 
-            # Write the wtgraph dataset
-            wtg_parent_ids = []
-            for sim in cur_iteration:
-                wtg_parent_ids.extend(list(sim.wtg_parent_ids))
-            wtg_parent_ids = np.array(wtg_parent_ids, dtype=seg_id_dtype)
+            # Append the tstates datasets for the current iteration
+            self._append_iter_tstates(f, iter_group, n_iter)
 
-            iter_group.create_dataset('wtgraph', data=wtg_parent_ids)
-
-            # Extract the pcoords from the next iteration with shape
-            # (n_particles, pcoord_len, pcoord_ndim)
-            pcoords = np.array(
-                [[x.parent_pcoord, x.pcoord] for x in cur_iteration],
-            )
-
-            # TODO: Create may not be compatible with appends. See
-            #       require_dataset instead.
-
-            # Create the pcoord dataset
-            iter_group.create_dataset('pcoord', data=pcoords)
-
-            # Create the bin_target_counts dataset
-            iter_group.create_dataset(
-                'bin_target_counts',
-                data=np.array(sim.bin_target_counts),
-            )
-
-            # Create the ibstates datasets for the current iteration
-            iter_group['ibstates'] = self._find_multi_iter_group(
-                f,
-                n_iter,
-                'ibstates',
-            )
-
-            # Create the tstates datasets for the current iteration
-            tstate_group = self._find_multi_iter_group(
-                f,
-                n_iter,
-                'tstates',
-            )
-            if tstate_group is not None:
-                iter_group['tstates'] = tstate_group
-
-            # TODO: Once we are finished implementing each component,
-            #       revisit the westpa analog of this function to make
-            #       sure everything is complete.
-
-            # TODO: When we log the results to HDF5 we want the current
-            #       iteration before recycling.
+            # Append the auxdata datasets for the current iteration
+            self._append_auxdata(iter_group, cur_iteration)

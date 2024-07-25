@@ -87,6 +87,12 @@ class SimMetadata(BaseModel):
         default='',
         description='Auxiliary reference information for the simulation.',
     )
+    auxdata: dict[str, list[int | float]] = Field(
+        default_factory=dict,
+        description='Auxiliary data for the simulation (stores auxiliary '
+        'pcoords, etc). Does not store raw coords since that would create '
+        'a bottleneck when writing the HDF5 file.',
+    )
     endpoint_type: int = Field(
         default=1,
         description='The type of endpoint for the simulation. Default is 1.'

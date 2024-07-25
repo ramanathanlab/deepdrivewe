@@ -163,6 +163,8 @@ def run_simulation(
     metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
     metadata.pcoord = [pcoord[-1]]
+    # Save the full pcoord data to the auxdata
+    metadata.auxdata = {'pcoord': pcoord.tolist()}
 
     result = SimResult(
         pcoord=pcoord,
