@@ -403,7 +403,10 @@ class WestpaH5File:
         # seg_index_table = seg_index_table_ds[...]
 
         # Create the seg index table
-        seg_index_table = np.array(len(cur_iteration), dtype=seg_index_dtype)
+        seg_index_table = np.array(
+            (len(cur_iteration),),
+            dtype=seg_index_dtype,
+        )
 
         total_parents = 0
         for idx, sim in enumerate(cur_iteration):

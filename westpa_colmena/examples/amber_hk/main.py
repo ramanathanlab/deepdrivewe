@@ -51,6 +51,10 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (5) Implement a cleaner thinker backend
 # (6) Send cpptraj output to a separate log file to avoid polluting the main
 
+# TODO: Right now if any errors occur in the simulations, then it will
+# stop the entire workflow since no inference tasks will be submitted.
+# We should resubmit failed workers once and otherwise raise an error and exit.
+
 
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
     """A WESTPA thinker for DeepDriveMD."""
