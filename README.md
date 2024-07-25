@@ -26,6 +26,11 @@ To run the example, run the following command:
 python -m westpa_colmena.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
 ```
 
+To kill all the workers, run the following command:
+```bash
+ps -e | grep -E 'sander|python|process_worker|parsl' | awk '{print $1}' | xargs kill
+```
+
 
 ## Contributing
 
