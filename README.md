@@ -20,6 +20,12 @@ pip install mdtraj==1.9.9
 pip install -e .
 ```
 
+## Usage
+To run the example, run the following command:
+```bash
+python -m westpa_colmena.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
+```
+
 
 ## Contributing
 
