@@ -33,7 +33,7 @@ def run_inference(
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
-) -> list[SimMetadata]:
+) -> tuple[list[SimMetadata], list[SimMetadata]]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
     pcoords = [sim_result.metadata.pcoord for sim_result in input_data]
@@ -43,7 +43,7 @@ def run_inference(
     print(f'Num input simulations: {len(input_data)}')
 
     # Extract the simulation metadata
-    current_iteration = [sim_result.metadata for sim_result in input_data]
+    cur_sims = [sim_result.metadata for sim_result in input_data]
 
     # Define the recycling policy
     recycler = LowRecycler(
@@ -57,13 +57,12 @@ def run_inference(
         n_split=config.n_split,
     )
 
-    # Recycle the current iteration
-    current_iteration = recycler.recycle(current_iteration)
-
     # Get the next iteration of simulation metadata
-    next_iteration = resampler.get_next_iteration(current_iteration)
+    next_sims = resampler.get_next_iteration(cur_sims)
 
-    # Resample the next iteration
-    new_sims = resampler.resample(next_iteration)
+    # Recycle the current iteration
+    cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
 
-    return new_sims
+    cur_sims, next_sims = resampler.resample(cur_sims, next_sims)
+
+    return cur_sims, next_sims
