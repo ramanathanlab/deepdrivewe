@@ -37,6 +37,7 @@ from westpa_colmena.examples.amber_hk.inference import run_inference
 from westpa_colmena.examples.amber_hk.simulate import run_simulation
 from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
+from westpa_colmena.io import WestpaH5File
 from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.simulation.amber import run_cpptraj
 
@@ -54,11 +55,14 @@ from westpa_colmena.simulation.amber import run_cpptraj
 class DeepDriveWESTPA(DeepDriveMDWorkflow):
     """A WESTPA thinker for DeepDriveMD."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         queue: ColmenaQueues,
         result_dir: Path,
         ensemble: WeightedEnsemble,
+        westpa_h5file: WestpaH5File,
+        basis_states: BasisStates,
+        target_states: list[TargetState],
         done_callbacks: list[DoneCallback] | None = None,
     ) -> None:
         """Initialize the DeepDriveWESTPA thinker.
@@ -82,6 +86,9 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         )
 
         self.ensemble = ensemble
+        self.basis_states = basis_states
+        self.target_states = target_states
+        self.westpa_h5file = westpa_h5file
 
         # TODO: Update the inputs to support model weights, etc
         # Custom data structures
@@ -178,6 +185,17 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
         # Submit the next iteration of simulations
         self.simulate()
+
+        # Log the results to the HDF5 file
+        # TODO: Update the basis states and target states (right now
+        # it assumes they are static, but once we add these to the iteration
+        # metadata, they can be returned neatly from the inference function.)
+        # TODO: This requires making BasisStates a pydantic BaseModel.
+        self.westpa_h5file.append(
+            cur_iteration=current_sims,
+            basis_states=self.basis_states,
+            target_states=self.target_states,
+        )
 
         # Log the current iteration
         self.logger.info(
@@ -346,10 +364,18 @@ if __name__ == '__main__':
         InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
     ]
 
+    # Create the HDF5 file for WESTPA
+    # TODO: Unify the westpa hdf5 file with the checkpoint logic.
+    westpa_h5file = WestpaH5File(cfg.output_dir / 'west.h5')
+
+    # Create the workflow thinker
     thinker = DeepDriveWESTPA(
         queue=queues,
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
+        westpa_h5file=westpa_h5file,
+        basis_states=basis_states,
+        target_states=cfg.target_states,
         done_callbacks=done_callbacks,  # type: ignore[arg-type]
     )
     logging.info('Created the task server and task generator')

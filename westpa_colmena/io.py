@@ -2,37 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import h5py
 import numpy as np
-from pydantic import BaseModel
-from pydantic import Field
 
 import westpa_colmena
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
-
-
-class DDWEMetadata(BaseModel):
-    """Metadata for the weighted ensemble."""
-
-    west_current_iteration: int = Field(
-        ...,
-        description='The current iteration of the simulation.',
-    )
-    west_file_format_version: int = Field(
-        9,
-        description='The version of the file format.',
-    )
-    west_iter_prec: int = Field(
-        8,
-        description='The number of padding zeros for iteration number.',
-    )
-    west_version: str = Field(
-        westpa_colmena.__version__,
-        description='The version of WESTPA.',
-    )
-
 
 # Define data types for use in the HDF5 file
 
@@ -156,22 +134,22 @@ seg_index_dtype = np.dtype(
 class WestpaH5File:
     """Utility class for writing WESTPA HDF5 files."""
 
-    def __init__(self, h5file: str, config: DDWEMetadata) -> None:
-        self.config = config
-        self.h5file = h5file
+    # Default metadata for the WESTPA HDF5 file
+    west_fileformat_version: int = 9
+    west_iter_prec: int = 8
+    west_version: str = westpa_colmena.__version__
+
+    def __init__(self, westpa_h5file_path: str | Path) -> None:
+        self.westpa_h5file_path = westpa_h5file_path
 
         # Create the file
-        with h5py.File(h5file, mode='w') as f:
+        with h5py.File(westpa_h5file_path, mode='w') as f:
             # Set attribute metadata
-            f.attrs[
-                'west_file_format_version'
-            ] = config.west_file_format_version
-            f.attrs['west_iter_prec'] = config.west_iter_prec
-            f.attrs['west_version'] = config.west_version
-            f.attrs['westpa_iter_prec'] = config.west_iter_prec
-            f.attrs[
-                'westpa_fileformat_version'
-            ] = config.west_file_format_version
+            f.attrs['west_file_format_version'] = self.west_fileformat_version
+            f.attrs['west_iter_prec'] = self.west_iter_prec
+            f.attrs['west_version'] = self.west_version
+            f.attrs['westpa_iter_prec'] = self.west_iter_prec
+            f.attrs['westpa_fileformat_version'] = self.west_fileformat_version
 
             # Create the summary table
             f.create_dataset(
@@ -526,7 +504,7 @@ class WestpaH5File:
         # Get the current iteration number
         n_iter = cur_iteration[0].iteration_id
 
-        with h5py.File(self.h5file, mode='a') as f:
+        with h5py.File(self.westpa_h5file_path, mode='a') as f:
             # Append the summary table row
             self._append_summary(f, n_iter, cur_iteration)
 
@@ -550,7 +528,7 @@ class WestpaH5File:
             iter_group: h5py.Group = f.require_group(
                 '/iterations/iter_{:0{prec}d}'.format(
                     int(n_iter) + 1,  # WESTPA is 1-indexed
-                    prec=self.config.west_iter_prec,
+                    prec=self.west_iter_prec,
                 ),
             )
             iter_group.attrs['n_iter'] = n_iter
