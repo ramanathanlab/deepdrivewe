@@ -403,7 +403,7 @@ class WestpaH5File:
         # seg_index_table = seg_index_table_ds[...]
 
         # Create the seg index table
-        seg_index_table = np.array(
+        seg_index_table = np.empty(
             (len(cur_iteration),),
             dtype=seg_index_dtype,
         )
