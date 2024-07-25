@@ -1,8 +1,8 @@
 simulation_input_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/inputs
-output_dir: runs/naive_resampler_test_v1
+output_dir: runs/naive_resampler_test_v2
+basis_state_ext: .ncrst
 initial_ensemble_members: 5
 num_iterations: 100
-basis_state_ext: .ncrst
 resume_checkpoint: null
 
 simulation_config:
@@ -19,11 +19,12 @@ inference_config:
   max_allowed_weight: 0.25
   # Minimum weight allowed for a single simulation
   min_allowed_weight: 10e-40
-  # The target threshold for the progress coordinate to be considered
-  # in the target state.
-  target_states:
-      - label: bound_state
-        pcoord: [2.6]
+
+# The target threshold for the progress coordinate
+# to be considered in the target state.
+target_states:
+    - label: bound_state
+      pcoord: [2.6]
 
 compute_settings:
   name: local

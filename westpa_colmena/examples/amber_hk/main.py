@@ -238,6 +238,9 @@ class ExperimentSettings(BaseModel):
         'store PDB files, topology files, etc needed to start the simulation '
         'application.',
     )
+    output_dir: Path = Field(
+        description='Directory in which to store the results.',
+    )
     basis_state_ext: str = Field(
         default='.ncrst',
         description='Extension for the basis states.',
@@ -247,9 +250,6 @@ class ExperimentSettings(BaseModel):
     )
     num_iterations: int = Field(
         description='Number of iterations to run the weighted ensemble.',
-    )
-    output_dir: Path = Field(
-        description='Directory in which to store the results.',
     )
     resume_checkpoint: Path | None = Field(
         default=None,
