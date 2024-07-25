@@ -509,16 +509,16 @@ class WestpaH5File:
             self._append_summary(f, n_iter, cur_iteration)
 
             # Append the basis states if we are on the first iteration
-            if n_iter:
+            if n_iter == 0:
                 self._append_ibstates(f, n_iter, basis_states)
 
             # Append the target states if we are on the first iteration
-            if n_iter:
+            if n_iter == 0:
                 self._append_tstates(f, n_iter, target_states)
 
             # Append the bin mapper if we are on the first iteration
             # NOTE: this assumes the binning scheme does not change.
-            if n_iter:
+            if n_iter == 0:
                 self._append_bin_mapper(f, cur_iteration)
 
             # TODO: We may need to add istate_index, istate_pcoord into the
