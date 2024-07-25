@@ -387,39 +387,23 @@ class WestpaH5File:
         cur_iteration: list[SimMetadata],
     ) -> None:
         """Append the seg_index table to the HDF5 file."""
-        # Create the seg_index dataset
-        # seg_index_table_ds = iter_group.create_dataset(
-        #     'seg_index',
-        #     shape=(len(cur_iteration),),
-        #     dtype=seg_index_dtype,
-        # )
-
-        # Unfortunately, h5py doesn't like in-place modification of
-        # individual fields; it expects tuples. So, construct everything in
-        # a numpy array and then dump the whole thing into hdf5. In fact,
-        # this appears to be an h5py best practice (collect as much in ram
-        # as possible and then dump)
-        # TODO: Test to see if we actually need this line.
-        # seg_index_table = seg_index_table_ds[...]
-
         # Create the seg index table
-        seg_index_table = np.empty(
-            (len(cur_iteration),),
-            dtype=seg_index_dtype,
-        )
+        seg_index = np.empty((len(cur_iteration),), dtype=seg_index_dtype)
 
+        # TODO: Make sure all of these fields are being set
+        # Populate the seg index table
         total_parents = 0
         for idx, sim in enumerate(cur_iteration):
+            seg_index[idx]['weight'] = sim.weight
+            seg_index[idx]['parent_id'] = sim.parent_simulation_id
+            seg_index[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
+            seg_index[idx]['wtg_offset'] = total_parents
             # We set status to 2 to indicate the sim is complete
-            seg_index_table[idx]['status'] = 2
-            seg_index_table[idx]['weight'] = sim.weight
-            seg_index_table[idx]['parent_id'] = sim.parent_simulation_id
-            seg_index_table[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
-            seg_index_table[idx]['wtg_offset'] = total_parents
+            seg_index[idx]['status'] = 2
             total_parents += len(sim.wtg_parent_ids)
 
         # Write the seg_index dataset
-        iter_group.create_dataset('seg_index', data=seg_index_table)
+        iter_group.create_dataset('seg_index', data=seg_index)
 
         # Create the weight transfer graph dataset
         wtg_parent_ids = []
