@@ -37,6 +37,11 @@ cat runs/naive_resampler_test_v2/result/inference.json | grep '"success": false'
 cat runs/naive_resampler_test_v2/result/simulation.json | grep '"success": false'
 ```
 
+To check the number of iterations completed:
+```bash
+h5ls -d runs/naive_resampler_test_v2/west.h5/iterations
+```
+
 
 ## Contributing
 
