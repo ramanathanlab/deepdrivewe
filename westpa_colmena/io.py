@@ -388,18 +388,22 @@ class WestpaH5File:
     ) -> None:
         """Append the seg_index table to the HDF5 file."""
         # Create the seg_index dataset
-        seg_index_table_ds = iter_group.create_dataset(
-            'seg_index',
-            shape=(len(cur_iteration),),
-            dtype=seg_index_dtype,
-        )
+        # seg_index_table_ds = iter_group.create_dataset(
+        #     'seg_index',
+        #     shape=(len(cur_iteration),),
+        #     dtype=seg_index_dtype,
+        # )
 
         # Unfortunately, h5py doesn't like in-place modification of
         # individual fields; it expects tuples. So, construct everything in
         # a numpy array and then dump the whole thing into hdf5. In fact,
         # this appears to be an h5py best practice (collect as much in ram
         # as possible and then dump)
-        seg_index_table = seg_index_table_ds[...]
+        # TODO: Test to see if we actually need this line.
+        # seg_index_table = seg_index_table_ds[...]
+
+        # Create the seg index table
+        seg_index_table = np.array(len(cur_iteration), dtype=seg_index_dtype)
 
         total_parents = 0
         for idx, sim in enumerate(cur_iteration):
@@ -411,12 +415,16 @@ class WestpaH5File:
             seg_index_table[idx]['wtg_offset'] = total_parents
             total_parents += len(sim.wtg_parent_ids)
 
-        # Write the wtgraph dataset
+        # Write the seg_index dataset
+        iter_group.create_dataset('seg_index', data=seg_index_table)
+
+        # Create the weight transfer graph dataset
         wtg_parent_ids = []
         for sim in cur_iteration:
             wtg_parent_ids.extend(list(sim.wtg_parent_ids))
         wtg_parent_ids = np.array(wtg_parent_ids, dtype=seg_id_dtype)
 
+        # Write the wtgraph dataset
         iter_group.create_dataset('wtgraph', data=wtg_parent_ids)
 
     def _append_pcoords(
@@ -508,6 +516,8 @@ class WestpaH5File:
             # Append the summary table row
             self._append_summary(f, n_iter, cur_iteration)
 
+            # TODO: Westpa only saves unique basis states, we save all the
+            # replicates. We need to fix this.
             # Append the basis states if we are on the first iteration
             if n_iter == 0:
                 self._append_ibstates(f, n_iter, basis_states)
