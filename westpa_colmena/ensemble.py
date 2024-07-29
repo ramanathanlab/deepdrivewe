@@ -83,10 +83,6 @@ class SimMetadata(BaseModel):
         default='',
         description='The pickled binner used to assign simulations.',
     )
-    auxref: str = Field(
-        default='',
-        description='Auxiliary reference information for the simulation.',
-    )
     auxdata: dict[str, list[int | float]] = Field(
         default_factory=dict,
         description='Auxiliary data for the simulation (stores auxiliary '
