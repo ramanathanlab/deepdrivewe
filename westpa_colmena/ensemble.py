@@ -227,6 +227,10 @@ class BasisStates(ABC):
         # Assign a uniform weight to each of the basis states
         weight = 1.0 / self.ensemble_members
 
+        # Create a index map to get a unique id for each basis state
+        # (note we add 1 to the index to avoid a parent ID of 0)
+        index_map = {file: -(idx + 1) for idx, file in enumerate(basis_files)}
+
         # Create the metadata for each basis state to populate the
         # first iteration. We cycle/repeat through the basis state
         # files to the desired number of ensemble members.
@@ -245,9 +249,9 @@ class BasisStates(ABC):
                     # Set the parent simulation ID to the negative of the
                     # index to indicate that the simulation is a basis state
                     # (note we add 1 to the index to avoid a parent ID of 0)
-                    parent_simulation_id=-(idx + 1),
+                    parent_simulation_id=index_map[file],
                     # TODO: Can we double check this is correct?
-                    wtg_parent_ids=[-(idx + 1)],
+                    wtg_parent_ids=[index_map[file]],
                 ),
             )
 
