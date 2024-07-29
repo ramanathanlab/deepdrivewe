@@ -226,7 +226,7 @@ class WestpaH5File:
 
         # Update the summary table
         summary_table.resize((len(summary_table) + 1,))
-        summary_table[n_iter - 1] = summary_row
+        summary_table[n_iter] = summary_row
 
     def _append_ibstates(
         self,
