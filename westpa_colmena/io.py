@@ -209,12 +209,10 @@ class WestpaH5File:
         summary_row['min_bin_prob'] = cur_iteration[0].min_bin_prob
         summary_row['max_bin_prob'] = cur_iteration[0].max_bin_prob
 
-        # TODO: Set the cputime which measures the total CPU time for
-        # this iteration
-        summary_row['cputime'] = 0.0
-        # TODO: Set the walltime which measures the total wallclock time
-        # for this iteration
-        summary_row['walltime'] = 0.0
+        # Compute the total CPU time for this iteration (in seconds)
+        summary_row['cputime'] = sum(x.cputime for x in cur_iteration)
+        # Compute the total wallclock time for this iteration (in seconds)
+        summary_row['walltime'] = max(x.walltime for x in cur_iteration)
 
         # Save a hex string identifying the binning used in this iteration
         summary_row['binhash'] = cur_iteration[0].binner_hash
