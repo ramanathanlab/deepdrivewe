@@ -275,7 +275,7 @@ class WestpaH5File:
                 #       this is implicitly coupled to the
                 #       BasisStates._uniform_init function.
                 state_table[i]['probability'] = 1.0 / len(unique_bstates)
-                state_table[i]['auxref'] = state.parent_restart_file
+                state_table[i]['auxref'] = state.parent_restart_file.name
 
             # Get the pcoords for the basis states
             state_pcoords = [x.parent_pcoord for x in unique_bstates]
