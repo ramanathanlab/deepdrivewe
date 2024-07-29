@@ -324,7 +324,8 @@ class WestpaH5File:
                 state_table[i]['label'] = state.label
 
             # Collect the pcoords for the target states
-            state_pcoords = np.array([x.pcoord for x in target_states])
+            state_pcoords = [x.pcoord for x in target_states]
+            state_pcoords = np.array(state_pcoords, dtype=np.float32)
 
             # Create the group for the target states
             state_group = group.create_group(str(set_id))
