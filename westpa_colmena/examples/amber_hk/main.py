@@ -365,7 +365,7 @@ if __name__ == '__main__':
 
     # Add a callbacks to decide when to stop the thinker
     done_callbacks = [
-        InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
+        InferenceCountDoneCallback(total_inferences=cfg.num_iterations - 1),
     ]
 
     # Create the HDF5 file for WESTPA

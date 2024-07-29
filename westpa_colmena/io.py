@@ -154,7 +154,7 @@ class WestpaH5File:
             # Create the summary table
             f.create_dataset(
                 'summary',
-                shape=(1,),
+                shape=(0,),
                 dtype=summary_table_dtype,
                 maxshape=(None,),
             )
