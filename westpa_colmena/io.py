@@ -432,6 +432,7 @@ class WestpaH5File:
         # pcoords for each frame in the current simulation.
         pcoords = np.array(
             [[x.parent_pcoord, *x.pcoord] for x in cur_iteration],
+            dtype=np.float32,
         )
 
         # Create the pcoord dataset
