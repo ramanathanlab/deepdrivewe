@@ -271,11 +271,15 @@ class WestpaH5File:
             # Populate the state table
             for i, state in enumerate(unique_bstates):
                 state_table[i]['label'] = str(state.simulation_id)
-                state_table[i]['probability'] = state.weight
+                # NOTE: This assumes that all basis states are equally likely
+                #       this is implicitly coupled to the
+                #       BasisStates._uniform_init function.
+                state_table[i]['probability'] = 1.0 / len(unique_bstates)
                 state_table[i]['auxref'] = state.auxref
 
             # Get the pcoords for the basis states
-            state_pcoords = np.array([x.parent_pcoord for x in unique_bstates])
+            state_pcoords = [x.parent_pcoord for x in unique_bstates]
+            state_pcoords = np.array(state_pcoords, dtype=np.float32)
 
             # Add the basis state table to the state group
             state_group['bstate_index'] = state_table
