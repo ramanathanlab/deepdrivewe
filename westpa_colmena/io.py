@@ -448,10 +448,8 @@ class WestpaH5File:
     ) -> None:
         """Append the bin_target_counts to the HDF5 file."""
         # Create the bin_target_counts dataset
-        iter_group.create_dataset(
-            'bin_target_counts',
-            data=np.array(cur_iteration[0].bin_target_counts),
-        )
+        counts = np.array(cur_iteration[0].bin_target_counts, dtype=np.float16)
+        iter_group.create_dataset('bin_target_counts', data=counts)
 
     def _append_iter_ibstates(
         self,
