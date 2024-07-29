@@ -397,7 +397,6 @@ class WestpaH5File:
         # Create the seg index table
         seg_index = np.empty((len(cur_iteration),), dtype=seg_index_dtype)
 
-        # TODO: Make sure all of these fields are being set
         # Populate the seg index table
         total_parents = 0
         for idx, sim in enumerate(cur_iteration):
@@ -405,6 +404,9 @@ class WestpaH5File:
             seg_index[idx]['parent_id'] = sim.parent_simulation_id
             seg_index[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
             seg_index[idx]['wtg_offset'] = total_parents
+            seg_index[idx]['cputime'] = 0.0  # TODO: set this
+            seg_index[idx]['walltime'] = 0.0  # TODO: set this
+            seg_index[idx]['endpoint_type'] = sim.endpoint_type
             # We set status to 2 to indicate the sim is complete
             seg_index[idx]['status'] = 2
             total_parents += len(sim.wtg_parent_ids)
