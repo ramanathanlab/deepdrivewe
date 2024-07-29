@@ -222,11 +222,8 @@ class WestpaH5File:
         # Create a table of summary information about each iteration
         summary_table = h5_file['summary']
 
-        # Resize the summary table if necessary
-        if len(summary_table) < n_iter:
-            summary_table.resize((n_iter + 1,))
-
         # Update the summary table
+        summary_table.resize((len(summary_table) + 1,))
         summary_table[n_iter - 1] = summary_row
 
     def _append_ibstates(
