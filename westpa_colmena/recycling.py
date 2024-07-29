@@ -46,8 +46,8 @@ class Recycler(ABC):
         list[SimMetadata]
             The updated list of next simulations.
         """
-        # Extract the progress coordinates from the current simulations
-        pcoords = np.array([sim.pcoord for sim in cur_sims])
+        # Extract the last progress coordinate from the current simulations
+        pcoords = np.array([sim.pcoord[-1] for sim in cur_sims])
 
         # Get the recycled indices
         recycle_inds = self.recycle(pcoords)

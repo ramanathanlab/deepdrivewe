@@ -32,7 +32,8 @@ class Resampler(ABC):
             # Ensure that the simulation has a restart file, i.e., the `sim`
             # object represents a simulation that has been run.
             assert sim.restart_file is not None
-            assert sim.pcoord is not None
+
+            print('PCOORD LIST', sim.pcoord, sim.pcoord[-1])
 
             # Create the metadata for the new simulation
             new_sim = SimMetadata(
