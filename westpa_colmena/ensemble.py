@@ -140,10 +140,12 @@ class BasisStates(ABC):
             The directory containing the simulation input files.
         basis_state_ext : str
             The extension of the basis state files.
+        initial_ensemble_members : int
+            The number of initial ensemble members.
         """
         self.simulation_input_dir = simulation_input_dir
         self.basis_state_ext = basis_state_ext
-        self.initial_ensemble_members = initial_ensemble_members
+        self.ensemble_members = initial_ensemble_members
 
         # Load the basis states
         basis_files = self._load_basis_states()
@@ -155,6 +157,9 @@ class BasisStates(ABC):
 
         # Initialize the basis states
         self.basis_states = self._uniform_init(basis_files, basis_pcoords)
+
+        # Store the unique basis states (to be used in the HDF5 I/O module)
+        self.unique_basis_states = self.basis_states[: len(basis_files)]
 
         # Log the number of basis states
         print(f'Loaded {len(self.basis_states)} basis states')
@@ -172,19 +177,30 @@ class BasisStates(ABC):
         return iter(self.basis_states)
 
     def _load_basis_states(self) -> list[Path]:
-        # Collect initial simulation directories, assumes they are in nested
-        # subdirectories
-        simulation_input_dirs = filter(
-            lambda p: p.is_dir(),
-            self.simulation_input_dir.glob('*'),
-        )
+        """Load the unique basis states from the simulation input directory.
+
+        Returns
+        -------
+        list[Path]
+            The unique basis state paths in the simulation input directory.
+
+        Raises
+        ------
+        FileNotFoundError
+            If no basis state is found in the input directory.
+        """
+        # Collect initial simulation directories,
+        # assuming they are in nested subdirectories
+        sim_input_dirs = [
+            p for p in self.simulation_input_dir.glob('*') if p.is_dir()
+        ]
+
+        # Check if there are more input dirs than initial ensemble members
+        sim_input_dirs = sim_input_dirs[: self.ensemble_members]
 
         # Get the basis states by globbing the input directories
         basis_states = []
-        for _, input_dir in zip(
-            range(self.initial_ensemble_members),
-            itertools.cycle(simulation_input_dirs),
-        ):
+        for input_dir in sim_input_dirs:
             # Define the glob pattern
             pattern = f'*{self.basis_state_ext}'
 
@@ -193,7 +209,7 @@ class BasisStates(ABC):
 
             # Raise an error if no basis state is found
             if basis_state is None:
-                raise ValueError(
+                raise FileNotFoundError(
                     f'No basis state in {input_dir} found with'
                     f' extension: {self.basis_state_ext}',
                 )
@@ -210,19 +226,23 @@ class BasisStates(ABC):
         basis_pcoords: list[list[float]],
     ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
-        weight = 1.0 / self.initial_ensemble_members
+        weight = 1.0 / self.ensemble_members
 
         # Create the metadata for each basis state to populate the
-        # first iteration
+        # first iteration. We cycle/repeat through the basis state
+        # files to the desired number of ensemble members.
         simulations = []
-        for idx, (f, p) in enumerate(zip(basis_files, basis_pcoords)):
+        for idx, (file, pcoord) in zip(
+            range(self.ensemble_members),
+            itertools.cycle(zip(basis_files, basis_pcoords)),
+        ):
             simulations.append(
                 SimMetadata(
                     weight=weight,
                     simulation_id=idx,
                     iteration_id=0,
-                    parent_restart_file=f,
-                    parent_pcoord=p,
+                    parent_restart_file=file,
+                    parent_pcoord=pcoord,
                     # Set the parent simulation ID to the negative of the
                     # index to indicate that the simulation is a basis state
                     # (note we add 1 to the index to avoid a parent ID of 0)

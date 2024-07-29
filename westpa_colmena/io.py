@@ -253,26 +253,29 @@ class WestpaH5File:
                 maxshape=(None,),
             )
 
+        # Get the unique basis states
+        unique_bstates = basis_states.unique_basis_states
+
         # Create a new row for the index dataset
         set_id = len(index) - 1
         index_row = index[set_id]
         index_row['iter_valid'] = n_iter
-        index_row['n_bstates'] = len(basis_states)
+        index_row['n_bstates'] = len(unique_bstates)
         state_group = group.create_group(str(set_id))
         index_row['group_ref'] = state_group.ref
 
-        if basis_states:
+        if unique_bstates:
             # Create the basis state table
-            state_table = np.empty((len(basis_states),), dtype=bstate_dtype)
+            state_table = np.empty((len(unique_bstates),), dtype=bstate_dtype)
 
             # Populate the state table
-            for i, state in enumerate(basis_states):
+            for i, state in enumerate(unique_bstates):
                 state_table[i]['label'] = str(state.simulation_id)
                 state_table[i]['probability'] = state.weight
                 state_table[i]['auxref'] = state.auxref
 
             # Get the pcoords for the basis states
-            state_pcoords = np.array([x.parent_pcoord for x in basis_states])
+            state_pcoords = np.array([x.parent_pcoord for x in unique_bstates])
 
             # Add the basis state table to the state group
             state_group['bstate_index'] = state_table
