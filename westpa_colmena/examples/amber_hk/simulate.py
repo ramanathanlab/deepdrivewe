@@ -115,7 +115,7 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
         # Run the command
         pcoords = run_cpptraj(command)
 
-        return np.array(pcoords)
+        return np.array(pcoords).reshape(-1, 1)
 
 
 def run_simulation(
