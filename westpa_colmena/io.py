@@ -211,6 +211,10 @@ class WestpaH5File:
 
         # Compute the total CPU time for this iteration (in seconds)
         summary_row['cputime'] = sum(x.cputime for x in cur_iteration)
+        # TODO: This should be the total workflow overhead time
+        # for running an iteration. This is not currently tracked.
+        # Update this once we refactor the thinker.
+
         # Compute the total wallclock time for this iteration (in seconds)
         summary_row['walltime'] = max(x.walltime for x in cur_iteration)
 
