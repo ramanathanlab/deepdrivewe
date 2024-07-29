@@ -202,12 +202,12 @@ class WestpaH5File:
         summary_row['n_particles'] = len(cur_iteration)
         # Compute the total weight of all segments (should be close to 1.0)
         summary_row['norm'] = sum(x.weight for x in cur_iteration)
-        # Compute the min and max weight over all segments
-        summary_row['min_seg_prob'] = min(x.weight for x in cur_iteration)
-        summary_row['max_seg_prob'] = max(x.weight for x in cur_iteration)
         # Compute the min and max weight of each bin
         summary_row['min_bin_prob'] = cur_iteration[0].min_bin_prob
         summary_row['max_bin_prob'] = cur_iteration[0].max_bin_prob
+        # Compute the min and max weight over all segments
+        summary_row['min_seg_prob'] = min(x.weight for x in cur_iteration)
+        summary_row['max_seg_prob'] = max(x.weight for x in cur_iteration)
 
         # Compute the total CPU time for this iteration (in seconds)
         summary_row['cputime'] = sum(x.cputime for x in cur_iteration)
