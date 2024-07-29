@@ -105,7 +105,7 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
         # Create the cpptraj command file
         command = (
             f'parm {sim.top_file} \n'
-            f'trajin {sim.checkpoint_file}\n'
+            # f'trajin {sim.checkpoint_file}\n'
             f'trajin {sim.trajectory_file}\n'
             f'reference {self.reference_file} [reference] \n'
             'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
