@@ -2,7 +2,7 @@ simulation_input_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_
 output_dir: runs/naive_resampler_test_v2
 basis_state_ext: .ncrst
 initial_ensemble_members: 5
-num_iterations: 100
+num_iterations: 50
 resume_checkpoint: null
 
 simulation_config:
@@ -28,4 +28,4 @@ target_states:
 
 compute_settings:
   name: local
-  max_workers: 50
+  max_workers: 53
