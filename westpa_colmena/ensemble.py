@@ -71,9 +71,12 @@ class SimMetadata(BaseModel):
         default=None,
         description='The restart file for the simulation.',
     )
-    pcoord: list[float] | None = Field(
-        default=None,
-        description='The progress coordinate for the simulation.',
+    pcoord: list[list[float]] = Field(
+        default_factory=list,
+        description='The progress coordinates for the simulation. '
+        'Shape: (n_frames, pcoord_dim). where n_frames is the number of '
+        'frames in the trajectory and pcoord_dim is the dimension of the '
+        'progress coordinate.',
     )
     binner_hash: str = Field(
         default='',

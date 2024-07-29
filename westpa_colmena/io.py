@@ -427,10 +427,11 @@ class WestpaH5File:
         cur_iteration: list[SimMetadata],
     ) -> None:
         """Append the pcoords to the HDF5 file."""
-        # Extract the pcoords from the next iteration with shape
-        # (n_particles, pcoord_len, pcoord_ndim)
+        # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
+        # where the first frame is the parent pcoord and the rest are the
+        # pcoords for each frame in the current simulation.
         pcoords = np.array(
-            [[x.parent_pcoord, x.pcoord] for x in cur_iteration],
+            [[x.parent_pcoord, *x.pcoord] for x in cur_iteration],
         )
 
         # Create the pcoord dataset

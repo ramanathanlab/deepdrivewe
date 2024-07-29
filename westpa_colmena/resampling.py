@@ -40,7 +40,9 @@ class Resampler(ABC):
                 simulation_id=idx,
                 iteration_id=sim.iteration_id + 1,
                 parent_restart_file=sim.restart_file,
-                parent_pcoord=sim.pcoord,
+                # The parent progress coordinate is the progress coordinate
+                # of the last frame of the previous simulation
+                parent_pcoord=sim.pcoord[-1],
                 parent_simulation_id=sim.simulation_id,
                 wtg_parent_ids=[sim.simulation_id],
             )

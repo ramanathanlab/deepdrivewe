@@ -100,7 +100,7 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
         Returns
         -------
         np.ndarray
-            The progress coordinate from the aligned trajectory.
+            The progress coordinate from the aligned trajectory (n_frames, 1).
         """
         # Create the cpptraj command file
         command = (
@@ -162,7 +162,7 @@ def run_simulation(
     # Update the simulation metadata
     metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
-    metadata.pcoord = [pcoord[-1]]
+    metadata.pcoord = pcoord.tolist()
     # Save the full pcoord data to the auxdata
     metadata.auxdata = {'pcoord': pcoord.tolist()}
 
