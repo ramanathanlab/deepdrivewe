@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import time
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -125,6 +126,9 @@ def run_simulation(
     """Run a simulation and return the pcoord and coordinates."""
     from westpa_colmena.simulation.amber import AmberSimulation
 
+    # Add performance logging
+    start_walltime, start_cputime = time.perf_counter(), time.process_time()
+
     # Create the simulation output directory
     sim_output_dir = (
         output_dir
@@ -164,6 +168,11 @@ def run_simulation(
     metadata.pcoord = pcoord.tolist()
     # Save the full pcoord data to the auxdata
     metadata.auxdata = {'pcoord': pcoord.tolist()}
+
+    # Log the performance
+    stop_walltime, stop_cputime = time.perf_counter(), time.process_time()
+    metadata.walltime = stop_walltime - start_walltime
+    metadata.cputime = stop_cputime - start_cputime
 
     result = SimResult(
         pcoord=pcoord,

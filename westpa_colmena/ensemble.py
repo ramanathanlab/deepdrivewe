@@ -115,6 +115,16 @@ class SimMetadata(BaseModel):
         default_factory=list,
         description='The target counts for each bin.',
     )
+    cputime: float = Field(
+        default=0.0,
+        ge=0.0,
+        description='The CPU time for the simulation (i.e., clock time).',
+    )
+    walltime: float = Field(
+        default=0.0,
+        ge=0.0,
+        description='The wall time for the simulation (i.e., system wide).',
+    )
 
     # TODO: Do we still need this?
     def __hash__(self) -> int:
