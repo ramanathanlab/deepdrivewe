@@ -9,7 +9,7 @@ import numpy as np
 
 import westpa_colmena
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimMetadata
+from westpa_colmena.ensemble import SimMetadata, IterationMetadata
 from westpa_colmena.ensemble import TargetState
 
 # Define data types for use in the HDF5 file
@@ -194,6 +194,7 @@ class WestpaH5File:
         h5_file: h5py.File,
         n_iter: int,
         cur_iteration: list[SimMetadata],
+        iter_data: IterationMetadata,
     ) -> None:
         """Create a row for the summary table."""
         # Create a row for the summary table
@@ -203,8 +204,8 @@ class WestpaH5File:
         # Compute the total weight of all segments (should be close to 1.0)
         summary_row['norm'] = sum(x.weight for x in cur_iteration)
         # Compute the min and max weight of each bin
-        summary_row['min_bin_prob'] = cur_iteration[0].min_bin_prob
-        summary_row['max_bin_prob'] = cur_iteration[0].max_bin_prob
+        summary_row['min_bin_prob'] = iter_data.min_bin_prob
+        summary_row['max_bin_prob'] = iter_data.max_bin_prob
         # Compute the min and max weight over all segments
         summary_row['min_seg_prob'] = min(x.weight for x in cur_iteration)
         summary_row['max_seg_prob'] = max(x.weight for x in cur_iteration)
@@ -219,7 +220,7 @@ class WestpaH5File:
         summary_row['walltime'] = max(x.walltime for x in cur_iteration)
 
         # Save a hex string identifying the binning used in this iteration
-        summary_row['binhash'] = cur_iteration[0].binner_hash
+        summary_row['binhash'] = iter_data.binner_hash
 
         # Create a table of summary information about each iteration
         summary_table = h5_file['summary']
@@ -343,15 +344,15 @@ class WestpaH5File:
     def _append_bin_mapper(
         self,
         h5_file: h5py.File,
-        cur_iteration: list[SimMetadata],
+        iter_data: IterationMetadata,
     ) -> None:
         """Append the bin mapper to the HDF5 file."""
         # Create the group used to store bin mapper
         group = h5_file.require_group('bin_topologies')
 
         # Extract the bin mapper data
-        pickle_data = cur_iteration[0].binner_pickle
-        hashval = cur_iteration[0].binner_hash
+        pickle_data = iter_data.binner_pickle
+        hashval = iter_data.binner_hash
 
         if 'index' in group and 'pickles' in group:
             # Resize the index and pickle_ds datasets to add a new row
@@ -443,11 +444,11 @@ class WestpaH5File:
     def _append_bin_target_counts(
         self,
         iter_group: h5py.Group,
-        cur_iteration: list[SimMetadata],
+        iter_data: IterationMetadata,
     ) -> None:
         """Append the bin_target_counts to the HDF5 file."""
         # Create the bin_target_counts dataset
-        counts = np.array(cur_iteration[0].bin_target_counts, dtype=np.float16)
+        counts = np.array(iter_data.bin_target_counts, dtype=np.float16)
         iter_group.create_dataset('bin_target_counts', data=counts)
 
     def _append_iter_ibstates(
@@ -499,18 +500,20 @@ class WestpaH5File:
         cur_iteration: list[SimMetadata],
         basis_states: BasisStates,
         target_states: list[TargetState],
+        iter_data: IterationMetadata,
     ) -> None:
         """Append the next iteration to the HDF5 file."""
         # Make sure at least one simulation is provided
         if not cur_iteration:
             raise ValueError('cur_iteration must not be empty')
 
+        # TODO: Maybe this should be in the IterationMetadata?
         # Get the current iteration number
         n_iter = cur_iteration[0].iteration_id
 
         with h5py.File(self.westpa_h5file_path, mode='a') as f:
             # Append the summary table row
-            self._append_summary(f, n_iter, cur_iteration)
+            self._append_summary(f, n_iter, cur_iteration, iter_data)
 
             # TODO: Westpa only saves unique basis states, we save all the
             # replicates. We need to fix this.
@@ -525,7 +528,7 @@ class WestpaH5File:
             # Append the bin mapper if we are on the first iteration
             # NOTE: this assumes the binning scheme does not change.
             if n_iter == 0:
-                self._append_bin_mapper(f, cur_iteration)
+                self._append_bin_mapper(f, iter_data)
 
             # TODO: We may need to add istate_index, istate_pcoord into the
             #       ibstates group. But for now, we are not.
@@ -546,7 +549,7 @@ class WestpaH5File:
             self._append_pcoords(iter_group, cur_iteration)
 
             # Append the bin_target_counts
-            self._append_bin_target_counts(iter_group, cur_iteration)
+            self._append_bin_target_counts(iter_group, iter_data)
 
             # Append the ibstates datasets for the current iteration
             self._append_iter_ibstates(f, iter_group, n_iter)

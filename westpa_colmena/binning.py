@@ -11,7 +11,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from westpa_colmena.ensemble import SimMetadata
+from westpa_colmena.ensemble import SimMetadata, IterationMetadata
 
 
 class Binner(ABC):
@@ -139,6 +139,7 @@ class Binner(ABC):
         self,
         cur_sims: list[SimMetadata],
         next_sims: list[SimMetadata],
+        iter_dat: IterationMetadata,
     ) -> tuple[dict[int, list[int]], list[SimMetadata]]:
         """Assign the simulations to bins.
 
@@ -148,6 +149,8 @@ class Binner(ABC):
             The list of current simulations.
         next_sims : list[SimMetadata]
             The list of next simulations.
+        iter_dat : IterationMetadata
+            The iteration metadata.
 
         Returns
         -------
@@ -155,12 +158,13 @@ class Binner(ABC):
             A dictionary of the bin assignments. The keys are the bin
             indices and the values are the indices of the simulations
             assigned to that bin.
+        iter_dat : IterationMetadata
+            The updated iteration metadata.
 
-        list[SimMetadata]
-            The updated current simulations with metadata added.
+
         """
-        # Make a deep copy of the simulations to prevent side effects
-        _cur_sims = deepcopy(cur_sims)
+        # Deepcopy the iteration metadata
+        _iter_dat = deepcopy(iter_dat)
 
         # Extract the pcoords using the parent pcoords since
         # they are they have already been recycled.
@@ -179,21 +183,19 @@ class Binner(ABC):
         for sim_idx, bin_idx in enumerate(assignments):
             bin_assignments[bin_idx].append(sim_idx)
 
-        # Update the current simulation metadata
-        for sim in _cur_sims:
-            # Add the binner pickle and hash metadata to the simulations
-            sim.binner_pickle, sim.binner_hash = self.pickle_and_hash()
+        # Add the binner pickle and hash metadata to the iteration
+        _iter_dat.binner_pickle, _iter_dat.binner_hash = self.pickle_and_hash()
 
-            # Add the bin statistics to the simulations
-            sim.min_bin_prob, sim.max_bin_prob = self._get_bin_stats(
-                bin_assignments,
-                _cur_sims,
-            )
+        # Add the bin statistics to the simulations
+        _iter_dat.min_bin_prob, _iter_dat.max_bin_prob = self._get_bin_stats(
+            bin_assignments,
+            cur_sims,
+        )
 
-            # Add the bin target counts
-            sim.bin_target_counts = self.get_bin_target_counts()
+        # Add the bin target counts
+        _iter_dat.bin_target_counts = self.get_bin_target_counts()
 
-        return bin_assignments, _cur_sims
+        return bin_assignments, _iter_dat
 
 
 class RectilinearBinner(Binner):

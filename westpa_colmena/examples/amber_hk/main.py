@@ -29,7 +29,7 @@ from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimMetadata
+from westpa_colmena.ensemble import SimMetadata, IterationMetadata
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
@@ -174,7 +174,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
 
     def handle_inference_output(
         self,
-        output: tuple[list[SimMetadata], list[SimMetadata]],
+        output: tuple[list[SimMetadata], list[SimMetadata], IterationMetadata],
     ) -> None:
         """Handle the output of an inference run.
 
@@ -182,7 +182,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         available simulations.
         """
         # Unpack the output
-        current_sims, next_sims = output
+        current_sims, next_sims, iter_data = output
 
         # Update the weighted ensemble with the next iteration
         self.ensemble.advance_iteration(next_iteration=next_sims)
@@ -199,6 +199,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
             cur_iteration=current_sims,
             basis_states=self.basis_states,
             target_states=self.target_states,
+            iter_data=iter_data,
         )
 
         # Log the current iteration
