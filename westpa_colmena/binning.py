@@ -175,6 +175,7 @@ class Binner(ABC):
 
         # Create the iteration metadata
         return IterationMetadata(
+            iteration_id=cur_sims[0].iteration_id,
             binner_pickle=binner_pickle,
             binner_hash=binner_hash,
             min_bin_prob=min(bin_probs),

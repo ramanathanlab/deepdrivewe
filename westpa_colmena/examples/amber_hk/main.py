@@ -183,7 +183,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         available simulations.
         """
         # Unpack the output
-        current_sims, next_sims, iter_data = output
+        cur_sims, next_sims, iter_data = output
 
         # Update the weighted ensemble with the next iteration
         self.ensemble.advance_iteration(next_iteration=next_sims)
@@ -197,10 +197,10 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         # metadata, they can be returned neatly from the inference function.)
         # TODO: This requires making BasisStates a pydantic BaseModel.
         self.westpa_h5file.append(
-            cur_iteration=current_sims,
+            cur_iteration=cur_sims,
             basis_states=self.basis_states,
             target_states=self.target_states,
-            iter_data=iter_data,
+            metadata=iter_data,
         )
 
         # Log the current iteration

@@ -7,6 +7,7 @@ from pydantic import Field
 
 from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
+from westpa_colmena.ensemble import IterationMetadata
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.examples.amber_hk.simulate import SimResult
@@ -39,7 +40,7 @@ def run_inference(
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
-) -> tuple[list[SimMetadata], list[SimMetadata]]:
+) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
     pcoords = [sim_result.metadata.pcoord[-1] for sim_result in input_data]
@@ -105,7 +106,6 @@ def run_inference(
 
     # Compute the iteration metadata
     metadata = binner.compute_iteration_metadata(cur_sims)
-    assert metadata is not None  # TODO: handle the return
 
     # Resample the simulations in each bin
     new_sims = []
@@ -119,4 +119,4 @@ def run_inference(
         # Add the resampled simulations to the new simulations
         new_sims.extend(resampled_sims)
 
-    return cur_sims, new_sims
+    return cur_sims, new_sims, metadata

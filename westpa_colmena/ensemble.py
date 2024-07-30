@@ -30,6 +30,10 @@ class TargetState(BaseModel):
 class IterationMetadata(BaseModel):
     """Metadata for an iteration in the weighted ensemble."""
 
+    iteration_id: int = Field(
+        ...,
+        description='The ID of the iteration.',
+    )
     binner_pickle: bytes = Field(
         default='',
         description='The pickled binner used to assign simulations.',
