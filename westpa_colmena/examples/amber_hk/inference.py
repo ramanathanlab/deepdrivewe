@@ -7,7 +7,6 @@ from pydantic import Field
 
 from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import IterationMetadata
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.examples.amber_hk.simulate import SimResult
@@ -101,15 +100,12 @@ def run_inference(
     # Recycle the current iteration
     cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
 
-    # Create iteration metadata to store the bin info
-    iter_dat = IterationMetadata()
-
     # Assign the simulations to bins
-    bin_assignments, iter_dat = binner.bin_simulations(
-        cur_sims,
-        next_sims,
-        iter_dat,
-    )
+    bin_assignments = binner.bin_simulations(next_sims)
+
+    # Compute the iteration metadata
+    metadata = binner.compute_iteration_metadata(cur_sims)
+    assert metadata is not None  # TODO: handle the return
 
     # Resample the simulations in each bin
     new_sims = []

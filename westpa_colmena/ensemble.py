@@ -30,13 +30,13 @@ class TargetState(BaseModel):
 class IterationMetadata(BaseModel):
     """Metadata for an iteration in the weighted ensemble."""
 
-    binner_hash: str = Field(
-        default='',
-        description='The hash of the binner used to assign simulations.',
-    )
     binner_pickle: bytes = Field(
         default='',
         description='The pickled binner used to assign simulations.',
+    )
+    binner_hash: str = Field(
+        default='',
+        description='The hash of the binner used to assign simulations.',
     )
     min_bin_prob: float = Field(
         default=0.0,

@@ -5,6 +5,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 from pydantic import Field
 
+from westpa_colmena.binning import RectilinearBinner
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
@@ -26,6 +27,11 @@ class InferenceConfig(BaseModel):
         description='The number of simulations to split each simulation into.'
         ' Default is 2.',
     )
+    total_simulations: int = Field(
+        default=10,
+        description='The total number of simulations to maintain in the'
+        ' ensemble. Default is 10.',
+    )
 
 
 def run_inference(
@@ -45,6 +51,16 @@ def run_inference(
     # Extract the simulation metadata
     cur_sims = [sim_result.metadata for sim_result in input_data]
 
+    # Create the binner
+    binner = RectilinearBinner(
+        bins=[
+            float('-inf'),
+            2.6,
+            float('inf'),
+        ],
+        bin_target_counts=config.total_simulations,
+    )
+
     # Define the recycling policy
     recycler = LowRecycler(
         basis_states=basis_states,
@@ -62,6 +78,10 @@ def run_inference(
 
     # Recycle the current iteration
     cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
+
+    # Compute the iteration metadata
+    metadata = binner.compute_iteration_metadata(cur_sims)
+    assert metadata is not None  # TODO: handle the return
 
     cur_sims, next_sims = resampler.resample(cur_sims, next_sims)
 
