@@ -9,7 +9,8 @@ import numpy as np
 
 import westpa_colmena
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimMetadata, IterationMetadata
+from westpa_colmena.ensemble import IterationMetadata
+from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
 
 # Define data types for use in the HDF5 file

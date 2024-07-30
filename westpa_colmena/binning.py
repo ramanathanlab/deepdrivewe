@@ -11,7 +11,8 @@ from copy import deepcopy
 
 import numpy as np
 
-from westpa_colmena.ensemble import SimMetadata, IterationMetadata
+from westpa_colmena.ensemble import IterationMetadata
+from westpa_colmena.ensemble import SimMetadata
 
 
 class Binner(ABC):
@@ -140,7 +141,7 @@ class Binner(ABC):
         cur_sims: list[SimMetadata],
         next_sims: list[SimMetadata],
         iter_dat: IterationMetadata,
-    ) -> tuple[dict[int, list[int]], list[SimMetadata]]:
+    ) -> tuple[dict[int, list[int]], IterationMetadata]:
         """Assign the simulations to bins.
 
         Parameters
@@ -160,8 +161,6 @@ class Binner(ABC):
             assigned to that bin.
         iter_dat : IterationMetadata
             The updated iteration metadata.
-
-
         """
         # Deepcopy the iteration metadata
         _iter_dat = deepcopy(iter_dat)

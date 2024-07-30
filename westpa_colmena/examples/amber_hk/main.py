@@ -29,7 +29,8 @@ from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimMetadata, IterationMetadata
+from westpa_colmena.ensemble import IterationMetadata
+from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
