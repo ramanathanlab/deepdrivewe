@@ -101,7 +101,10 @@ class Binner(ABC):
         assignments = self.assign_bins(pcoords)
 
         # Check that the number of assignments is the same as the simulations
-        assert len(assignments) == len(pcoords)
+        if len(assignments) != len(pcoords):
+            raise ValueError(
+                'Number of assignments must match the number of simulations.',
+            )
 
         # Collect a dictionary of the bin assignments
         bin_assignments = defaultdict(list)
