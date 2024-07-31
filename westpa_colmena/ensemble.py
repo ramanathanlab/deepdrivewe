@@ -27,9 +27,37 @@ class TargetState(BaseModel):
     )
 
 
-# TODO: We might want a IterationMetadata class to store the metadata for each
-# iteration. This would include the binner_hash, binner_pickle, min_bin_prob,
-# and max_bin_prob. Since currently they are copied to each SimMetadata object.
+class IterationMetadata(BaseModel):
+    """Metadata for an iteration in the weighted ensemble."""
+
+    iteration_id: int = Field(
+        ...,
+        description='The ID of the iteration.',
+    )
+    binner_pickle: bytes = Field(
+        default='',
+        description='The pickled binner used to assign simulations.',
+    )
+    binner_hash: str = Field(
+        default='',
+        description='The hash of the binner used to assign simulations.',
+    )
+    min_bin_prob: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description='The minimum bin probability for an iteration.',
+    )
+    max_bin_prob: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description='The maximum bin probability for an iteration.',
+    )
+    bin_target_counts: list[int] = Field(
+        default_factory=list,
+        description='The target counts for each bin.',
+    )
 
 
 class SimMetadata(BaseModel):
@@ -78,14 +106,6 @@ class SimMetadata(BaseModel):
         'frames in the trajectory and pcoord_dim is the dimension of the '
         'progress coordinate.',
     )
-    binner_hash: str = Field(
-        default='',
-        description='The hash of the binner used to assign simulations.',
-    )
-    binner_pickle: bytes = Field(
-        default='',
-        description='The pickled binner used to assign simulations.',
-    )
     auxdata: dict[str, list[int | float]] = Field(
         default_factory=dict,
         description='Auxiliary data for the simulation (stores auxiliary '
@@ -98,22 +118,6 @@ class SimMetadata(BaseModel):
         '1 indicates the simulation should continue, 2 indicates the '
         'simulation ended in a merge, and 3 indicates the simulation '
         'ended by recycling.',
-    )
-    min_bin_prob: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
-        description='The minimum bin probability for an iteration.',
-    )
-    max_bin_prob: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
-        description='The maximum bin probability for an iteration.',
-    )
-    bin_target_counts: list[int] = Field(
-        default_factory=list,
-        description='The target counts for each bin.',
     )
     cputime: float = Field(
         default=0.0,
