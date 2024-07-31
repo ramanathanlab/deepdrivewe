@@ -547,7 +547,10 @@ class WestpaH5File:
                     prec=self.west_iter_prec,
                 ),
             )
+
+            # Add the iteration number and binhash to the group attributes
             iter_group.attrs['n_iter'] = n_iter
+            iter_group.attrs['binhash'] = metadata.binner_hash
 
             # Append the seg_index table
             self._append_seg_index_table(iter_group, cur_iteration)
