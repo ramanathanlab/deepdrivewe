@@ -8,16 +8,21 @@ from __future__ import annotations
 
 import logging
 import sys
+import time
 from argparse import ArgumentParser
+from collections import defaultdict
 from functools import partial
 from functools import update_wrapper
 from pathlib import Path
 from typing import Any
 
+from colmena.models import Result
 from colmena.queue import ColmenaQueues
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from colmena.thinker import agent
+from colmena.thinker import BaseThinker
+from colmena.thinker import result_processor
 from proxystore.connectors.file import FileConnector
 from proxystore.store import register_store
 from proxystore.store import Store
@@ -25,12 +30,10 @@ from pydantic import Field
 from pydantic import validator
 
 from westpa_colmena.api import BaseModel
-from westpa_colmena.api import DeepDriveMDWorkflow
 from westpa_colmena.api import DoneCallback
 from westpa_colmena.api import InferenceCountDoneCallback
+from westpa_colmena.api import ResultLogger
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import IterationMetadata
-from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
@@ -51,14 +54,13 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (4) Create a pytest for the WESTPA thinker.
 # (5) Implement a cleaner thinker backend
 # (6) Send cpptraj output to a separate log file to avoid polluting the main
-
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
 # We should resubmit failed workers once and otherwise raise an error and exit.
 
 
-class DeepDriveWESTPA(DeepDriveMDWorkflow):
-    """A WESTPA thinker for DeepDriveMD."""
+class SynchronousDDWE(BaseThinker):
+    """A synchronous DDWE thinker."""
 
     def __init__(  # noqa: PLR0913
         self,
@@ -70,7 +72,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         target_states: list[TargetState],
         done_callbacks: list[DoneCallback] | None = None,
     ) -> None:
-        """Initialize the DeepDriveWESTPA thinker.
+        """Initialize the DeepDriveMD workflow.
 
         Parameters
         ----------
@@ -78,135 +80,268 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
             Queue used to communicate with the task server
         result_dir: Path
             Directory in which to store outputs
-        ensemble: WeightedEnsemble
-            Weighted ensemble object to manage the simulations and weights.
-        done_callbacks: list[DoneCallback] | None
-            List of callbacks to determine when the thinker should stop.
+        done_callbacks: list[DoneCallback]
+            Callbacks that can trigger a run to end.
         """
-        super().__init__(
-            queue,
-            result_dir,
-            done_callbacks,
-            async_simulation=False,
-        )
+        super().__init__(queue)
 
         self.ensemble = ensemble
+        self.westpa_h5file = westpa_h5file
         self.basis_states = basis_states
         self.target_states = target_states
-        self.westpa_h5file = westpa_h5file
-
-        # TODO: Update the inputs to support model weights, etc
-        # Custom data structures
-        # self.train_input: list[SimResult] = []
         self.inference_input: list[SimResult] = []
 
-        # Make sure there has been at least one training task
-        # complete before running inference
-        # self.model_weights_available = False
+        # Number of times a given task has been submitted
+        self.task_counter: defaultdict[str, int] = defaultdict(int)
+        self.done_callbacks = done_callbacks or []
+        self.result_logger = ResultLogger(result_dir)
+
+    def log_result(self, result: Result, topic: str) -> None:
+        """Log a result to the result logger."""
+        # Log the jsonl result
+        self.result_logger.log(result, topic)
+
+        # Increment the task counter
+        self.task_counter[topic] += 1
+
+    def submit_task(self, topic: str, *inputs: Any) -> None:
+        """Submit a task to the task server."""
+        self.queues.send_inputs(
+            *inputs,
+            method=f'run_{topic}',
+            topic=topic,
+            keep_inputs=False,
+        )
+
+    @agent
+    def main_loop(self) -> None:
+        """Run main loop for the DeepDriveMD workflow."""
+        while not self.done.is_set():
+            for callback in self.done_callbacks:
+                if callback.workflow_finished(self):
+                    self.logger.info('Exiting DeepDriveMD')
+                    self.done.set()
+                    return
+            time.sleep(1)
 
     @agent(startup=True)
     def start_simulations(self) -> None:
         """Launch the first iteration of simulations to start the workflow."""
-        self.simulate()
-
-    def simulate(self) -> None:
-        """Start simulation task(s).
-
-        Must call :meth:`submit_task` with ``topic='simulation'``.
-        """
         # Submit the next iteration of simulations
         for sim in self.ensemble.current_iteration:
             self.submit_task('simulation', sim)
 
-    def train(self) -> None:
-        """Start a training task.
+    @result_processor(topic='simulation')
+    def process_simulation_result(self, result: Result) -> None:
+        """Process a simulation result.
 
-        Must call :meth:`submit_task` with ``topic='train'``.
+        Will always submit a new simulation tasks and an inference or training
+        if the :meth:`handle_simulation_output` sets the appropriate flags.
         """
-        # self.submit_task('train', self.train_input)
-        pass
+        # Log simulation job results
+        self.log_result(result, 'simulation')
+        if not result.success:
+            # TODO (wardlt): Should we submit a new simulation if one fails?
+            # (braceal): Yes, I think so. I think we can move this check to
+            # after submit_task()
+            self.logger.warning('Bad simulation result')
+            return
 
-    def inference(self) -> None:
-        """Start an inference task.
-
-        Must call a :meth:`submit_task` with ``topic='infer'``.
-        """
-        # Inference must wait for a trained model to be available
-        # while not self.model_weights_available:
-        #     time.sleep(1)
-
-        self.submit_task('inference', self.inference_input)
-        self.inference_input = []  # Clear batched data
-        self.logger.info('processed inference result')
-
-    def handle_simulation_output(self, output: SimResult) -> None:
-        """Handle the output of a simulation.
-
-        Stores a simulation output in the training set and define new
-        inference tasks Should call ``self.run_training.set()``
-        and/or ``self.run_inference.set()``.
-
-        Parameters
-        ----------
-        output:
-            Output to be processed
-        """
         # Collect simulation results
-        # self.train_input.append(output)
-        self.inference_input.append(output)
+        self.inference_input.append(result.value)
 
-        # Number of simulations in the current iteration
-        num_simulations = len(self.ensemble.current_iteration)
+        if len(self.inference_input) == len(self.ensemble.current_iteration):
+            self.submit_task('inference', self.inference_input)
+            self.inference_input = []  # Clear batched data
+            self.logger.info('submitted inference task')
 
-        # Since we are not clearing the train/inference inputs, the
-        # length will be the same as the ensemble members
-        if len(self.inference_input) % num_simulations == 0:
-            # self.run_training.set()
-            self.run_inference.set()
+    @result_processor(topic='inference')
+    def process_inference_result(self, result: Result) -> None:
+        """Process an inference result.
 
-    def handle_train_output(self, output: Any) -> None:
-        """Use the output from a training run to update the model."""
-        # self.inference_input.model_weight_path = output.model_weight_path
-        # self.model_weights_available = True
-        # self.logger.info(
-        #     f'Updated model_weight_path to: {output.model_weight_path}',
-        # )
-        pass
-
-    def handle_inference_output(
-        self,
-        output: tuple[list[SimMetadata], list[SimMetadata], IterationMetadata],
-    ) -> None:
-        """Handle the output of an inference run.
-
-        Use the output from an inference run to update the list of
-        available simulations.
+        Will always submit a new simulation tasks and an inference or training
+        if the :meth:`handle_simulation_output` sets the appropriate flags.
         """
+        # Log inference job results
+        self.log_result(result, 'inference')
+        if not result.success:
+            self.logger.warning('Bad inference result')
+            return
+
         # Unpack the output
-        cur_sims, next_sims, iter_data = output
+        cur_sims, next_sims, metadata = result.value
 
         # Update the weighted ensemble with the next iteration
         self.ensemble.advance_iteration(next_iteration=next_sims)
 
         # Submit the next iteration of simulations
-        self.simulate()
+        for sim in self.ensemble.current_iteration:
+            self.submit_task('simulation', sim)
 
         # Log the results to the HDF5 file
-        # TODO: Update the basis states and target states (right now
-        # it assumes they are static, but once we add these to the iteration
-        # metadata, they can be returned neatly from the inference function.)
-        # TODO: This requires making BasisStates a pydantic BaseModel.
         self.westpa_h5file.append(
             cur_iteration=cur_sims,
             basis_states=self.basis_states,
             target_states=self.target_states,
-            metadata=iter_data,
+            metadata=metadata,
         )
 
         # Log the current iteration
         self.logger.info(
             f'Current iteration: {len(self.ensemble.simulations)}',
         )
+
+
+# class DeepDriveWESTPA(DeepDriveMDWorkflow):
+#     """A WESTPA thinker for DeepDriveMD."""
+
+#     def __init__(
+#         self,
+#         queue: ColmenaQueues,
+#         result_dir: Path,
+#         ensemble: WeightedEnsemble,
+#         westpa_h5file: WestpaH5File,
+#         basis_states: BasisStates,
+#         target_states: list[TargetState],
+#         done_callbacks: list[DoneCallback] | None = None,
+#     ) -> None:
+#         """Initialize the DeepDriveWESTPA thinker.
+
+#         Parameters
+#         ----------
+#         queue: ColmenaQueues
+#             Queue used to communicate with the task server
+#         result_dir: Path
+#             Directory in which to store outputs
+#         ensemble: WeightedEnsemble
+#             Weighted ensemble object to manage the simulations and weights.
+#         done_callbacks: list[DoneCallback] | None
+#             List of callbacks to determine when the thinker should stop.
+#         """
+#         super().__init__(
+#             queue,
+#             result_dir,
+#             done_callbacks,
+#             async_simulation=False,
+#         )
+
+#         self.ensemble = ensemble
+#         self.basis_states = basis_states
+#         self.target_states = target_states
+#         self.westpa_h5file = westpa_h5file
+
+#         # TODO: Update the inputs to support model weights, etc
+#         # Custom data structures
+#         # self.train_input: list[SimResult] = []
+#         self.inference_input: list[SimResult] = []
+
+#         # Make sure there has been at least one training task
+#         # complete before running inference
+#         # self.model_weights_available = False
+
+#     @agent(startup=True)
+#     def start_simulations(self) -> None:
+#         """Launch the first iteration of simulations to start the workflow.""" # noqa E501
+#         self.simulate()
+
+#     def simulate(self) -> None:
+#         """Start simulation task(s).
+
+#         Must call :meth:`submit_task` with ``topic='simulation'``.
+#         """
+#         # Submit the next iteration of simulations
+#         for sim in self.ensemble.current_iteration:
+#             self.submit_task('simulation', sim)
+
+#     def train(self) -> None:
+#         """Start a training task.
+
+#         Must call :meth:`submit_task` with ``topic='train'``.
+#         """
+#         # self.submit_task('train', self.train_input)
+#         pass
+
+#     def inference(self) -> None:
+#         """Start an inference task.
+
+#         Must call a :meth:`submit_task` with ``topic='infer'``.
+#         """
+#         # Inference must wait for a trained model to be available
+#         # while not self.model_weights_available:
+#         #     time.sleep(1)
+
+#         self.submit_task('inference', self.inference_input)
+#         self.inference_input = []  # Clear batched data
+#         self.logger.info('processed inference result')
+
+#     def handle_simulation_output(self, output: SimResult) -> None:
+#         """Handle the output of a simulation.
+
+#         Stores a simulation output in the training set and define new
+#         inference tasks Should call ``self.run_training.set()``
+#         and/or ``self.run_inference.set()``.
+
+#         Parameters
+#         ----------
+#         output:
+#             Output to be processed
+#         """
+#         # Collect simulation results
+#         # self.train_input.append(output)
+#         self.inference_input.append(output)
+
+#         # Number of simulations in the current iteration
+#         num_simulations = len(self.ensemble.current_iteration)
+
+#         # Since we are not clearing the train/inference inputs, the
+#         # length will be the same as the ensemble members
+#         if len(self.inference_input) % num_simulations == 0:
+#             # self.run_training.set()
+#             self.run_inference.set()
+
+#     def handle_train_output(self, output: Any) -> None:
+#         """Use the output from a training run to update the model."""
+#         # self.inference_input.model_weight_path = output.model_weight_path
+#         # self.model_weights_available = True
+#         # self.logger.info(
+#         #     f'Updated model_weight_path to: {output.model_weight_path}',
+#         # )
+#         pass
+
+#     def handle_inference_output(
+#         self,
+#         output: tuple[list[SimMetadata], list[SimMetadata], IterationMetadata], # noqa E501
+#     ) -> None:
+#         """Handle the output of an inference run.
+
+#         Use the output from an inference run to update the list of
+#         available simulations.
+#         """
+#         # Unpack the output
+#         cur_sims, next_sims, iter_data = output
+
+#         # Update the weighted ensemble with the next iteration
+#         self.ensemble.advance_iteration(next_iteration=next_sims)
+
+#         # Submit the next iteration of simulations
+#         self.simulate()
+
+#         # Log the results to the HDF5 file
+#         # TODO: Update the basis states and target states (right now
+#         # it assumes they are static, but once we add these to the iteration
+#         # metadata, they can be returned neatly from the inference function.)
+#         # TODO: This requires making BasisStates a pydantic BaseModel.
+#         self.westpa_h5file.append(
+#             cur_iteration=cur_sims,
+#             basis_states=self.basis_states,
+#             target_states=self.target_states,
+#             metadata=iter_data,
+#         )
+
+#         # Log the current iteration
+#         self.logger.info(
+#             f'Current iteration: {len(self.ensemble.simulations)}',
+#         )
 
 
 class MyBasisStates(BasisStates):
@@ -219,6 +354,7 @@ class MyBasisStates(BasisStates):
         **kwargs: Any,
     ) -> None:
         """Initialize the basis states."""
+        # NOTE: init_basis_pcoord is called in the super().__init__ call
         self.sim_config = sim_config
         super().__init__(*args, **kwargs)
 
@@ -375,7 +511,7 @@ if __name__ == '__main__':
     westpa_h5file = WestpaH5File(cfg.output_dir / 'west.h5')
 
     # Create the workflow thinker
-    thinker = DeepDriveWESTPA(
+    thinker = SynchronousDDWE(
         queue=queues,
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,

@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import json
-import shutil
 import time
-import uuid
 from abc import ABC
 from abc import abstractmethod
 from collections import defaultdict
@@ -24,7 +22,6 @@ from colmena.thinker import BaseThinker
 from colmena.thinker import event_responder
 from colmena.thinker import result_processor
 from pydantic import BaseModel as _BaseModel
-from pydantic import validator
 
 T = TypeVar('T')
 
@@ -45,121 +42,6 @@ class BaseModel(_BaseModel):
         with open(filename) as fp:
             raw_data = yaml.safe_load(fp)
         return cls(**raw_data)
-
-
-class ApplicationSettings(BaseModel):
-    """Settings for an application within the DeepDriveMD workflow."""
-
-    output_dir: Path
-    node_local_path: Path | None = None
-
-    @validator('output_dir')
-    @classmethod
-    def create_output_dir(cls, v: Path) -> Path:
-        """Resolve and create the output directory if it does not exist."""
-        v = v.resolve()
-        v.mkdir(exist_ok=True, parents=True)
-        return v
-
-
-class BatchSettings(BaseModel):
-    """Dataclass utilities for data batches with multiple lists."""
-
-    def __len__(self) -> int:
-        """Get the number of elements in the batch."""
-        lists = self.get_lists()
-        return len(lists[0]) if lists else 0
-
-    def get_lists(self) -> list[list[Any]]:
-        """Get all lists in the batch."""
-        return [
-            field
-            for field in self.__dict__.values()
-            if isinstance(field, list)
-        ]
-
-    def append(self, *args: Any) -> None:
-        """Append elements to the batch."""
-        lists = self.get_lists()
-        assert len(lists) == len(
-            args,
-        ), 'Number of args must match the number of lists.'
-        for arg, _list in zip(args, lists):
-            _list.append(arg)
-
-    def clear(self) -> None:
-        """Clear all lists in the batch."""
-        for _list in self.get_lists():
-            _list.clear()
-
-
-# TODO: Add logger to Application which writes to file in workdir
-
-
-class Application:
-    """Application interface for workflow components.
-
-    Provides standard access to node local storage, persistent storage,
-    work directories.
-    """
-
-    def __init__(self, config: ApplicationSettings) -> None:
-        self.config = config
-        self.__workdir: Path | None = None
-
-    @property
-    def persistent_dir(self) -> Path:
-        """Get the persistent directory for the application.
-
-        A unique directory to save application output files to.
-        Same as workdir if node local storage is not used.
-        Otherwise, returns the output_dir / run-{uuid} path for the run.
-        """
-        return self.config.output_dir / self.workdir.name
-
-    @property
-    def workdir(self) -> Path:
-        """Get the work directory for the application.
-
-        Returns a directory path to for application.run to write files to.
-        Will use a node local storage option if it is specified. At the end
-        of the application.run function, the workdir will be moved to the
-        persistent_dir location, if node local storage is being used. If node
-        local storage is not being used, workdir and persistent_dir are the
-        same.
-        """
-        # Check if the workdir has been initialized
-        if isinstance(self.__workdir, Path):
-            return self.__workdir
-
-        # Initialize a workdir of the form run-<uuid>
-        workdir_parent = (
-            self.config.output_dir
-            if self.config.node_local_path is None
-            else self.config.node_local_path
-        )
-        workdir = workdir_parent / f'run-{uuid.uuid4()}'
-        workdir.mkdir(exist_ok=True, parents=True)
-        self.__workdir = workdir
-        return workdir
-
-    def backup_node_local(self) -> None:
-        """Move node local storage contents back to persistent storage."""
-        if self.config.node_local_path is None:
-            return
-
-        # Check for at least one file before backing up the workdir.
-        # This avoids having an empty run directory for applications
-        # that don't make use of the file system for backing up data.
-        if next(self.workdir.iterdir(), None):
-            shutil.move(self.workdir, self.persistent_dir)
-
-    def copy_to_workdir(self, p: Path) -> Path:
-        """Copy a file or directory to the workdir."""
-        if p.is_file():
-            return Path(shutil.copy(p, self.workdir))
-        else:
-            return Path(shutil.copytree(p, self.workdir / p.name))
 
 
 class DoneCallback(ABC):
