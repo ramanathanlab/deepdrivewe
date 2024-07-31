@@ -279,6 +279,7 @@ class RectilinearBinner(Binner):
             for i in self.target_state_inds:
                 bin_target_counts[i] = 0
 
+            # Cache the result
             self.bin_target_counts = bin_target_counts
 
         # Otherwise, return the list of bin target counts

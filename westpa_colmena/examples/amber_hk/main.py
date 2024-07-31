@@ -48,10 +48,18 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (4) Implement a cleaner thinker backend
 # (5) Send cpptraj output to a separate log file to avoid polluting the main
 # (6) Support checkpointing for the WESTPA thinker
+# (7) Do we want iteration_id as used to name the sim dirs to be 1-indexed?
+# (8) Forward some of the imports and unify api and ensemble imports.
+# (9) Call package ddwe.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
 # We should resubmit failed workers once and otherwise raise an error and exit.
+
+# TODO: It looks like this thinker implements all the base WESTPA cases.
+#       Maybe we should move it to the API.
+
+# TODO: See TODOs in process_inference_result for pydantic refactor.
 
 
 class SynchronousDDWE(BaseThinker):
@@ -145,6 +153,13 @@ class SynchronousDDWE(BaseThinker):
         # it assumes they are static, but once we add these to the iteration
         # metadata, they can be returned neatly from the inference function.)
         # TODO: This requires making BasisStates a pydantic BaseModel.
+        # TODO: The ensemble can also be a pydantic class to facilitate
+        # easy logging to json for readable checkpoints.
+        # TODO: We should consider whether to make the westpa h5 file a
+        # pydantic class in order to serialize the metadata with the checkpoint
+        # file. However, we might want to think about the case where a user
+        # wants to resume a checkpoint in a different directory. Is this
+        # a supported case?
 
         # Log the results to the HDF5 file
         self.westpa_h5file.append(
@@ -180,7 +195,8 @@ class MyBasisStates(BasisStates):
     ) -> None:
         """Initialize the basis states."""
         # NOTE: init_basis_pcoord is called in the super().__init__ call
-        # TODO: It would be nice to run the super init first.
+        # TODO: It would be nice to run the super init first. Perhaps using
+        # a post validation hook in pydantic (if we go that route).
         self.sim_config = sim_config
         super().__init__(*args, **kwargs)
 
