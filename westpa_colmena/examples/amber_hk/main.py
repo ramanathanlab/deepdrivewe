@@ -97,17 +97,6 @@ class SynchronousDDWE(BaseThinker):
             keep_inputs=False,
         )
 
-    # @agent
-    # def main_loop(self) -> None:
-    #     """Run main loop for the DeepDriveMD workflow."""
-    #     while not self.done.is_set():
-    #         for callback in self.done_callbacks:
-    #             if callback.workflow_finished(self):
-    #                 self.logger.info('Exiting DeepDriveMD')
-    #                 self.done.set()
-    #                 return
-    #         time.sleep(1)
-
     @agent(startup=True)
     def start_simulations(self) -> None:
         """Launch the first iteration of simulations to start the workflow."""
@@ -335,11 +324,6 @@ if __name__ == '__main__':
         queues,
         parsl_config,
     )
-
-    # Add a callbacks to decide when to stop the thinker
-    # done_callbacks = [
-    #     InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
-    # ]
 
     # Create the HDF5 file for WESTPA
     # TODO: Unify the westpa hdf5 file with the checkpoint logic.
