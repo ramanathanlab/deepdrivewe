@@ -47,6 +47,7 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (3) Create a pytest for the WESTPA thinker.
 # (4) Implement a cleaner thinker backend
 # (5) Send cpptraj output to a separate log file to avoid polluting the main
+# (6) Support checkpointing for the WESTPA thinker
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
@@ -179,6 +180,7 @@ class MyBasisStates(BasisStates):
     ) -> None:
         """Initialize the basis states."""
         # NOTE: init_basis_pcoord is called in the super().__init__ call
+        # TODO: It would be nice to run the super init first.
         self.sim_config = sim_config
         super().__init__(*args, **kwargs)
 
