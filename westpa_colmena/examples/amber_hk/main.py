@@ -216,18 +216,18 @@ class MyBasisStates(BasisStates):
 class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
-    simulation_input_dir: Path = Field(
+    basis_state_dir: Path = Field(
         description='Nested directory storing initial simulation start files, '
         'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
         'store PDB files, topology files, etc needed to start the simulation '
         'application.',
     )
-    output_dir: Path = Field(
-        description='Directory in which to store the results.',
-    )
     basis_state_ext: str = Field(
         default='.ncrst',
         description='Extension for the basis states.',
+    )
+    output_dir: Path = Field(
+        description='Directory in which to store the results.',
     )
     initial_ensemble_members: int = Field(
         description='Number of simulations to start the weighted ensemble.',
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     basis_states = MyBasisStates(
         sim_config=cfg.simulation_config,
         initial_ensemble_members=cfg.initial_ensemble_members,
-        simulation_input_dir=cfg.simulation_input_dir,
+        basis_state_dir=cfg.basis_state_dir,
         basis_state_ext=cfg.basis_state_ext,
     )
 

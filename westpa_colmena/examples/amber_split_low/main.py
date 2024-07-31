@@ -205,7 +205,7 @@ https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_
 # class ExperimentSettings(BaseModel):
 #     """Provide a YAML interface to configure the experiment."""
 
-#     simulation_input_dir: Path = Field(
+#     basis_state_dir: Path = Field(
 #         description='Nested directory storing initial simulation start files, ' # noqa: E501
 #         'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might ' # noqa: E501
 #         'store PDB files, topology files, etc needed to start the simulation ' # noqa: E501
@@ -292,7 +292,7 @@ https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_
 #     basis_states = MyBasisStates(
 #         sim_config=cfg.simulation_config,
 #         initial_ensemble_members=cfg.initial_ensemble_members,
-#         simulation_input_dir=cfg.simulation_input_dir,
+#         basis_state_dir=cfg.basis_state_dir,
 #         basis_state_ext=cfg.basis_state_ext,
 #     )
 

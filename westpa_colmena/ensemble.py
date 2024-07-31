@@ -141,7 +141,7 @@ class BasisStates(ABC):
 
     def __init__(
         self,
-        simulation_input_dir: Path,
+        basis_state_dir: Path,
         basis_state_ext: str,
         initial_ensemble_members: int,
     ) -> None:
@@ -149,14 +149,14 @@ class BasisStates(ABC):
 
         Parameters
         ----------
-        simulation_input_dir : Path
+        basis_state_dir : Path
             The directory containing the simulation input files.
         basis_state_ext : str
             The extension of the basis state files.
         initial_ensemble_members : int
             The number of initial ensemble members.
         """
-        self.simulation_input_dir = simulation_input_dir
+        self.basis_state_dir = basis_state_dir
         self.basis_state_ext = basis_state_ext
         self.ensemble_members = initial_ensemble_members
 
@@ -205,7 +205,7 @@ class BasisStates(ABC):
         # Collect initial simulation directories,
         # assuming they are in nested subdirectories
         sim_input_dirs = [
-            p for p in self.simulation_input_dir.glob('*') if p.is_dir()
+            p for p in self.basis_state_dir.glob('*') if p.is_dir()
         ]
 
         # Check if there are more input dirs than initial ensemble members
