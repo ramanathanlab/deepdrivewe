@@ -20,15 +20,12 @@ class Resampler(ABC):
         """Initialize the resampler."""
         self._index_counter = itertools.count()
 
-    def get_next_iteration(
-        self,
-        current_iteration: list[SimMetadata],
-    ) -> list[SimMetadata]:
+    def get_next_sims(self, cur_sims: list[SimMetadata]) -> list[SimMetadata]:
         """Return the simulations for the next iteration."""
         # Create a list to store the new simulations for this iteration
         simulations = []
 
-        for idx, sim in enumerate(current_iteration):
+        for idx, sim in enumerate(cur_sims):
             # Ensure that the simulation has a restart file, i.e., the `sim`
             # object represents a simulation that has been run.
             assert sim.restart_file is not None

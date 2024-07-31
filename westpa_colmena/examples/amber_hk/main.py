@@ -112,7 +112,7 @@ class SynchronousDDWE(BaseThinker):
     def start_simulations(self) -> None:
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
-        for sim in self.ensemble.current_iteration:
+        for sim in self.ensemble.current_sims:
             self.submit_task('simulation', sim)
 
     @result_processor(topic='simulation')
@@ -131,7 +131,7 @@ class SynchronousDDWE(BaseThinker):
         # Collect simulation results
         self.inference_input.append(result.value)
 
-        if len(self.inference_input) == len(self.ensemble.current_iteration):
+        if len(self.inference_input) == len(self.ensemble.current_sims):
             self.submit_task('inference', self.inference_input)
             self.inference_input = []  # Clear batched data
             self.logger.info('submitted inference task')
@@ -158,25 +158,24 @@ class SynchronousDDWE(BaseThinker):
 
         # Log the results to the HDF5 file
         self.westpa_h5file.append(
-            cur_iteration=cur_sims,
+            cur_sims=cur_sims,
             basis_states=self.basis_states,
             target_states=self.target_states,
             metadata=metadata,
         )
 
         # Log the current iteration
-        self.logger.info(
-            f'Current iteration: {len(self.ensemble.simulations)}',
-        )
+        self.logger.info(f'Current iteration: {self.ensemble.iteration}')
 
         # Check if the workflow is finished (if so return before submitting)
-        if len(self.ensemble.simulations) >= self.num_iterations:
+        if self.ensemble.iteration >= self.num_iterations:
             self.logger.info('Workflow finished')
             self.done.set()
             return
 
         # Submit the next iteration of simulations
-        for sim in self.ensemble.current_iteration:
+        self.logger.info('Submitting next iteration of simulations')
+        for sim in self.ensemble.current_sims:
             self.submit_task('simulation', sim)
 
 

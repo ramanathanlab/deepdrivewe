@@ -75,7 +75,7 @@ def run_inference(
     )
 
     # Get the next iteration of simulation metadata
-    next_sims = resampler.get_next_iteration(cur_sims)
+    next_sims = resampler.get_next_sims(cur_sims)
 
     # Recycle the current iteration
     cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)

@@ -102,7 +102,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         Must call :meth:`submit_task` with ``topic='simulation'``
         """
         # Submit the next iteration of simulations
-        for sim in self.ensemble.current_iteration:
+        for sim in self.ensemble.current_sims:
             self.submit_task('simulation', sim)
 
     def train(self) -> None:
@@ -143,7 +143,7 @@ class DeepDriveWESTPA(DeepDriveMDWorkflow):
         self.inference_input.append(output)
 
         # Number of simulations in the current iteration
-        num_simulations = len(self.ensemble.current_iteration)
+        num_simulations = len(self.ensemble.current_sims)
 
         # Since we are not clearing the train/inference inputs, the
         # length will be the same as the ensemble members

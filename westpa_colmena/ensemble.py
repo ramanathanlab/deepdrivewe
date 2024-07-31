@@ -339,9 +339,15 @@ class WeightedEnsemble:
             pickle.dump(self, f)
 
     @property
-    def current_iteration(self) -> list[SimMetadata]:
+    def current_sims(self) -> list[SimMetadata]:
         """Return the simulations for the current iteration."""
         return self.simulations[-1]
+
+    @property
+    def iteration(self) -> int:
+        """Return the current iteration of the weighted ensemble."""
+        # The first iteration is the basis states
+        return len(self.simulations) - 1
 
     def advance_iteration(
         self,
