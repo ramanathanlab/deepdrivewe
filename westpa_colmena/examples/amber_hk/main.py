@@ -43,13 +43,11 @@ from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Reproduce a binning example to see if our system is working.
-# (1.1) TODO: Test changes. We can set the target state closer to the basis
-# state to see if the recycle logic is working.
-# (2) Pack outputs into HDF5 for westpa analysis.
-# (3) Test the resampler and weighted ensemble logic using ntl9.
-# (4) Create a pytest for the WESTPA thinker.
-# (5) Implement a cleaner thinker backend
-# (6) Send cpptraj output to a separate log file to avoid polluting the main
+# (2) Test the resampler and weighted ensemble logic using ntl9.
+# (3) Create a pytest for the WESTPA thinker.
+# (4) Implement a cleaner thinker backend
+# (5) Send cpptraj output to a separate log file to avoid polluting the main
+
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
 # We should resubmit failed workers once and otherwise raise an error and exit.
@@ -153,10 +151,6 @@ class SynchronousDDWE(BaseThinker):
         # Update the weighted ensemble with the next iteration
         self.ensemble.advance_iteration(next_iteration=next_sims)
 
-        # Submit the next iteration of simulations
-        for sim in self.ensemble.current_iteration:
-            self.submit_task('simulation', sim)
-
         # TODO: Update the basis states and target states (right now
         # it assumes they are static, but once we add these to the iteration
         # metadata, they can be returned neatly from the inference function.)
@@ -175,10 +169,15 @@ class SynchronousDDWE(BaseThinker):
             f'Current iteration: {len(self.ensemble.simulations)}',
         )
 
-        # Check if the workflow is finished
+        # Check if the workflow is finished (if so return before submitting)
         if len(self.ensemble.simulations) >= self.num_iterations:
             self.logger.info('Workflow finished')
             self.done.set()
+            return
+
+        # Submit the next iteration of simulations
+        for sim in self.ensemble.current_iteration:
+            self.submit_task('simulation', sim)
 
 
 class MyBasisStates(BasisStates):
