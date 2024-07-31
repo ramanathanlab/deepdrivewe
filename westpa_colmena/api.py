@@ -53,29 +53,6 @@ class DoneCallback(ABC):
         ...
 
 
-class TimeoutDoneCallback(DoneCallback):
-    """Timeout done callback.
-
-    Exit from DeepDriveMD after a certain amount of time has elapsed.
-    """
-
-    def __init__(self, duration_sec: float) -> None:
-        """Initialize the timeout done callback.
-
-        Parameters
-        ----------
-        duration_sec : float
-            Seconds to run workflow for.
-        """
-        self.duration_sec = duration_sec
-        self.start_time = time.time()
-
-    def workflow_finished(self, workflow: DeepDriveMDWorkflow) -> bool:
-        """Return True, if workflow should terminate."""
-        elapsed_sec = time.time() - self.start_time
-        return elapsed_sec > self.duration_sec
-
-
 class SimulationCountDoneCallback(DoneCallback):
     """Simulation count done callback.
 
@@ -134,8 +111,15 @@ class ResultLogger:
         result_dir.mkdir(exist_ok=True)
         self.result_dir = result_dir
 
+        # Number of times a given task has been submitted
+        self.task_counter: defaultdict[str, int] = defaultdict(int)
+
     def log(self, result: Result, topic: str) -> None:
         """Write a JSON result per line of the output file."""
+        # Increment the task counter
+        self.task_counter[topic] += 1
+
+        # Write the result to a jsonl file
         with open(self.result_dir / f'{topic}.json', 'a') as f:
             print(result.json(exclude={'inputs', 'value'}), file=f)
 

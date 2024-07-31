@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import logging
 import sys
-import time
 from argparse import ArgumentParser
-from collections import defaultdict
 from functools import partial
 from functools import update_wrapper
 from pathlib import Path
@@ -30,8 +28,6 @@ from pydantic import Field
 from pydantic import validator
 
 from westpa_colmena.api import BaseModel
-from westpa_colmena.api import DoneCallback
-from westpa_colmena.api import InferenceCountDoneCallback
 from westpa_colmena.api import ResultLogger
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import TargetState
@@ -70,7 +66,7 @@ class SynchronousDDWE(BaseThinker):
         westpa_h5file: WestpaH5File,
         basis_states: BasisStates,
         target_states: list[TargetState],
-        done_callbacks: list[DoneCallback] | None = None,
+        num_iterations: int,
     ) -> None:
         """Initialize the DeepDriveMD workflow.
 
@@ -80,8 +76,8 @@ class SynchronousDDWE(BaseThinker):
             Queue used to communicate with the task server
         result_dir: Path
             Directory in which to store outputs
-        done_callbacks: list[DoneCallback]
-            Callbacks that can trigger a run to end.
+        num_iterations: int
+            Number of iterations to run the workflow.
         """
         super().__init__(queue)
 
@@ -89,20 +85,10 @@ class SynchronousDDWE(BaseThinker):
         self.westpa_h5file = westpa_h5file
         self.basis_states = basis_states
         self.target_states = target_states
+        self.num_iterations = num_iterations
+
         self.inference_input: list[SimResult] = []
-
-        # Number of times a given task has been submitted
-        self.task_counter: defaultdict[str, int] = defaultdict(int)
-        self.done_callbacks = done_callbacks or []
         self.result_logger = ResultLogger(result_dir)
-
-    def log_result(self, result: Result, topic: str) -> None:
-        """Log a result to the result logger."""
-        # Log the jsonl result
-        self.result_logger.log(result, topic)
-
-        # Increment the task counter
-        self.task_counter[topic] += 1
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server."""
@@ -113,16 +99,16 @@ class SynchronousDDWE(BaseThinker):
             keep_inputs=False,
         )
 
-    @agent
-    def main_loop(self) -> None:
-        """Run main loop for the DeepDriveMD workflow."""
-        while not self.done.is_set():
-            for callback in self.done_callbacks:
-                if callback.workflow_finished(self):
-                    self.logger.info('Exiting DeepDriveMD')
-                    self.done.set()
-                    return
-            time.sleep(1)
+    # @agent
+    # def main_loop(self) -> None:
+    #     """Run main loop for the DeepDriveMD workflow."""
+    #     while not self.done.is_set():
+    #         for callback in self.done_callbacks:
+    #             if callback.workflow_finished(self):
+    #                 self.logger.info('Exiting DeepDriveMD')
+    #                 self.done.set()
+    #                 return
+    #         time.sleep(1)
 
     @agent(startup=True)
     def start_simulations(self) -> None:
@@ -133,13 +119,10 @@ class SynchronousDDWE(BaseThinker):
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
-        """Process a simulation result.
-
-        Will always submit a new simulation tasks and an inference or training
-        if the :meth:`handle_simulation_output` sets the appropriate flags.
-        """
+        """Process a simulation result."""
         # Log simulation job results
-        self.log_result(result, 'simulation')
+        self.result_logger.log(result, topic='simulation')
+
         if not result.success:
             # TODO (wardlt): Should we submit a new simulation if one fails?
             # (braceal): Yes, I think so. I think we can move this check to
@@ -157,13 +140,9 @@ class SynchronousDDWE(BaseThinker):
 
     @result_processor(topic='inference')
     def process_inference_result(self, result: Result) -> None:
-        """Process an inference result.
-
-        Will always submit a new simulation tasks and an inference or training
-        if the :meth:`handle_simulation_output` sets the appropriate flags.
-        """
+        """Process an inference result."""
         # Log inference job results
-        self.log_result(result, 'inference')
+        self.result_logger.log(result, topic='inference')
         if not result.success:
             self.logger.warning('Bad inference result')
             return
@@ -195,6 +174,11 @@ class SynchronousDDWE(BaseThinker):
         self.logger.info(
             f'Current iteration: {len(self.ensemble.simulations)}',
         )
+
+        # Check if the workflow is finished
+        if len(self.ensemble.simulations) >= self.num_iterations:
+            self.logger.info('Workflow finished')
+            self.done.set()
 
 
 class MyBasisStates(BasisStates):
@@ -355,9 +339,9 @@ if __name__ == '__main__':
     )
 
     # Add a callbacks to decide when to stop the thinker
-    done_callbacks = [
-        InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
-    ]
+    # done_callbacks = [
+    #     InferenceCountDoneCallback(total_inferences=cfg.num_iterations),
+    # ]
 
     # Create the HDF5 file for WESTPA
     # TODO: Unify the westpa hdf5 file with the checkpoint logic.
@@ -371,7 +355,7 @@ if __name__ == '__main__':
         westpa_h5file=westpa_h5file,
         basis_states=basis_states,
         target_states=cfg.target_states,
-        done_callbacks=done_callbacks,  # type: ignore[arg-type]
+        num_iterations=cfg.num_iterations,
     )
     logging.info('Created the task server and task generator')
 
