@@ -86,8 +86,6 @@ class Binner(ABC):
         # Assign the simulations to bin indices (in-place)
         output[:] = self.assign_bins(coords)
 
-        print('Calling assign_bins')
-
         return output
 
     def pickle_and_hash(self) -> tuple[bytes, str]:
