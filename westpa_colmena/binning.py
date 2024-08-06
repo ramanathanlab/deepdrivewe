@@ -81,10 +81,14 @@ class Binner(ABC):
 
         # Initialize output if not provided
         if output is None:
-            output = np.empty(coords.shape[0], dtype=int)
+            output = np.empty(coords.shape[0], dtype=np.uint16)
+
+        # Initialize the mask if not provided
+        if mask is not None:
+            mask = np.ones(coords.shape[0], dtype=np.bool_)
 
         # Assign the simulations to bin indices (in-place)
-        output[:] = self.assign_bins(coords)
+        output[mask] = self.assign_bins(coords)
 
         return output
 
