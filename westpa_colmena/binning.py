@@ -74,8 +74,17 @@ class Binner(ABC):
         # Note: The mask is not used in this implementation (i.e., all
         # simulations are used).
 
-        # Assign the simulations to bin indices
-        output = self.assign_bins(coords)
+        # # Assign the simulations to bin indices
+        # output = self.assign_bins(coords)
+
+        # return output
+
+        # Initialize output if not provided
+        if output is None:
+            output = np.empty(coords.shape[0], dtype=int)
+
+        # Assign the simulations to bin indices (in-place)
+        output[:] = self.assign_bins(coords)
 
         return output
 
