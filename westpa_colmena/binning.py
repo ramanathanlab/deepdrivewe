@@ -71,14 +71,6 @@ class Binner(ABC):
         np.ndarray
             The bin assignments for each simulation (n_simulations,)
         """
-        # Note: The mask is not used in this implementation (i.e., all
-        # simulations are used).
-
-        # # Assign the simulations to bin indices
-        # output = self.assign_bins(coords)
-
-        # return output
-
         # Initialize output if not provided
         if output is None:
             output = np.empty(coords.shape[0], dtype=np.uint16)
