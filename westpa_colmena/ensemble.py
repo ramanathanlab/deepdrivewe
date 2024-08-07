@@ -32,7 +32,8 @@ class IterationMetadata(BaseModel):
 
     iteration_id: int = Field(
         ...,
-        description='The ID of the iteration.',
+        ge=1,
+        description='The ID of the iteration (1-indexed).',
     )
     binner_pickle: bytes = Field(
         default='',
@@ -75,7 +76,9 @@ class SimMetadata(BaseModel):
     )
     iteration_id: int = Field(
         ...,
-        description='The ID of the iteration the simulation is in.',
+        ge=1,
+        description='The ID of the iteration the simulation is in '
+        '(1-indexed).',
     )
     parent_restart_file: Path = Field(
         ...,
@@ -141,7 +144,7 @@ class BasisStates(ABC):
 
     def __init__(
         self,
-        simulation_input_dir: Path,
+        basis_state_dir: Path,
         basis_state_ext: str,
         initial_ensemble_members: int,
     ) -> None:
@@ -149,14 +152,14 @@ class BasisStates(ABC):
 
         Parameters
         ----------
-        simulation_input_dir : Path
+        basis_state_dir : Path
             The directory containing the simulation input files.
         basis_state_ext : str
             The extension of the basis state files.
         initial_ensemble_members : int
             The number of initial ensemble members.
         """
-        self.simulation_input_dir = simulation_input_dir
+        self.basis_state_dir = basis_state_dir
         self.basis_state_ext = basis_state_ext
         self.ensemble_members = initial_ensemble_members
 
@@ -205,7 +208,7 @@ class BasisStates(ABC):
         # Collect initial simulation directories,
         # assuming they are in nested subdirectories
         sim_input_dirs = [
-            p for p in self.simulation_input_dir.glob('*') if p.is_dir()
+            p for p in self.basis_state_dir.glob('*') if p.is_dir()
         ]
 
         # Check if there are more input dirs than initial ensemble members
@@ -257,7 +260,7 @@ class BasisStates(ABC):
                 SimMetadata(
                     weight=weight,
                     simulation_id=idx,
-                    iteration_id=0,
+                    iteration_id=1,  # WESTPA is 1-indexed
                     parent_restart_file=file,
                     parent_pcoord=pcoord,
                     # Set the parent simulation ID to the negative of the
@@ -339,9 +342,15 @@ class WeightedEnsemble:
             pickle.dump(self, f)
 
     @property
-    def current_iteration(self) -> list[SimMetadata]:
+    def current_sims(self) -> list[SimMetadata]:
         """Return the simulations for the current iteration."""
         return self.simulations[-1]
+
+    @property
+    def iteration(self) -> int:
+        """Return the current iteration of the weighted ensemble."""
+        # The first iteration is the basis states
+        return len(self.simulations) - 1
 
     def advance_iteration(
         self,

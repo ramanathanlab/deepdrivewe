@@ -71,11 +71,16 @@ class Binner(ABC):
         np.ndarray
             The bin assignments for each simulation (n_simulations,)
         """
-        # Note: The mask is not used in this implementation (i.e., all
-        # simulations are used).
+        # Initialize output if not provided
+        if output is None:
+            output = np.empty(coords.shape[0], dtype=np.uint16)
 
-        # Assign the simulations to bin indices
-        output = self.assign_bins(coords)
+        # Initialize the mask if not provided
+        if mask is not None:
+            mask = np.ones(coords.shape[0], dtype=np.bool_)
+
+        # Assign the simulations to bin indices (in-place)
+        output[mask] = self.assign_bins(coords)
 
         return output
 
@@ -279,6 +284,7 @@ class RectilinearBinner(Binner):
             for i in self.target_state_inds:
                 bin_target_counts[i] = 0
 
+            # Cache the result
             self.bin_target_counts = bin_target_counts
 
         # Otherwise, return the list of bin target counts

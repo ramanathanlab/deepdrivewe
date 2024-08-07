@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
+from pathlib import Path
 from typing import Literal
 from typing import Sequence
 from typing import Union
@@ -13,7 +14,6 @@ from parsl.executors import HighThroughputExecutor
 from parsl.providers import LocalProvider
 
 from westpa_colmena.api import BaseModel
-from westpa_colmena.api import PathLike
 
 
 class BaseComputeSettings(BaseModel, ABC):
@@ -23,12 +23,12 @@ class BaseComputeSettings(BaseModel, ABC):
     """Name of the platform to use."""
 
     @abstractmethod
-    def config_factory(self, run_dir: PathLike) -> Config:
+    def config_factory(self, run_dir: str | Path) -> Config:
         """Create a new Parsl configuration.
 
         Parameters
         ----------
-        run_dir : PathLike
+        run_dir : str | Path
             Path to store monitoring DB and parsl logs.
 
         Returns
@@ -48,7 +48,7 @@ class LocalSettings(BaseComputeSettings):
     worker_port_range: tuple[int, int] = (10000, 20000)
     label: str = 'htex'
 
-    def config_factory(self, run_dir: PathLike) -> Config:
+    def config_factory(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for local execution."""
         return Config(
             run_dir=str(run_dir),
@@ -78,7 +78,7 @@ class WorkstationSettings(BaseComputeSettings):
     retries: int = 1
     label: str = 'htex'
 
-    def config_factory(self, run_dir: PathLike) -> Config:
+    def config_factory(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for workstation execution."""
         return Config(
             run_dir=str(run_dir),

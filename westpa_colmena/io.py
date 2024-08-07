@@ -201,31 +201,31 @@ class WestpaH5File:
         self,
         h5_file: h5py.File,
         n_iter: int,
-        cur_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
         metadata: IterationMetadata,
     ) -> None:
         """Create a row for the summary table."""
         # Create a row for the summary table
         summary_row = np.zeros((1,), dtype=summary_table_dtype)
         # The number of simulation segments in this iteration
-        summary_row['n_particles'] = len(cur_iteration)
+        summary_row['n_particles'] = len(cur_sims)
         # Compute the total weight of all segments (should be close to 1.0)
-        summary_row['norm'] = sum(x.weight for x in cur_iteration)
+        summary_row['norm'] = sum(x.weight for x in cur_sims)
         # Compute the min and max weight of each bin
         summary_row['min_bin_prob'] = metadata.min_bin_prob
         summary_row['max_bin_prob'] = metadata.max_bin_prob
         # Compute the min and max weight over all segments
-        summary_row['min_seg_prob'] = min(x.weight for x in cur_iteration)
-        summary_row['max_seg_prob'] = max(x.weight for x in cur_iteration)
+        summary_row['min_seg_prob'] = min(x.weight for x in cur_sims)
+        summary_row['max_seg_prob'] = max(x.weight for x in cur_sims)
 
         # Compute the total CPU time for this iteration (in seconds)
-        summary_row['cputime'] = sum(x.cputime for x in cur_iteration)
+        summary_row['cputime'] = sum(x.cputime for x in cur_sims)
         # TODO: This should be the total workflow overhead time
         # for running an iteration. This is not currently tracked.
         # Update this once we refactor the thinker.
 
         # Compute the total wallclock time for this iteration (in seconds)
-        summary_row['walltime'] = max(x.walltime for x in cur_iteration)
+        summary_row['walltime'] = max(x.walltime for x in cur_sims)
 
         # Save a hex string identifying the binning used in this iteration
         summary_row['binhash'] = metadata.binner_hash
@@ -235,7 +235,7 @@ class WestpaH5File:
 
         # Update the summary table
         summary_table.resize((len(summary_table) + 1,))
-        summary_table[n_iter] = summary_row
+        summary_table[n_iter - 1] = summary_row
 
     def _append_ibstates(
         self,
@@ -267,7 +267,7 @@ class WestpaH5File:
         # Create a new row for the index dataset
         set_id = len(index) - 1
         index_row = index[set_id]
-        index_row['iter_valid'] = n_iter
+        index_row['iter_valid'] = n_iter - 1
         index_row['n_bstates'] = len(unique_bstates)
         state_group = group.create_group(str(set_id))
         index_row['group_ref'] = state_group.ref
@@ -322,7 +322,7 @@ class WestpaH5File:
         # Create a new row for the index dataset
         set_id = len(index) - 1
         index_row = index[set_id]
-        index_row['iter_valid'] = n_iter
+        index_row['iter_valid'] = n_iter - 1
         index_row['n_states'] = len(target_states)
 
         if target_states:
@@ -400,15 +400,15 @@ class WestpaH5File:
     def _append_seg_index_table(
         self,
         iter_group: h5py.Group,
-        cur_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
     ) -> None:
         """Append the seg_index table to the HDF5 file."""
         # Create the seg index table
-        seg_index = np.empty((len(cur_iteration),), dtype=seg_index_dtype)
+        seg_index = np.empty((len(cur_sims),), dtype=seg_index_dtype)
 
         # Populate the seg index table
         total_parents = 0
-        for idx, sim in enumerate(cur_iteration):
+        for idx, sim in enumerate(cur_sims):
             seg_index[idx]['weight'] = sim.weight
             seg_index[idx]['parent_id'] = sim.parent_simulation_id
             seg_index[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
@@ -425,7 +425,7 @@ class WestpaH5File:
 
         # Create the weight transfer graph dataset
         wtg_parent_ids = []
-        for sim in cur_iteration:
+        for sim in cur_sims:
             wtg_parent_ids.extend(list(sim.wtg_parent_ids))
         wtg_parent_ids = np.array(wtg_parent_ids, dtype=seg_id_dtype)
 
@@ -435,14 +435,14 @@ class WestpaH5File:
     def _append_pcoords(
         self,
         iter_group: h5py.Group,
-        cur_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
     ) -> None:
         """Append the pcoords to the HDF5 file."""
         # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
         # where the first frame is the parent pcoord and the rest are the
         # pcoords for each frame in the current simulation.
         pcoords = np.array(
-            [[x.parent_pcoord, *x.pcoord] for x in cur_iteration],
+            [[x.parent_pcoord, *x.pcoord] for x in cur_sims],
             dtype=np.float32,
         )
 
@@ -492,49 +492,49 @@ class WestpaH5File:
     def _append_auxdata(
         self,
         iter_group: h5py.Group,
-        cur_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
     ) -> None:
         """Append the auxdata datasets for the current iteration."""
         # Check if there are any simulations
-        if not cur_iteration:
+        if not cur_sims:
             return
         # Create the auxdata datasets for the current iteration
-        for name in cur_iteration[0].auxdata:
+        for name in cur_sims[0].auxdata:
             # Concatenate the auxdata from all the simulations
-            auxdata = np.array([x.auxdata[name] for x in cur_iteration])
+            auxdata = np.array([x.auxdata[name] for x in cur_sims])
 
             # Create the dataset
             iter_group.create_dataset(f'auxdata/{name}', data=auxdata)
 
     def append(
         self,
-        cur_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
         basis_states: BasisStates,
         target_states: list[TargetState],
         metadata: IterationMetadata,
     ) -> None:
         """Append the next iteration to the HDF5 file."""
-        # Get the current iteration number
+        # Get the current iteration number (1-indexed)
         n_iter = metadata.iteration_id
 
         with h5py.File(self.westpa_h5file_path, mode='a') as f:
-            # Update the attrs for the current iteration (WESTPA is 1-indexed)
-            f.attrs['west_current_iteration'] = n_iter + 1
+            # Update the attrs for the current iteration
+            f.attrs['west_current_iteration'] = n_iter
 
             # Append the summary table row
-            self._append_summary(f, n_iter, cur_iteration, metadata)
+            self._append_summary(f, n_iter, cur_sims, metadata)
 
             # Append the basis states if we are on the first iteration
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_ibstates(f, n_iter, basis_states)
 
             # Append the target states if we are on the first iteration
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_tstates(f, n_iter, target_states)
 
             # Append the bin mapper if we are on the first iteration
             # NOTE: this assumes the binning scheme does not change.
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_bin_mapper(f, metadata)
 
             # TODO: We may need to add istate_index, istate_pcoord into the
@@ -543,20 +543,20 @@ class WestpaH5File:
             # Create the iteration group
             iter_group: h5py.Group = f.require_group(
                 '/iterations/iter_{:0{prec}d}'.format(
-                    n_iter + 1,  # WESTPA is 1-indexed
+                    n_iter,
                     prec=self.west_iter_prec,
                 ),
             )
 
             # Add the iteration number and binhash to the group attributes
-            iter_group.attrs['n_iter'] = n_iter + 1  # WESTPA is 1-indexed
+            iter_group.attrs['n_iter'] = n_iter
             iter_group.attrs['binhash'] = metadata.binner_hash
 
             # Append the seg_index table
-            self._append_seg_index_table(iter_group, cur_iteration)
+            self._append_seg_index_table(iter_group, cur_sims)
 
             # Append the pcoords
-            self._append_pcoords(iter_group, cur_iteration)
+            self._append_pcoords(iter_group, cur_sims)
 
             # Append the bin_target_counts
             self._append_bin_target_counts(iter_group, metadata)
@@ -568,4 +568,4 @@ class WestpaH5File:
             self._append_iter_tstates(f, iter_group, n_iter)
 
             # Append the auxdata datasets for the current iteration
-            self._append_auxdata(iter_group, cur_iteration)
+            self._append_auxdata(iter_group, cur_sims)
