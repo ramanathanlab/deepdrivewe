@@ -61,6 +61,9 @@ from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: See TODOs in process_inference_result for pydantic refactor.
 
+# TODO: We should look at the h5 for tstate and bstate info for checkpointing +
+# to accounnt for changes in the h5.
+
 
 class SynchronousDDWE(BaseThinker):
     """A synchronous DDWE thinker."""
