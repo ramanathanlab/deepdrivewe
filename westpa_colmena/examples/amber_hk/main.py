@@ -188,26 +188,20 @@ class SynchronousDDWE(BaseThinker):
 class MyBasisStates(BasisStates):
     """Custom basis state initialization."""
 
-    def __init__(
-        self,
-        sim_config: SimulationConfig,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        """Initialize the basis states."""
-        # NOTE: init_basis_pcoord is called in the super().__init__ call
-        # TODO: It would be nice to run the super init first. Perhaps using
-        # a post validation hook in pydantic (if we go that route).
-        self.sim_config = sim_config
-        super().__init__(*args, **kwargs)
+    top_file: Path = Field(
+        description='Topology file for the cpptraj command.',
+    )
+    reference_file: Path = Field(
+        description='Reference file for the cpptraj command.',
+    )
 
     def init_basis_pcoord(self, basis_file: Path) -> list[float]:
         """Initialize the basis state parent coordinates."""
         # Create the cpptraj command file
         command = (
-            f'parm {self.sim_config.amber_config.top_file} \n'
+            f'parm {self.top_file} \n'
             f'trajin {basis_file}\n'
-            f'reference {self.sim_config.reference_file} [reference] \n'
+            f'reference {self.reference_file} [reference] \n'
             'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
@@ -217,21 +211,11 @@ class MyBasisStates(BasisStates):
 class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
-    basis_state_dir: Path = Field(
-        description='Nested directory storing initial simulation start files, '
-        'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
-        'store PDB files, topology files, etc needed to start the simulation '
-        'application.',
-    )
-    basis_state_ext: str = Field(
-        default='.ncrst',
-        description='Extension for the basis states.',
+    basis_states: BasisStates = Field(
+        description='Arguments for the basis states.',
     )
     output_dir: Path = Field(
         description='Directory in which to store the results.',
-    )
-    initial_ensemble_members: int = Field(
-        description='Number of simulations to start the weighted ensemble.',
     )
     num_iterations: int = Field(
         description='Number of iterations to run the weighted ensemble.',
@@ -304,20 +288,15 @@ if __name__ == '__main__':
         cfg.output_dir / 'run-info',
     )
 
-    # Initialize the basis states
-    basis_states = MyBasisStates(
-        sim_config=cfg.simulation_config,
-        initial_ensemble_members=cfg.initial_ensemble_members,
-        basis_state_dir=cfg.basis_state_dir,
-        basis_state_ext=cfg.basis_state_ext,
-    )
+    # Initialize the basis state
+    cfg.basis_states.load_basis_states()
 
     # Print the basis states
-    logging.info(f'Basis states: {basis_states.basis_states}')
+    logging.info(f'Basis states: {cfg.basis_states}')
 
     # Initialize the weighted ensemble
     ensemble = WeightedEnsemble(
-        basis_states=basis_states,
+        basis_states=cfg.basis_states,
         checkpoint_dir=cfg.output_dir / 'checkpoint',
         resume_checkpoint=cfg.resume_checkpoint,
     )
@@ -330,7 +309,7 @@ if __name__ == '__main__':
     )
     my_run_inference = partial(
         run_inference,
-        basis_states=basis_states,
+        basis_states=cfg.basis_states,
         target_states=cfg.target_states,
         config=cfg.inference_config,
     )
@@ -354,7 +333,7 @@ if __name__ == '__main__':
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
         westpa_h5file=westpa_h5file,
-        basis_states=basis_states,
+        basis_states=cfg.basis_states,
         target_states=cfg.target_states,
         num_iterations=cfg.num_iterations,
     )

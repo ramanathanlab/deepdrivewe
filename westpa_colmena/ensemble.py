@@ -139,46 +139,38 @@ class SimMetadata(BaseModel):
         return hash((self.simulation_id, self.restart_file))
 
 
-class BasisStates(ABC):
+class BasisStates(BaseModel, ABC):
     """Basis states for the weighted ensemble."""
 
-    def __init__(
-        self,
-        basis_state_dir: Path,
-        basis_state_ext: str,
-        initial_ensemble_members: int,
-    ) -> None:
-        """Initialize the basis states.
+    basis_state_dir: Path = Field(
+        description='Nested directory storing initial simulation start files, '
+        'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
+        'store PDB files, topology files, etc needed to start the simulation '
+        'application.',
+    )
+    basis_state_ext: str = Field(
+        default='.ncrst',
+        description='Extension for the basis states.',
+    )
+    initial_ensemble_members: int = Field(
+        ...,
+        ge=1,
+        description='The number of initial ensemble members.',
+    )
+    num_basis_files: int = Field(
+        default=0,
+        description='The number of unique basis state files.',
+    )
+    basis_states: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The basis states for the weighted ensemble.',
+    )
 
-        Parameters
-        ----------
-        basis_state_dir : Path
-            The directory containing the simulation input files.
-        basis_state_ext : str
-            The extension of the basis state files.
-        initial_ensemble_members : int
-            The number of initial ensemble members.
-        """
-        self.basis_state_dir = basis_state_dir
-        self.basis_state_ext = basis_state_ext
-        self.ensemble_members = initial_ensemble_members
-
-        # Load the basis states
-        basis_files = self._load_basis_states()
-
-        # Compute the pcoord for each basis state
-        basis_pcoords = [
-            self.init_basis_pcoord(basis_file) for basis_file in basis_files
-        ]
-
-        # Initialize the basis states
-        self.basis_states = self._uniform_init(basis_files, basis_pcoords)
-
-        # Store the unique basis states (to be used in the HDF5 I/O module)
-        self.unique_basis_states = self.basis_states[: len(basis_files)]
-
-        # Log the number of basis states
-        print(f'Loaded {len(self.basis_states)} basis states')
+    @property
+    def unique_basis_states(self) -> list[SimMetadata]:
+        """Return the unique basis states."""
+        # (to be used in the HDF5 I/O module)
+        return self.basis_states[: self.num_basis_files]
 
     def __len__(self) -> int:
         """Return the number of basis states."""
@@ -192,7 +184,29 @@ class BasisStates(ABC):
         """Return an iterator over the basis states."""
         return iter(self.basis_states)
 
-    def _load_basis_states(self) -> list[Path]:
+    def load_basis_states(self) -> None:
+        """Load the basis states for the weighted ensemble."""
+        # TODO: See if we can do this with a post init hook in
+        #       the new pydantic
+
+        # Collect the basis state files
+        basis_files = self._glob_basis_states()
+
+        # Compute the pcoord for each basis state
+        basis_pcoords = [
+            self.init_basis_pcoord(basis_file) for basis_file in basis_files
+        ]
+
+        # Initialize the basis states
+        self.basis_states = self._uniform_init(basis_files, basis_pcoords)
+
+        # Set the number of basis files
+        self.num_basis_files = len(basis_files)
+
+        # Log the number of basis states
+        print(f'Loaded {len(self.basis_states)} basis states')
+
+    def _glob_basis_states(self) -> list[Path]:
         """Load the unique basis states from the simulation input directory.
 
         Returns
@@ -212,7 +226,7 @@ class BasisStates(ABC):
         ]
 
         # Check if there are more input dirs than initial ensemble members
-        sim_input_dirs = sim_input_dirs[: self.ensemble_members]
+        sim_input_dirs = sim_input_dirs[: self.initial_ensemble_members]
 
         # Get the basis states by globbing the input directories
         basis_states = []
@@ -242,7 +256,7 @@ class BasisStates(ABC):
         basis_pcoords: list[list[float]],
     ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
-        weight = 1.0 / self.ensemble_members
+        weight = 1.0 / self.initial_ensemble_members
 
         # Create a index map to get a unique id for each basis state
         # (note we add 1 to the index to avoid a parent ID of 0)
@@ -253,7 +267,7 @@ class BasisStates(ABC):
         # files to the desired number of ensemble members.
         simulations = []
         for idx, (file, pcoord) in zip(
-            range(self.ensemble_members),
+            range(self.initial_ensemble_members),
             itertools.cycle(zip(basis_files, basis_pcoords)),
         ):
             simulations.append(
