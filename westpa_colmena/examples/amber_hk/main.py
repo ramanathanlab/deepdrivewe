@@ -48,6 +48,7 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (4) Support checkpointing for the WESTPA thinker
 # (5) Forward some of the imports and unify api and ensemble imports.
 # (6) Call package ddwe.
+# (7) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
