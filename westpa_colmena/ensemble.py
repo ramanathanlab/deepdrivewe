@@ -32,7 +32,8 @@ class IterationMetadata(BaseModel):
 
     iteration_id: int = Field(
         ...,
-        description='The ID of the iteration.',
+        ge=1,
+        description='The ID of the iteration (1-indexed).',
     )
     binner_pickle: bytes = Field(
         default='',
@@ -75,7 +76,9 @@ class SimMetadata(BaseModel):
     )
     iteration_id: int = Field(
         ...,
-        description='The ID of the iteration the simulation is in.',
+        ge=1,
+        description='The ID of the iteration the simulation is in '
+        '(1-indexed).',
     )
     parent_restart_file: Path = Field(
         ...,
@@ -257,7 +260,7 @@ class BasisStates(ABC):
                 SimMetadata(
                     weight=weight,
                     simulation_id=idx,
-                    iteration_id=0,
+                    iteration_id=1,  # WESTPA is 1-indexed
                     parent_restart_file=file,
                     parent_pcoord=pcoord,
                     # Set the parent simulation ID to the negative of the

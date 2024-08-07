@@ -235,7 +235,7 @@ class WestpaH5File:
 
         # Update the summary table
         summary_table.resize((len(summary_table) + 1,))
-        summary_table[n_iter] = summary_row
+        summary_table[n_iter - 1] = summary_row
 
     def _append_ibstates(
         self,
@@ -267,7 +267,7 @@ class WestpaH5File:
         # Create a new row for the index dataset
         set_id = len(index) - 1
         index_row = index[set_id]
-        index_row['iter_valid'] = n_iter
+        index_row['iter_valid'] = n_iter - 1
         index_row['n_bstates'] = len(unique_bstates)
         state_group = group.create_group(str(set_id))
         index_row['group_ref'] = state_group.ref
@@ -322,7 +322,7 @@ class WestpaH5File:
         # Create a new row for the index dataset
         set_id = len(index) - 1
         index_row = index[set_id]
-        index_row['iter_valid'] = n_iter
+        index_row['iter_valid'] = n_iter - 1
         index_row['n_states'] = len(target_states)
 
         if target_states:
@@ -514,27 +514,27 @@ class WestpaH5File:
         metadata: IterationMetadata,
     ) -> None:
         """Append the next iteration to the HDF5 file."""
-        # Get the current iteration number
+        # Get the current iteration number (1-indexed)
         n_iter = metadata.iteration_id
 
         with h5py.File(self.westpa_h5file_path, mode='a') as f:
-            # Update the attrs for the current iteration (WESTPA is 1-indexed)
-            f.attrs['west_current_iteration'] = n_iter + 1
+            # Update the attrs for the current iteration
+            f.attrs['west_current_iteration'] = n_iter
 
             # Append the summary table row
             self._append_summary(f, n_iter, cur_sims, metadata)
 
             # Append the basis states if we are on the first iteration
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_ibstates(f, n_iter, basis_states)
 
             # Append the target states if we are on the first iteration
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_tstates(f, n_iter, target_states)
 
             # Append the bin mapper if we are on the first iteration
             # NOTE: this assumes the binning scheme does not change.
-            if n_iter == 0:
+            if n_iter == 1:
                 self._append_bin_mapper(f, metadata)
 
             # TODO: We may need to add istate_index, istate_pcoord into the
@@ -543,13 +543,13 @@ class WestpaH5File:
             # Create the iteration group
             iter_group: h5py.Group = f.require_group(
                 '/iterations/iter_{:0{prec}d}'.format(
-                    n_iter + 1,  # WESTPA is 1-indexed
+                    n_iter,
                     prec=self.west_iter_prec,
                 ),
             )
 
             # Add the iteration number and binhash to the group attributes
-            iter_group.attrs['n_iter'] = n_iter + 1  # WESTPA is 1-indexed
+            iter_group.attrs['n_iter'] = n_iter
             iter_group.attrs['binhash'] = metadata.binner_hash
 
             # Append the seg_index table

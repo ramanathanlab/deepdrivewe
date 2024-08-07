@@ -42,15 +42,12 @@ from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
-# (1) Reproduce a binning example to see if our system is working.
-# (2) Test the resampler and weighted ensemble logic using ntl9.
-# (3) Create a pytest for the WESTPA thinker.
-# (4) Implement a cleaner thinker backend
-# (5) Send cpptraj output to a separate log file to avoid polluting the main
-# (6) Support checkpointing for the WESTPA thinker
-# (7) Do we want iteration_id as used to name the sim dirs to be 1-indexed?
-# (8) Forward some of the imports and unify api and ensemble imports.
-# (9) Call package ddwe.
+# (1) Test the resampler and weighted ensemble logic using ntl9.
+# (2) Create a pytest for the WESTPA thinker.
+# (3) Send cpptraj output to a separate log file to avoid polluting the main
+# (4) Support checkpointing for the WESTPA thinker
+# (5) Forward some of the imports and unify api and ensemble imports.
+# (6) Call package ddwe.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
