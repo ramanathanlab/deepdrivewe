@@ -30,16 +30,15 @@ from pydantic import validator
 from westpa_colmena.api import BaseModel
 from westpa_colmena.api import ResultLogger
 from westpa_colmena.checkpoint import EnsembleCheckpointer
-from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsembleV2
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
 from westpa_colmena.examples.amber_hk.inference import run_inference
+from westpa_colmena.examples.amber_hk.simulate import MyBasisStates
 from westpa_colmena.examples.amber_hk.simulate import run_simulation
 from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
 from westpa_colmena.parsl import ComputeSettingsTypes
-from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
@@ -180,29 +179,6 @@ class SynchronousDDWE(BaseThinker):
         self.logger.info('Submitting next iteration of simulations')
         for sim in self.ensemble.current_sims:
             self.submit_task('simulation', sim)
-
-
-class MyBasisStates(BasisStates):
-    """Custom basis state initialization."""
-
-    top_file: str = Field(
-        description='Topology file for the cpptraj command.',
-    )
-    reference_file: str = Field(
-        description='Reference file for the cpptraj command.',
-    )
-
-    def init_basis_pcoord(self, basis_file: Path) -> list[float]:
-        """Initialize the basis state parent coordinates."""
-        # Create the cpptraj command file
-        command = (
-            f'parm {self.top_file} \n'
-            f'trajin {basis_file}\n'
-            f'reference {self.reference_file} [reference] \n'
-            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
-            'go'
-        )
-        return run_cpptraj(command)
 
 
 class ExperimentSettings(BaseModel):
