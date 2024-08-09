@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from westpa_colmena.ensemble import WeightedEnsembleV2
+from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.io import WestpaH5File
 
 
@@ -19,12 +19,12 @@ class EnsembleCheckpointer:
         # Make the checkpoint directory if it does not exist
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-    def save(self, weighted_ensemble: WeightedEnsembleV2) -> None:
+    def save(self, weighted_ensemble: WeightedEnsemble) -> None:
         """Save the weighted ensemble to a checkpoint file.
 
         Parameters
         ----------
-        weighted_ensemble : WeightedEnsembleV2
+        weighted_ensemble : WeightedEnsemble
             The weighted ensemble to save to the checkpoint file.
         """
         # Save the weighted ensemble to a checkpoint file
@@ -44,12 +44,12 @@ class EnsembleCheckpointer:
             metadata=weighted_ensemble.metadata,
         )
 
-    def load(self, path: Path | None = None) -> WeightedEnsembleV2:
+    def load(self, path: str | Path | None = None) -> WeightedEnsemble:
         """Load the weighted ensemble from a checkpoint file.
 
         Returns
         -------
-        WeightedEnsembleV2
+        WeightedEnsemble
             The weighted ensemble loaded from the checkpoint file.
 
         Raises
@@ -69,7 +69,7 @@ class EnsembleCheckpointer:
 
         # Load the weighted ensemble from the checkpoint file
         with open(path) as fp:
-            return WeightedEnsembleV2(**json.load(fp))
+            return WeightedEnsemble(**json.load(fp))
 
     def latest_checkpoint(self) -> Path | None:
         """Return the latest checkpoint file.

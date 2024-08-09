@@ -32,7 +32,7 @@ from westpa_colmena.api import ResultLogger
 from westpa_colmena.checkpoint import EnsembleCheckpointer
 from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import TargetState
-from westpa_colmena.ensemble import WeightedEnsembleV2
+from westpa_colmena.ensemble import WeightedEnsemble
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
 from westpa_colmena.examples.amber_hk.inference import run_inference
 from westpa_colmena.examples.amber_hk.simulate import run_simulation
@@ -45,10 +45,9 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
 # (3) Send cpptraj output to a separate log file to avoid polluting the main
-# (4) Support checkpointing for the WESTPA thinker
-# (5) Forward some of the imports and unify api and ensemble imports.
-# (6) Call package ddwe.
-# (7) Address west.cfg file requirement for WESTPA analysis tools.
+# (4) Forward some of the imports and unify api and ensemble imports.
+# (5) Call package ddwe.
+# (6) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
@@ -56,13 +55,6 @@ from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: It looks like this thinker implements all the base WESTPA cases.
 #       Maybe we should move it to the API.
-
-# TODO: See TODOs in process_inference_result for pydantic refactor.
-
-# TODO: We should look at the h5 for tstate and bstate info for checkpointing +
-# to accounnt for changes in the h5.
-
-# TODO: Next step: see ensemble.py to finish implementing WeightedEnsembleV2.
 
 
 class SynchronousDDWE(BaseThinker):
@@ -72,7 +64,7 @@ class SynchronousDDWE(BaseThinker):
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        ensemble: WeightedEnsembleV2,
+        ensemble: WeightedEnsemble,
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
     ) -> None:
@@ -154,18 +146,6 @@ class SynchronousDDWE(BaseThinker):
 
         # Save an ensemble checkpoint
         self.checkpointer.save(self.ensemble)
-
-        # TODO: Update the basis states and target states (right now
-        # it assumes they are static, but once we add these to the iteration
-        # metadata, they can be returned neatly from the inference function.)
-        # TODO: This requires making BasisStates a pydantic BaseModel.
-        # TODO: The ensemble can also be a pydantic class to facilitate
-        # easy logging to json for readable checkpoints.
-        # TODO: We should consider whether to make the westpa h5 file a
-        # pydantic class in order to serialize the metadata with the checkpoint
-        # file. However, we might want to think about the case where a user
-        # wants to resume a checkpoint in a different directory. Is this
-        # a supported case?
 
         # Log the current iteration
         self.logger.info(f'Current iteration: {self.ensemble.iteration}')
@@ -293,7 +273,7 @@ if __name__ == '__main__':
 
     if checkpoint is None:
         # Initialize the weighted ensemble
-        ensemble = WeightedEnsembleV2(
+        ensemble = WeightedEnsemble(
             basis_states=cfg.basis_states,
             target_states=cfg.target_states,
         )
