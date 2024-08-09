@@ -185,10 +185,10 @@ class SynchronousDDWE(BaseThinker):
 class MyBasisStates(BasisStates):
     """Custom basis state initialization."""
 
-    top_file: Path = Field(
+    top_file: str = Field(
         description='Topology file for the cpptraj command.',
     )
-    reference_file: Path = Field(
+    reference_file: str = Field(
         description='Reference file for the cpptraj command.',
     )
 

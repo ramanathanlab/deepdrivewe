@@ -135,7 +135,7 @@ class TargetState(BaseModel):
 class BasisStates(BaseModel, ABC):
     """Basis states for the weighted ensemble."""
 
-    basis_state_dir: Path = Field(
+    basis_state_dir: str = Field(
         description='Nested directory storing initial simulation start files, '
         'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
         'store PDB files, topology files, etc needed to start the simulation '
@@ -215,7 +215,7 @@ class BasisStates(BaseModel, ABC):
         # Collect initial simulation directories,
         # assuming they are in nested subdirectories
         sim_input_dirs = [
-            p for p in self.basis_state_dir.glob('*') if p.is_dir()
+            p for p in Path(self.basis_state_dir).glob('*') if p.is_dir()
         ]
 
         # Check if there are more input dirs than initial ensemble members
