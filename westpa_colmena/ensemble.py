@@ -5,13 +5,11 @@ from __future__ import annotations
 import itertools
 from abc import ABC
 from abc import abstractmethod
-from copy import deepcopy
 from pathlib import Path
 from typing import Iterator
 
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import root_validator
 
 
 class IterationMetadata(BaseModel):
@@ -313,24 +311,24 @@ class WeightedEnsembleV2(BaseModel):
         description='The simulations for the current iteration.',
     )
 
-    @root_validator
-    @classmethod
-    def _initialize_basis_states(cls, values: dict) -> dict:
-        """Load from a checkpoint file if it exists."""
-        # If the simulations are not provided (say from a checkpoint),
-        # then we need to initialize the simulations with the basis states
-        # to establish the first iteration.
-        if not values['simulations']:
-            # Get the basis states to initialize the weighted ensemble
-            basis_states: BasisStates = values['basis_states']
+    # @root_validator
+    # @classmethod
+    # def _initialize_basis_states(cls, values: dict) -> dict:
+    #     """Load from a checkpoint file if it exists."""
+    #     # If the simulations are not provided (say from a checkpoint),
+    #     # then we need to initialize the simulations with the basis states
+    #     # to establish the first iteration.
+    #     if not values['simulations']:
+    #         # Get the basis states to initialize the weighted ensemble
+    #         basis_states: BasisStates = values['basis_states']
 
-            # Load the basis states
-            basis_states.load_basis_states()
+    #         # Load the basis states
+    #         basis_states.load_basis_states()
 
-            # Initialize the simulations with the basis states
-            values['simulations'] = [deepcopy(basis_states.basis_states)]
+    #         # Initialize the simulations with the basis states
+    #         values['simulations'] = [deepcopy(basis_states.basis_states)]
 
-        return values
+    #     return values
 
     @property
     def current_sims(self) -> list[SimMetadata]:

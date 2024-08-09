@@ -294,6 +294,14 @@ if __name__ == '__main__':
             basis_states=cfg.basis_states,
             target_states=cfg.target_states,
         )
+
+        # TODO: temp hack to load the basis states
+        # Load the basis states
+        ensemble.basis_states.load_basis_states()
+        from copy import deepcopy
+
+        # Initialize the simulations with the basis states
+        ensemble.simulations = [deepcopy(ensemble.basis_states.basis_states)]
     else:
         # Load the ensemble from a checkpoint if it exists
         ensemble = checkpointer.load(checkpoint)
