@@ -49,7 +49,7 @@ For development, it is recommended to use a virtual environment. The following
 commands will create a virtual environment, install the package in editable
 mode, and install the pre-commit hooks.
 ```bash
-python3.10 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -U pip setuptools wheel
 pip install -e '.[dev,docs]'
