@@ -29,8 +29,8 @@ from pydantic import validator
 
 from westpa_colmena.api import BaseModel
 from westpa_colmena.api import ResultLogger
+from westpa_colmena.checkpoint import EnsembleCheckpointer
 from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import EnsembleCheckpointer
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsembleV2
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
