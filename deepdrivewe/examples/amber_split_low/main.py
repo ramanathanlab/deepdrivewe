@@ -24,20 +24,20 @@ https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_
 # from pydantic import Field
 # from pydantic import validator
 
-# from westpa_colmena.api import BaseModel
-# from westpa_colmena.api import DeepDriveMDWorkflow
-# from westpa_colmena.api import DoneCallback
-# from westpa_colmena.api import InferenceCountDoneCallback
-# from westpa_colmena.ensemble import BasisStates
-# from westpa_colmena.ensemble import SimMetadata
-# from westpa_colmena.ensemble import WeightedEnsemble
-# from westpa_colmena.examples.amber_split_low.inference import InferenceConfig
-# from westpa_colmena.examples.amber_split_low.inference import run_inference
-# from westpa_colmena.examples.amber_split_low.simulate import run_simulation
-# from westpa_colmena.examples.amber_split_low.simulate import SimResult
-# from westpa_colmena.examples.amber_split_low.simulate import SimulationConfig
-# from westpa_colmena.parsl import ComputeSettingsTypes
-# from westpa_colmena.simulation.amber import run_cpptraj
+# from deepdrivewe.api import BaseModel
+# from deepdrivewe.api import DeepDriveMDWorkflow
+# from deepdrivewe.api import DoneCallback
+# from deepdrivewe.api import InferenceCountDoneCallback
+# from deepdrivewe.ensemble import BasisStates
+# from deepdrivewe.ensemble import SimMetadata
+# from deepdrivewe.ensemble import WeightedEnsemble
+# from deepdrivewe.examples.amber_split_low.inference import InferenceConfig
+# from deepdrivewe.examples.amber_split_low.inference import run_inference
+# from deepdrivewe.examples.amber_split_low.simulate import run_simulation
+# from deepdrivewe.examples.amber_split_low.simulate import SimResult
+# from deepdrivewe.examples.amber_split_low.simulate import SimulationConfig
+# from deepdrivewe.parsl import ComputeSettingsTypes
+# from deepdrivewe.simulation.amber import run_cpptraj
 
 # # TODO: Next steps:
 # # (1) Reproduce a binning example to see if our system is working.

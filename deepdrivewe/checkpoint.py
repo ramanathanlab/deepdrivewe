@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from westpa_colmena.ensemble import WeightedEnsemble
-from westpa_colmena.io import WestpaH5File
+from deepdrivewe.ensemble import WeightedEnsemble
+from deepdrivewe.io import WestpaH5File
 
 
 class EnsembleCheckpointer:

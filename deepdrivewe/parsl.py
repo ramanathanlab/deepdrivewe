@@ -12,7 +12,6 @@ from typing import Union
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
 from parsl.providers import LocalProvider
-
 from westpa_colmena.api import BaseModel
 
 

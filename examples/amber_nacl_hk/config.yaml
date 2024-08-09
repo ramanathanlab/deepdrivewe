@@ -1,13 +1,13 @@
 output_dir: runs/naive_resampler_test_v2
 
 basis_states:
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/inputs
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/inputs
   basis_state_ext: .ncrst
   initial_ensemble_members: 5
 
 basis_state_initializer:
-  top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/common_files/nacl.parm7
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/inputs/bstates/bstate.ncrst
+  top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/nacl.parm7
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/inputs/bstates/bstate.ncrst
 
 num_iterations: 50
 resume_checkpoint: null
@@ -15,9 +15,9 @@ resume_checkpoint: null
 simulation_config:
   amber_config:
     amber_exe: sander
-    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/common_files/md.in
-    top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/common_files/nacl.parm7
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/westpa_colmena/examples/amber_nacl_hk/inputs/bstates/bstate.ncrst
+    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/md.in
+    top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/nacl.parm7
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/inputs/bstates/bstate.ncrst
 
 inference_config:
   # The number of simulations to maintain per bin

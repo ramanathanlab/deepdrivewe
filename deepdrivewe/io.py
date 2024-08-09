@@ -7,11 +7,11 @@ from pathlib import Path
 import h5py
 import numpy as np
 
-import westpa_colmena
-from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import IterationMetadata
-from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.ensemble import TargetState
+import deepdrivewe
+from deepdrivewe.ensemble import BasisStates
+from deepdrivewe.ensemble import IterationMetadata
+from deepdrivewe.ensemble import SimMetadata
+from deepdrivewe.ensemble import TargetState
 
 # Define data types for use in the HDF5 file
 
@@ -152,7 +152,7 @@ class WestpaH5File:
             # Set attribute metadata
             f.attrs['west_file_format_version'] = WEST_FILEFORMAT_VERSION
             f.attrs['west_iter_prec'] = WEST_ITER_PREC
-            f.attrs['west_version'] = westpa_colmena.__version__
+            f.attrs['west_version'] = deepdrivewe.__version__
             f.attrs['westpa_iter_prec'] = WEST_ITER_PREC
             f.attrs['westpa_fileformat_version'] = WEST_FILEFORMAT_VERSION
             f.attrs['west_current_iteration'] = 1  # WESTPA is 1-indexed

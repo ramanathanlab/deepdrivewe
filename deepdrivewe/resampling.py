@@ -9,7 +9,6 @@ from abc import abstractmethod
 from copy import deepcopy
 
 import numpy as np
-
 from westpa_colmena.ensemble import SimMetadata
 
 

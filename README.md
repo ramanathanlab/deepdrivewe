@@ -1,20 +1,20 @@
-# westpa_colmena
+# deepdrivewe
 Implementation of WESTPA using Colmena
 
 ## Installation
 
 To install the package, run the following command:
 ```bash
-git clone git@github.com:braceal/westpa_colmena.git
-cd westpa_colmena
+git clone git@github.com:braceal/deepdrivewe.git
+cd deepdrivewe
 pip install -e .
 ```
 
 Full installation including dependencies:
 ```bash
-git clone git@github.com:braceal/westpa_colmena.git
-cd westpa_colmena
-conda create -n westpa_colmena python=3.10 -y
+git clone git@github.com:braceal/deepdrivewe.git
+cd deepdrivewe
+conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
 pip install mdtraj==1.9.9
 pip install -e .
@@ -23,7 +23,7 @@ pip install -e .
 ## Usage
 To run the example, run the following command:
 ```bash
-python -m westpa_colmena.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
+python -m deepdrivewe.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
 ```
 
 To kill all the workers, run the following command:

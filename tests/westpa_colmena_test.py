@@ -1,10 +1,10 @@
-"""Tests for the westpa_colmena package."""
+"""Tests for the deepdrivewe package."""
 
 from __future__ import annotations
 
 
-def test_westpa_colmena() -> None:
-    """Test the westpa_colmena package."""
-    import westpa_colmena
+def test_deepdrivewe() -> None:
+    """Test the deepdrivewe package."""
+    import deepdrivewe
 
-    assert westpa_colmena.__version__
+    assert deepdrivewe.__version__

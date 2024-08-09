@@ -7,7 +7,10 @@ authors:
   - family-names: Frazee
     given-names: Nicolas
     orcid: https://orcid.org/0000-0002-6223-8036
+  - family-names: Leung
+    given-names: Jeremy
+    orcid: https://orcid.org/0000-0001-7021-4619
 license: MIT
-repository-code: https://github.com/braceal/westpa_colmena
-title: westpa_colmena
-url: https://github.com/braceal/westpa_colmena
+repository-code: https://github.com/braceal/deepdrivewe
+title: deepdrivewe
+url: https://github.com/braceal/deepdrivewe

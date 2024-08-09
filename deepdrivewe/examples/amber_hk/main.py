@@ -27,27 +27,26 @@ from proxystore.store import Store
 from pydantic import Field
 from pydantic import validator
 
-from westpa_colmena.api import BaseModel
-from westpa_colmena.api import ResultLogger
-from westpa_colmena.checkpoint import EnsembleCheckpointer
-from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import TargetState
-from westpa_colmena.ensemble import WeightedEnsemble
-from westpa_colmena.examples.amber_hk.inference import InferenceConfig
-from westpa_colmena.examples.amber_hk.inference import run_inference
-from westpa_colmena.examples.amber_hk.simulate import run_simulation
-from westpa_colmena.examples.amber_hk.simulate import SimResult
-from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
-from westpa_colmena.parsl import ComputeSettingsTypes
-from westpa_colmena.simulation.amber import run_cpptraj
+from deepdrivewe.api import BaseModel
+from deepdrivewe.api import ResultLogger
+from deepdrivewe.checkpoint import EnsembleCheckpointer
+from deepdrivewe.ensemble import BasisStates
+from deepdrivewe.ensemble import TargetState
+from deepdrivewe.ensemble import WeightedEnsemble
+from deepdrivewe.examples.amber_hk.inference import InferenceConfig
+from deepdrivewe.examples.amber_hk.inference import run_inference
+from deepdrivewe.examples.amber_hk.simulate import run_simulation
+from deepdrivewe.examples.amber_hk.simulate import SimResult
+from deepdrivewe.examples.amber_hk.simulate import SimulationConfig
+from deepdrivewe.parsl import ComputeSettingsTypes
+from deepdrivewe.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
 # (3) Send cpptraj output to a separate log file to avoid polluting the main
 # (4) Forward some of the imports and unify api and ensemble imports.
-# (5) Call package ddwe.
-# (6) Address west.cfg file requirement for WESTPA analysis tools.
+# (5) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
@@ -60,7 +59,7 @@ from westpa_colmena.simulation.amber import run_cpptraj
 class SynchronousDDWE(BaseThinker):
     """A synchronous DDWE thinker."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         queue: ColmenaQueues,
         result_dir: Path,

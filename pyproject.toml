@@ -3,7 +3,7 @@ requires = ["setuptools>=64.0", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "westpa_colmena"
+name = "deepdrivewe"
 version = "0.1.0"
 authors = [
     {name = "Alexander Brace", email = "abrace@anl.gov"},
@@ -28,12 +28,12 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/braceal/westpa_colmena"
-documentation = "https://github.com/braceal/westpa_colmena"
-repository = "https://github.com/braceal/westpa_colmena"
+homepage = "https://github.com/braceal/deepdrivewe"
+documentation = "https://github.com/braceal/deepdrivewe"
+repository = "https://github.com/braceal/deepdrivewe"
 
 [project.scripts]
-protein-search = "westpa_colmena.cli:main"
+deepdrivewe = "deepdrivewe.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -153,7 +153,7 @@ quote-style = "single"
 
 [tool.ruff.isort]
 force-single-line = true
-known-first-party = ["westpa_colmena", "test", "testing"]
+known-first-party = ["deepdrivewe", "test", "testing"]
 order-by-type = false
 required-imports = ["from __future__ import annotations"]
 

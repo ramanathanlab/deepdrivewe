@@ -10,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 from pydantic import Field
-
 from westpa_colmena.api import BaseModel
 from westpa_colmena.ensemble import SimMetadata
 from westpa_colmena.simulation.amber import AmberConfig
