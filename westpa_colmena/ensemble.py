@@ -95,7 +95,7 @@ class SimMetadata(BaseModel):
         'frames in the trajectory and pcoord_dim is the dimension of the '
         'progress coordinate.',
     )
-    auxdata: dict[str, list[int | float]] = Field(
+    auxdata: dict[str, list[list[int | float]]] = Field(
         default_factory=dict,
         description='Auxiliary data for the simulation (stores auxiliary '
         'pcoords, etc). Does not store raw coords since that would create '
