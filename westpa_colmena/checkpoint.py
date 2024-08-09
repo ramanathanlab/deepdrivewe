@@ -33,7 +33,7 @@ class EnsembleCheckpointer:
 
         # Save the weighted ensemble to the checkpoint file
         with open(checkpoint_file, 'w') as fp:
-            json.dump(weighted_ensemble.dict(), fp, indent=2)
+            fp.write(weighted_ensemble.json())
 
         # Save the weighted ensemble to the HDF5 file
         self.h5file.append(
