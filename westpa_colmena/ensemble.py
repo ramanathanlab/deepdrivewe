@@ -18,7 +18,7 @@ class IterationMetadata(BaseModel):
     """Metadata for an iteration in the weighted ensemble."""
 
     iteration_id: int = Field(
-        1,
+        default=1,
         ge=1,
         description='The ID of the iteration (1-indexed).',
     )

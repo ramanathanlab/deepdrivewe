@@ -299,8 +299,9 @@ if __name__ == '__main__':
         ensemble = checkpointer.load(checkpoint)
         logging.info(f'Loaded ensemble from checkpoint {checkpoint}')
 
-    # Print the basis states
+    # Print the input states
     logging.info(f'Basis states: {ensemble.basis_states}')
+    logging.info(f'Target states: {ensemble.target_states}')
 
     # Assign constant settings to each task function
     my_run_simulation = partial(
