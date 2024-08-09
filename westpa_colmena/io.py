@@ -131,32 +131,30 @@ seg_index_dtype = np.dtype(
     ],
 )
 
+# The version of the WESTPA file format used in this file
+WEST_FILEFORMAT_VERSION = 9
+# The number of digits used to format iteration folders.
+WEST_ITER_PREC = 8
+
 
 class WestpaH5File:
     """Utility class for writing WESTPA HDF5 files."""
 
-    # Default metadata for the WESTPA HDF5 file
-    west_fileformat_version: int = 9
-    west_iter_prec: int = 8
-    west_version: str = westpa_colmena.__version__
-
-    def __init__(self, westpa_h5file_path: str | Path) -> None:
+    def __init__(self, westpa_h5file_path: Path) -> None:
         self.westpa_h5file_path = westpa_h5file_path
 
-        # Initialize the HDF5 file if it does not exist
-        if not Path(self.westpa_h5file_path).exists():
-            self._initialize_hdf5_file()
+        if not self.westpa_h5file_path.exists():
+            self._create_westpa_h5file()
 
-    def _initialize_hdf5_file(self) -> None:
-        """Initialize the HDF5 file."""
-        # Create the file
+    def _create_westpa_h5file(self) -> None:
+        # Create the file if it does not exist
         with h5py.File(self.westpa_h5file_path, mode='w') as f:
             # Set attribute metadata
-            f.attrs['west_file_format_version'] = self.west_fileformat_version
-            f.attrs['west_iter_prec'] = self.west_iter_prec
-            f.attrs['west_version'] = self.west_version
-            f.attrs['westpa_iter_prec'] = self.west_iter_prec
-            f.attrs['westpa_fileformat_version'] = self.west_fileformat_version
+            f.attrs['west_file_format_version'] = WEST_FILEFORMAT_VERSION
+            f.attrs['west_iter_prec'] = WEST_ITER_PREC
+            f.attrs['west_version'] = westpa_colmena.__version__
+            f.attrs['westpa_iter_prec'] = WEST_ITER_PREC
+            f.attrs['westpa_fileformat_version'] = WEST_FILEFORMAT_VERSION
             f.attrs['west_current_iteration'] = 1  # WESTPA is 1-indexed
 
             # Create the summary table
@@ -498,6 +496,7 @@ class WestpaH5File:
         # Check if there are any simulations
         if not cur_sims:
             return
+
         # Create the auxdata datasets for the current iteration
         for name in cur_sims[0].auxdata:
             # Concatenate the auxdata from all the simulations
@@ -544,7 +543,7 @@ class WestpaH5File:
             iter_group: h5py.Group = f.require_group(
                 '/iterations/iter_{:0{prec}d}'.format(
                     n_iter,
-                    prec=self.west_iter_prec,
+                    prec=WEST_ITER_PREC,
                 ),
             )
 

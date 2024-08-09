@@ -3,41 +3,27 @@
 from __future__ import annotations
 
 import itertools
-import pickle
-from abc import ABC
-from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Iterator
+from typing import Protocol
 
 from pydantic import BaseModel
 from pydantic import Field
-
-
-class TargetState(BaseModel):
-    """Target state for the weighted ensemble."""
-
-    label: str = Field(
-        '',
-        description='The label for the target state.',
-    )
-    pcoord: list[float] = Field(
-        ...,
-        description='The progress coordinate for the target state.',
-    )
 
 
 class IterationMetadata(BaseModel):
     """Metadata for an iteration in the weighted ensemble."""
 
     iteration_id: int = Field(
-        ...,
+        default=1,
         ge=1,
         description='The ID of the iteration (1-indexed).',
     )
     binner_pickle: bytes = Field(
         default='',
         description='The pickled binner used to assign simulations.',
+        exclude=True,  # Exclude from JSON serialization to checkpoint
     )
     binner_hash: str = Field(
         default='',
@@ -109,7 +95,7 @@ class SimMetadata(BaseModel):
         'frames in the trajectory and pcoord_dim is the dimension of the '
         'progress coordinate.',
     )
-    auxdata: dict[str, list[int | float]] = Field(
+    auxdata: dict[str, list[list[int | float]]] = Field(
         default_factory=dict,
         description='Auxiliary data for the simulation (stores auxiliary '
         'pcoords, etc). Does not store raw coords since that would create '
@@ -133,52 +119,60 @@ class SimMetadata(BaseModel):
         description='The wall time for the simulation (i.e., system wide).',
     )
 
-    # TODO: Do we still need this?
-    def __hash__(self) -> int:
-        """Hash the simulation metadata to ensure that it is unique."""
-        return hash((self.simulation_id, self.restart_file))
+
+class TargetState(BaseModel):
+    """Target state for the weighted ensemble."""
+
+    label: str = Field(
+        '',
+        description='The label for the target state.',
+    )
+    pcoord: list[float] = Field(
+        ...,
+        description='The progress coordinate for the target state.',
+    )
 
 
-class BasisStates(ABC):
+class BasisStateInitializer(Protocol):
+    """Protocol for initializing the progress coordinate for a basis state."""
+
+    def __call__(self, basis_file: str) -> list[float]:
+        """Initialize the progress coordinate for a basis state."""
+        ...
+
+
+class BasisStates(BaseModel):
     """Basis states for the weighted ensemble."""
 
-    def __init__(
-        self,
-        basis_state_dir: Path,
-        basis_state_ext: str,
-        initial_ensemble_members: int,
-    ) -> None:
-        """Initialize the basis states.
+    basis_state_dir: Path = Field(
+        description='Nested directory storing initial simulation start files, '
+        'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
+        'store PDB files, topology files, etc needed to start the simulation '
+        'application.',
+    )
+    basis_state_ext: str = Field(
+        default='.ncrst',
+        description='Extension for the basis states.',
+    )
+    initial_ensemble_members: int = Field(
+        ...,
+        ge=1,
+        description='The number of initial ensemble members.',
+    )
+    num_basis_files: int = Field(
+        default=0,
+        description='The number of unique basis state files.',
+    )
+    basis_states: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The basis states for the weighted ensemble.',
+    )
 
-        Parameters
-        ----------
-        basis_state_dir : Path
-            The directory containing the simulation input files.
-        basis_state_ext : str
-            The extension of the basis state files.
-        initial_ensemble_members : int
-            The number of initial ensemble members.
-        """
-        self.basis_state_dir = basis_state_dir
-        self.basis_state_ext = basis_state_ext
-        self.ensemble_members = initial_ensemble_members
-
-        # Load the basis states
-        basis_files = self._load_basis_states()
-
-        # Compute the pcoord for each basis state
-        basis_pcoords = [
-            self.init_basis_pcoord(basis_file) for basis_file in basis_files
-        ]
-
-        # Initialize the basis states
-        self.basis_states = self._uniform_init(basis_files, basis_pcoords)
-
-        # Store the unique basis states (to be used in the HDF5 I/O module)
-        self.unique_basis_states = self.basis_states[: len(basis_files)]
-
-        # Log the number of basis states
-        print(f'Loaded {len(self.basis_states)} basis states')
+    @property
+    def unique_basis_states(self) -> list[SimMetadata]:
+        """Return the unique basis states."""
+        # (to be used in the HDF5 I/O module)
+        return self.basis_states[: self.num_basis_files]
 
     def __len__(self) -> int:
         """Return the number of basis states."""
@@ -192,7 +186,30 @@ class BasisStates(ABC):
         """Return an iterator over the basis states."""
         return iter(self.basis_states)
 
-    def _load_basis_states(self) -> list[Path]:
+    def load_basis_states(
+        self,
+        basis_state_initializer: BasisStateInitializer,
+    ) -> None:
+        """Load the basis states for the weighted ensemble."""
+        # Collect the basis state files
+        basis_files = self._glob_basis_states()
+
+        # Compute the pcoord for each basis state
+        basis_pcoords = [
+            basis_state_initializer(basis_file.as_posix())
+            for basis_file in basis_files
+        ]
+
+        # Initialize the basis states
+        self.basis_states = self._uniform_init(basis_files, basis_pcoords)
+
+        # Set the number of basis files
+        self.num_basis_files = len(basis_files)
+
+        # Log the number of basis states
+        print(f'Loaded {len(self.basis_states)} basis states')
+
+    def _glob_basis_states(self) -> list[Path]:
         """Load the unique basis states from the simulation input directory.
 
         Returns
@@ -212,7 +229,7 @@ class BasisStates(ABC):
         ]
 
         # Check if there are more input dirs than initial ensemble members
-        sim_input_dirs = sim_input_dirs[: self.ensemble_members]
+        sim_input_dirs = sim_input_dirs[: self.initial_ensemble_members]
 
         # Get the basis states by globbing the input directories
         basis_states = []
@@ -242,7 +259,7 @@ class BasisStates(ABC):
         basis_pcoords: list[list[float]],
     ) -> list[SimMetadata]:
         # Assign a uniform weight to each of the basis states
-        weight = 1.0 / self.ensemble_members
+        weight = 1.0 / self.initial_ensemble_members
 
         # Create a index map to get a unique id for each basis state
         # (note we add 1 to the index to avoid a parent ID of 0)
@@ -253,7 +270,7 @@ class BasisStates(ABC):
         # files to the desired number of ensemble members.
         simulations = []
         for idx, (file, pcoord) in zip(
-            range(self.ensemble_members),
+            range(self.initial_ensemble_members),
             itertools.cycle(zip(basis_files, basis_pcoords)),
         ):
             simulations.append(
@@ -274,72 +291,49 @@ class BasisStates(ABC):
 
         return simulations
 
-    @abstractmethod
-    def init_basis_pcoord(self, basis_file: Path) -> list[float]:
-        """Initialize the progress coordinate for a basis state."""
-        ...
 
-
-# TODO: Unify this with the westh5 file since that is the checkpoint
-class WeightedEnsemble:
+class WeightedEnsemble(BaseModel):
     """Weighted ensemble."""
 
-    # The list of simulations for each iteration
-    simulations: list[list[SimMetadata]]
+    basis_states: BasisStates = Field(
+        ...,
+        description='The basis states for the weighted ensemble.',
+    )
+    target_states: list[TargetState] = Field(
+        ...,
+        description='The target states for the weighted ensemble.',
+    )
+    simulations: list[list[SimMetadata]] = Field(
+        default_factory=list,
+        description='The list of simulations for each iteration.',
+    )
+    metadata: IterationMetadata = Field(
+        default=IterationMetadata,
+        description='The metadata for the current iteration.',
+    )
+    cur_sims: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The simulations for the current iteration.',
+    )
 
-    def __init__(
+    def initialize_basis_states(
         self,
-        basis_states: BasisStates,
-        checkpoint_dir: Path | None = None,
-        resume_checkpoint: Path | None = None,
+        basis_state_initializer: BasisStateInitializer,
     ) -> None:
-        """Initialize the weighted ensemble.
+        """Load the basis states for the weighted ensemble.
 
         Parameters
         ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        checkpoint_dir : Path or None
-            The directory to save the weighted ensemble checkpoints.
-        resume_checkpoint : Path or None
-            The checkpoint file to resume the weighted ensemble from.
+        basis_state_initializer : BasisStateInitializer
+            The initializer for the basis states (e.g., a function that
+            reads the progress coordinate from a file and computes and
+            returns a progress coordinate).
         """
-        self.basis_states = basis_states
-        self.checkpoint_dir = checkpoint_dir
+        # Load the basis states
+        self.basis_states.load_basis_states(basis_state_initializer)
 
-        # Initialize the checkpoint dir
-        if checkpoint_dir is not None:
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-        # Initialize the weighted ensemble simulations
-        if resume_checkpoint is None:
-            # Initialize the ensemble with the basis states
-            self.simulations = [deepcopy(self.basis_states.basis_states)]
-        else:
-            # Load the weighted ensemble from the checkpoint file
-            self.load_checkpoint(resume_checkpoint)
-
-    def load_checkpoint(self, checkpoint_file: Path) -> None:
-        """Load the weighted ensemble from a checkpoint file."""
-        # Load the weighted ensemble from the checkpoint file
-        with checkpoint_file.open('rb') as f:
-            weighted_ensemble = pickle.load(f)
-
-        # Update the weighted ensemble
-        self.__dict__.update(weighted_ensemble.__dict__)
-
-    def save_checkpoint(self, output_dir: Path) -> None:
-        """Save the weighted ensemble to a checkpoint file."""
-        # Make the output directory if it does not exist
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Save the weighted ensemble to a checkpoint file
-        checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations):06d}'
-        checkpoint_file = output_dir / f'{checkpoint_name}.pkl'
-
-        # Save the weighted ensemble to the checkpoint file
-        with checkpoint_file.open('wb') as f:
-            pickle.dump(self, f)
+        # Initialize the simulations with the basis states
+        self.simulations = [deepcopy(self.basis_states.basis_states)]
 
     @property
     def current_sims(self) -> list[SimMetadata]:
@@ -354,7 +348,9 @@ class WeightedEnsemble:
 
     def advance_iteration(
         self,
-        next_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+        metadata: IterationMetadata,
     ) -> None:
         """Advance the iteration of the weighted ensemble.
 
@@ -363,8 +359,6 @@ class WeightedEnsemble:
         iteration of the weighted ensemble.
         """
         # Create a list to store the new simulations for this iteration
-        self.simulations.append(next_iteration)
-
-        # Save the weighted ensemble to a checkpoint file
-        if self.checkpoint_dir is not None:
-            self.save_checkpoint(self.checkpoint_dir)
+        self.simulations.append(next_sims)
+        self.metadata = metadata
+        self.cur_sims = cur_sims
