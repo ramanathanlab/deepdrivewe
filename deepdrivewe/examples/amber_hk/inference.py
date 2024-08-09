@@ -5,10 +5,10 @@ from __future__ import annotations
 from pydantic import BaseModel
 from pydantic import Field
 
-from deepdrivewe.api import BasisStates
-from deepdrivewe.api import IterationMetadata
-from deepdrivewe.api import SimMetadata
-from deepdrivewe.api import TargetState
+from deepdrivewe import BasisStates
+from deepdrivewe import IterationMetadata
+from deepdrivewe import SimMetadata
+from deepdrivewe import TargetState
 from deepdrivewe.binning import RectilinearBinner
 from deepdrivewe.examples.amber_hk.simulate import SimResult
 from deepdrivewe.recycling import LowRecycler

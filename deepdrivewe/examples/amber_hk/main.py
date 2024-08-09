@@ -27,11 +27,11 @@ from proxystore.store import Store
 from pydantic import Field
 from pydantic import validator
 
-from deepdrivewe.api import BaseModel
-from deepdrivewe.api import BasisStates
-from deepdrivewe.api import TargetState
-from deepdrivewe.api import WeightedEnsemble
-from deepdrivewe.checkpoint import EnsembleCheckpointer
+from deepdrivewe import BaseModel
+from deepdrivewe import BasisStates
+from deepdrivewe import EnsembleCheckpointer
+from deepdrivewe import TargetState
+from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.amber_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_hk.inference import run_inference
 from deepdrivewe.examples.amber_hk.simulate import run_simulation
@@ -72,9 +72,13 @@ class SynchronousDDWE(BaseThinker):
         Parameters
         ----------
         queue: ColmenaQueues
-            Queue used to communicate with the task server
+            Queue used to communicate with the task server.
         result_dir: Path
-            Directory in which to store outputs
+            Directory in which to store outputs.
+        ensemble: WeightedEnsemble
+            The weighted ensemble to use for the workflow.
+        checkpointer: EnsembleCheckpointer
+            Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
         """

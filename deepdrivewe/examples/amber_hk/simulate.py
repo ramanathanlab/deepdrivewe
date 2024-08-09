@@ -11,8 +11,8 @@ from pathlib import Path
 import numpy as np
 from pydantic import Field
 
-from deepdrivewe.api import BaseModel
-from deepdrivewe.api import SimMetadata
+from deepdrivewe import BaseModel
+from deepdrivewe import SimMetadata
 from deepdrivewe.simulation.amber import AmberConfig
 from deepdrivewe.simulation.amber import AmberSimulation
 from deepdrivewe.simulation.amber import AmberTrajAnalyzer
