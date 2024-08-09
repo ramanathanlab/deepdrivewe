@@ -33,7 +33,8 @@ class EnsembleCheckpointer:
 
         # Save the weighted ensemble to the checkpoint file
         with open(checkpoint_file, 'w') as fp:
-            fp.write(weighted_ensemble.json(exclude={'binner_pickle'}))
+            json.dump(weighted_ensemble.dict(), fp, indent=2)
+            # fp.write(weighted_ensemble.json(exclude={'binner_pickle'}))
 
         # Save the weighted ensemble to the HDF5 file
         self.h5file.append(

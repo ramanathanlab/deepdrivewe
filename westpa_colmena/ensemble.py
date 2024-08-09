@@ -23,6 +23,7 @@ class IterationMetadata(BaseModel):
     binner_pickle: bytes = Field(
         default='',
         description='The pickled binner used to assign simulations.',
+        exclude=True,  # Exclude from JSON serialization to checkpoint
     )
     binner_hash: str = Field(
         default='',
