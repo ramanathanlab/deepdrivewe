@@ -496,6 +496,7 @@ class WestpaH5File:
         # Check if there are any simulations
         if not cur_sims:
             return
+
         # Create the auxdata datasets for the current iteration
         for name in cur_sims[0].auxdata:
             # Concatenate the auxdata from all the simulations
