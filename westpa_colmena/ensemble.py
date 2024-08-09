@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import itertools
-from abc import ABC
-from abc import abstractmethod
+from copy import deepcopy
 from pathlib import Path
 from typing import Iterator
+from typing import Protocol
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -133,10 +133,18 @@ class TargetState(BaseModel):
     )
 
 
-class BasisStates(BaseModel, ABC):
+class BasisStateInitializer(Protocol):
+    """Protocol for initializing the progress coordinate for a basis state."""
+
+    def __call__(self, basis_file: str) -> list[float]:
+        """Initialize the progress coordinate for a basis state."""
+        ...
+
+
+class BasisStates(BaseModel):
     """Basis states for the weighted ensemble."""
 
-    basis_state_dir: str = Field(
+    basis_state_dir: Path = Field(
         description='Nested directory storing initial simulation start files, '
         'e.g. pdb_dir/system1/, pdb_dir/system2/, ..., where system<i> might '
         'store PDB files, topology files, etc needed to start the simulation '
@@ -178,17 +186,18 @@ class BasisStates(BaseModel, ABC):
         """Return an iterator over the basis states."""
         return iter(self.basis_states)
 
-    def load_basis_states(self) -> None:
+    def load_basis_states(
+        self,
+        basis_state_initializer: BasisStateInitializer,
+    ) -> None:
         """Load the basis states for the weighted ensemble."""
-        # TODO: See if we can do this with a post init hook in
-        #       the new pydantic
-
         # Collect the basis state files
         basis_files = self._glob_basis_states()
 
         # Compute the pcoord for each basis state
         basis_pcoords = [
-            self.init_basis_pcoord(basis_file) for basis_file in basis_files
+            basis_state_initializer(basis_file.as_posix())
+            for basis_file in basis_files
         ]
 
         # Initialize the basis states
@@ -216,7 +225,7 @@ class BasisStates(BaseModel, ABC):
         # Collect initial simulation directories,
         # assuming they are in nested subdirectories
         sim_input_dirs = [
-            p for p in Path(self.basis_state_dir).glob('*') if p.is_dir()
+            p for p in self.basis_state_dir.glob('*') if p.is_dir()
         ]
 
         # Check if there are more input dirs than initial ensemble members
@@ -282,11 +291,6 @@ class BasisStates(BaseModel, ABC):
 
         return simulations
 
-    @abstractmethod
-    def init_basis_pcoord(self, basis_file: Path) -> list[float]:
-        """Initialize the progress coordinate for a basis state."""
-        ...
-
 
 class WeightedEnsembleV2(BaseModel):
     """Weighted ensemble."""
@@ -312,24 +316,24 @@ class WeightedEnsembleV2(BaseModel):
         description='The simulations for the current iteration.',
     )
 
-    # @root_validator
-    # @classmethod
-    # def _initialize_basis_states(cls, values: dict) -> dict:
-    #     """Load from a checkpoint file if it exists."""
-    #     # If the simulations are not provided (say from a checkpoint),
-    #     # then we need to initialize the simulations with the basis states
-    #     # to establish the first iteration.
-    #     if not values['simulations']:
-    #         # Get the basis states to initialize the weighted ensemble
-    #         basis_states: BasisStates = values['basis_states']
+    def initialize_basis_states(
+        self,
+        basis_state_initializer: BasisStateInitializer,
+    ) -> None:
+        """Load the basis states for the weighted ensemble.
 
-    #         # Load the basis states
-    #         basis_states.load_basis_states()
+        Parameters
+        ----------
+        basis_state_initializer : BasisStateInitializer
+            The initializer for the basis states (e.g., a function that
+            reads the progress coordinate from a file and computes and
+            returns a progress coordinate).
+        """
+        # Load the basis states
+        self.basis_states.load_basis_states(basis_state_initializer)
 
-    #         # Initialize the simulations with the basis states
-    #         values['simulations'] = [deepcopy(basis_states.basis_states)]
-
-    #     return values
+        # Initialize the simulations with the basis states
+        self.simulations = [deepcopy(self.basis_states.basis_states)]
 
     @property
     def current_sims(self) -> list[SimMetadata]:

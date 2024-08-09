@@ -30,15 +30,16 @@ from pydantic import validator
 from westpa_colmena.api import BaseModel
 from westpa_colmena.api import ResultLogger
 from westpa_colmena.checkpoint import EnsembleCheckpointer
+from westpa_colmena.ensemble import BasisStates
 from westpa_colmena.ensemble import TargetState
 from westpa_colmena.ensemble import WeightedEnsembleV2
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
 from westpa_colmena.examples.amber_hk.inference import run_inference
-from westpa_colmena.examples.amber_hk.simulate import MyBasisStates
 from westpa_colmena.examples.amber_hk.simulate import run_simulation
 from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
 from westpa_colmena.parsl import ComputeSettingsTypes
+from westpa_colmena.simulation.amber import run_cpptraj
 
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
@@ -181,6 +182,29 @@ class SynchronousDDWE(BaseThinker):
             self.submit_task('simulation', sim)
 
 
+class CustumBasisStateInitializer(BaseModel):
+    """Custom basis state initialization."""
+
+    top_file: Path = Field(
+        description='Topology file for the cpptraj command.',
+    )
+    reference_file: Path = Field(
+        description='Reference file for the cpptraj command.',
+    )
+
+    def __call__(self, basis_file: str) -> list[float]:
+        """Initialize the basis state parent coordinates."""
+        # Create the cpptraj command file
+        command = (
+            f'parm {self.top_file} \n'
+            f'trajin {basis_file}\n'
+            f'reference {self.reference_file} [reference] \n'
+            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
+            'go'
+        )
+        return run_cpptraj(command)
+
+
 class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
@@ -191,8 +215,11 @@ class ExperimentSettings(BaseModel):
         ge=1,
         description='Number of iterations to run the weighted ensemble.',
     )
-    basis_states: MyBasisStates = Field(
+    basis_states: BasisStates = Field(
         description='The basis states for the weighted ensemble.',
+    )
+    basis_state_initializer: CustumBasisStateInitializer = Field(
+        description='Arguments for initializing the basis states.',
     )
     target_states: list[TargetState] = Field(
         description='The target threshold for the progress coordinate to be'
@@ -271,13 +298,8 @@ if __name__ == '__main__':
             target_states=cfg.target_states,
         )
 
-        # TODO: temp hack to load the basis states
-        # Load the basis states
-        ensemble.basis_states.load_basis_states()
-        from copy import deepcopy
-
         # Initialize the simulations with the basis states
-        ensemble.simulations = [deepcopy(ensemble.basis_states.basis_states)]
+        ensemble.initialize_basis_states(cfg.basis_state_initializer)
     else:
         # Load the ensemble from a checkpoint if it exists
         ensemble = checkpointer.load(checkpoint)
