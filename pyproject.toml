@@ -161,6 +161,9 @@ required-imports = ["from __future__ import annotations"]
 "*/__init__.py" = ["F401"]
 "*/*_test.py" = ["D10"]
 
+[tool.ruff.lint.pylint]
+max-args = 6
+
 [tool.ruff.pydocstyle]
 convention = "numpy"
 

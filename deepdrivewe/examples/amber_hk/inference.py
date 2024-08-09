@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 from pydantic import Field
-from westpa_colmena.binning import RectilinearBinner
-from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import IterationMetadata
-from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.ensemble import TargetState
-from westpa_colmena.examples.amber_hk.simulate import SimResult
-from westpa_colmena.recycling import LowRecycler
-from westpa_colmena.resampling import HuberKimResampler
+
+from deepdrivewe.api import BasisStates
+from deepdrivewe.api import IterationMetadata
+from deepdrivewe.api import SimMetadata
+from deepdrivewe.api import TargetState
+from deepdrivewe.binning import RectilinearBinner
+from deepdrivewe.examples.amber_hk.simulate import SimResult
+from deepdrivewe.recycling import LowRecycler
+from deepdrivewe.resampling import HuberKimResampler
 
 
 class InferenceConfig(BaseModel):

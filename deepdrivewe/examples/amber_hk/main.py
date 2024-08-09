@@ -28,11 +28,10 @@ from pydantic import Field
 from pydantic import validator
 
 from deepdrivewe.api import BaseModel
-from deepdrivewe.api import ResultLogger
+from deepdrivewe.api import BasisStates
+from deepdrivewe.api import TargetState
+from deepdrivewe.api import WeightedEnsemble
 from deepdrivewe.checkpoint import EnsembleCheckpointer
-from deepdrivewe.ensemble import BasisStates
-from deepdrivewe.ensemble import TargetState
-from deepdrivewe.ensemble import WeightedEnsemble
 from deepdrivewe.examples.amber_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_hk.inference import run_inference
 from deepdrivewe.examples.amber_hk.simulate import run_simulation
@@ -40,6 +39,7 @@ from deepdrivewe.examples.amber_hk.simulate import SimResult
 from deepdrivewe.examples.amber_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeSettingsTypes
 from deepdrivewe.simulation.amber import run_cpptraj
+from deepdrivewe.workflows.utils import ResultLogger
 
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
@@ -59,7 +59,7 @@ from deepdrivewe.simulation.amber import run_cpptraj
 class SynchronousDDWE(BaseThinker):
     """A synchronous DDWE thinker."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         queue: ColmenaQueues,
         result_dir: Path,
@@ -67,7 +67,7 @@ class SynchronousDDWE(BaseThinker):
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
     ) -> None:
-        """Initialize the DeepDriveMD workflow.
+        """Initialize the synchronous DDWE thinker.
 
         Parameters
         ----------
