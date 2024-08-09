@@ -28,13 +28,13 @@ class EnsembleCheckpointer:
             The weighted ensemble to save to the checkpoint file.
         """
         # Save the weighted ensemble to a checkpoint file
-        name = f'checkpoint-{len(weighted_ensemble.simulations):06d}.json'
+        iteration = weighted_ensemble.metadata.iteration_id
+        name = f'checkpoint-{iteration:06d}.json'
         checkpoint_file = self.checkpoint_dir / name
 
         # Save the weighted ensemble to the checkpoint file
         with open(checkpoint_file, 'w') as fp:
             fp.write(weighted_ensemble.json(indent=2))
-            # fp.write(weighted_ensemble.json(exclude={'binner_pickle'}))
 
         # Save the weighted ensemble to the HDF5 file
         self.h5file.append(
