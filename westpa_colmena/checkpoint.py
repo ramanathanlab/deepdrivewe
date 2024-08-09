@@ -29,11 +29,10 @@ class EnsembleCheckpointer:
         """
         # Save the weighted ensemble to a checkpoint file
         iteration = weighted_ensemble.metadata.iteration_id
-        name = f'checkpoint-{iteration:06d}.json'
-        checkpoint_file = self.checkpoint_dir / name
+        filename = f'checkpoint-{iteration:06d}.json'
 
         # Save the weighted ensemble to the checkpoint file
-        with open(checkpoint_file, 'w') as fp:
+        with open(self.checkpoint_dir / filename, 'w') as fp:
             fp.write(weighted_ensemble.json(indent=2))
 
         # Save the weighted ensemble to the HDF5 file
