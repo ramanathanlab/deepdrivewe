@@ -30,14 +30,14 @@ from pydantic import validator
 from westpa_colmena.api import BaseModel
 from westpa_colmena.api import ResultLogger
 from westpa_colmena.ensemble import BasisStates
+from westpa_colmena.ensemble import EnsembleCheckpointer
 from westpa_colmena.ensemble import TargetState
-from westpa_colmena.ensemble import WeightedEnsemble
+from westpa_colmena.ensemble import WeightedEnsembleV2
 from westpa_colmena.examples.amber_hk.inference import InferenceConfig
 from westpa_colmena.examples.amber_hk.inference import run_inference
 from westpa_colmena.examples.amber_hk.simulate import run_simulation
 from westpa_colmena.examples.amber_hk.simulate import SimResult
 from westpa_colmena.examples.amber_hk.simulate import SimulationConfig
-from westpa_colmena.io import WestpaH5File
 from westpa_colmena.parsl import ComputeSettingsTypes
 from westpa_colmena.simulation.amber import run_cpptraj
 
@@ -62,18 +62,18 @@ from westpa_colmena.simulation.amber import run_cpptraj
 # TODO: We should look at the h5 for tstate and bstate info for checkpointing +
 # to accounnt for changes in the h5.
 
+# TODO: Next step: see ensemble.py to finish implementing WeightedEnsembleV2.
+
 
 class SynchronousDDWE(BaseThinker):
     """A synchronous DDWE thinker."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         queue: ColmenaQueues,
         result_dir: Path,
-        ensemble: WeightedEnsemble,
-        westpa_h5file: WestpaH5File,
-        basis_states: BasisStates,
-        target_states: list[TargetState],
+        ensemble: WeightedEnsembleV2,
+        checkpointer: EnsembleCheckpointer,
         num_iterations: int,
     ) -> None:
         """Initialize the DeepDriveMD workflow.
@@ -90,9 +90,7 @@ class SynchronousDDWE(BaseThinker):
         super().__init__(queue)
 
         self.ensemble = ensemble
-        self.westpa_h5file = westpa_h5file
-        self.basis_states = basis_states
-        self.target_states = target_states
+        self.checkpointer = checkpointer
         self.num_iterations = num_iterations
 
         self.inference_input: list[SimResult] = []
@@ -148,7 +146,14 @@ class SynchronousDDWE(BaseThinker):
         cur_sims, next_sims, metadata = result.value
 
         # Update the weighted ensemble with the next iteration
-        self.ensemble.advance_iteration(next_iteration=next_sims)
+        self.ensemble.advance_iteration(
+            cur_sims=cur_sims,
+            next_sims=next_sims,
+            metadata=metadata,
+        )
+
+        # Save an ensemble checkpoint
+        self.checkpointer.save(self.ensemble)
 
         # TODO: Update the basis states and target states (right now
         # it assumes they are static, but once we add these to the iteration
@@ -161,14 +166,6 @@ class SynchronousDDWE(BaseThinker):
         # file. However, we might want to think about the case where a user
         # wants to resume a checkpoint in a different directory. Is this
         # a supported case?
-
-        # Log the results to the HDF5 file
-        self.westpa_h5file.append(
-            cur_sims=cur_sims,
-            basis_states=self.basis_states,
-            target_states=self.target_states,
-            metadata=metadata,
-        )
 
         # Log the current iteration
         self.logger.info(f'Current iteration: {self.ensemble.iteration}')
@@ -211,28 +208,25 @@ class MyBasisStates(BasisStates):
 class ExperimentSettings(BaseModel):
     """Provide a YAML interface to configure the experiment."""
 
-    basis_states: BasisStates = Field(
-        description='Arguments for the basis states.',
-    )
     output_dir: Path = Field(
         description='Directory in which to store the results.',
     )
     num_iterations: int = Field(
+        ge=1,
         description='Number of iterations to run the weighted ensemble.',
     )
-    resume_checkpoint: Path | None = Field(
-        default=None,
-        description='Path to the checkpoint file.',
+    basis_states: MyBasisStates = Field(
+        description='The basis states for the weighted ensemble.',
+    )
+    target_states: list[TargetState] = Field(
+        description='The target threshold for the progress coordinate to be'
+        ' considered in the target state.',
     )
     simulation_config: SimulationConfig = Field(
         description='Arguments for the simulation.',
     )
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
-    )
-    target_states: list[TargetState] = Field(
-        description='The target threshold for the progress coordinate to be'
-        ' considered in the target state.',
     )
     compute_settings: ComputeSettingsTypes = Field(
         description='Settings for the compute resources.',
@@ -288,18 +282,25 @@ if __name__ == '__main__':
         cfg.output_dir / 'run-info',
     )
 
-    # Initialize the basis state
-    cfg.basis_states.load_basis_states()
+    # Create the checkpoint manager
+    checkpointer = EnsembleCheckpointer(output_dir=cfg.output_dir)
+
+    # Check if a checkpoint exists
+    checkpoint = checkpointer.latest_checkpoint()
+
+    if checkpoint is None:
+        # Initialize the weighted ensemble
+        ensemble = WeightedEnsembleV2(
+            basis_states=cfg.basis_states,
+            target_states=cfg.target_states,
+        )
+    else:
+        # Load the ensemble from a checkpoint if it exists
+        ensemble = checkpointer.load(checkpoint)
+        logging.info(f'Loaded ensemble from checkpoint {checkpoint}')
 
     # Print the basis states
-    logging.info(f'Basis states: {cfg.basis_states}')
-
-    # Initialize the weighted ensemble
-    ensemble = WeightedEnsemble(
-        basis_states=cfg.basis_states,
-        checkpoint_dir=cfg.output_dir / 'checkpoint',
-        resume_checkpoint=cfg.resume_checkpoint,
-    )
+    logging.info(f'Basis states: {ensemble.basis_states}')
 
     # Assign constant settings to each task function
     my_run_simulation = partial(
@@ -309,8 +310,8 @@ if __name__ == '__main__':
     )
     my_run_inference = partial(
         run_inference,
-        basis_states=cfg.basis_states,
-        target_states=cfg.target_states,
+        basis_states=ensemble.basis_states,
+        target_states=ensemble.target_states,
         config=cfg.inference_config,
     )
     update_wrapper(my_run_simulation, run_simulation)
@@ -323,18 +324,12 @@ if __name__ == '__main__':
         parsl_config,
     )
 
-    # Create the HDF5 file for WESTPA
-    # TODO: Unify the westpa hdf5 file with the checkpoint logic.
-    westpa_h5file = WestpaH5File(cfg.output_dir / 'west.h5')
-
     # Create the workflow thinker
     thinker = SynchronousDDWE(
         queue=queues,
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
-        westpa_h5file=westpa_h5file,
-        basis_states=cfg.basis_states,
-        target_states=cfg.target_states,
+        checkpointer=checkpointer,
         num_iterations=cfg.num_iterations,
     )
     logging.info('Created the task server and task generator')

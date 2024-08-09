@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import itertools
-import pickle
+import json
 from abc import ABC
 from abc import abstractmethod
 from copy import deepcopy
@@ -12,26 +12,16 @@ from typing import Iterator
 
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import root_validator
 
-
-class TargetState(BaseModel):
-    """Target state for the weighted ensemble."""
-
-    label: str = Field(
-        '',
-        description='The label for the target state.',
-    )
-    pcoord: list[float] = Field(
-        ...,
-        description='The progress coordinate for the target state.',
-    )
+from westpa_colmena.io import WestpaH5File
 
 
 class IterationMetadata(BaseModel):
     """Metadata for an iteration in the weighted ensemble."""
 
     iteration_id: int = Field(
-        ...,
+        1,
         ge=1,
         description='The ID of the iteration (1-indexed).',
     )
@@ -133,10 +123,18 @@ class SimMetadata(BaseModel):
         description='The wall time for the simulation (i.e., system wide).',
     )
 
-    # TODO: Do we still need this?
-    def __hash__(self) -> int:
-        """Hash the simulation metadata to ensure that it is unique."""
-        return hash((self.simulation_id, self.restart_file))
+
+class TargetState(BaseModel):
+    """Target state for the weighted ensemble."""
+
+    label: str = Field(
+        '',
+        description='The label for the target state.',
+    )
+    pcoord: list[float] = Field(
+        ...,
+        description='The progress coordinate for the target state.',
+    )
 
 
 class BasisStates(BaseModel, ABC):
@@ -294,66 +292,48 @@ class BasisStates(BaseModel, ABC):
         ...
 
 
-# TODO: Unify this with the westh5 file since that is the checkpoint
-class WeightedEnsemble:
+class WeightedEnsembleV2(BaseModel):
     """Weighted ensemble."""
 
-    # The list of simulations for each iteration
-    simulations: list[list[SimMetadata]]
+    basis_states: BasisStates = Field(
+        ...,
+        description='The basis states for the weighted ensemble.',
+    )
+    target_states: list[TargetState] = Field(
+        ...,
+        description='The target states for the weighted ensemble.',
+    )
+    simulations: list[list[SimMetadata]] = Field(
+        default_factory=list,
+        description='The list of simulations for each iteration.',
+    )
+    metadata: IterationMetadata = Field(
+        default=IterationMetadata,
+        description='The metadata for the current iteration.',
+    )
+    cur_sims: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The simulations for the current iteration.',
+    )
 
-    def __init__(
-        self,
-        basis_states: BasisStates,
-        checkpoint_dir: Path | None = None,
-        resume_checkpoint: Path | None = None,
-    ) -> None:
-        """Initialize the weighted ensemble.
+    @root_validator
+    @classmethod
+    def _initialize_basis_states(cls, values: dict) -> dict:
+        """Load from a checkpoint file if it exists."""
+        # If the simulations are not provided (say from a checkpoint),
+        # then we need to initialize the simulations with the basis states
+        # to establish the first iteration.
+        if not values['simulations']:
+            # Get the basis states to initialize the weighted ensemble
+            basis_states: BasisStates = values['basis_states']
 
-        Parameters
-        ----------
-        basis_states : BasisStates
-            The basis states for the weighted ensemble.
-        checkpoint_dir : Path or None
-            The directory to save the weighted ensemble checkpoints.
-        resume_checkpoint : Path or None
-            The checkpoint file to resume the weighted ensemble from.
-        """
-        self.basis_states = basis_states
-        self.checkpoint_dir = checkpoint_dir
+            # Load the basis states
+            basis_states.load_basis_states()
 
-        # Initialize the checkpoint dir
-        if checkpoint_dir is not None:
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
+            # Initialize the simulations with the basis states
+            values['simulations'] = [deepcopy(basis_states.basis_states)]
 
-        # Initialize the weighted ensemble simulations
-        if resume_checkpoint is None:
-            # Initialize the ensemble with the basis states
-            self.simulations = [deepcopy(self.basis_states.basis_states)]
-        else:
-            # Load the weighted ensemble from the checkpoint file
-            self.load_checkpoint(resume_checkpoint)
-
-    def load_checkpoint(self, checkpoint_file: Path) -> None:
-        """Load the weighted ensemble from a checkpoint file."""
-        # Load the weighted ensemble from the checkpoint file
-        with checkpoint_file.open('rb') as f:
-            weighted_ensemble = pickle.load(f)
-
-        # Update the weighted ensemble
-        self.__dict__.update(weighted_ensemble.__dict__)
-
-    def save_checkpoint(self, output_dir: Path) -> None:
-        """Save the weighted ensemble to a checkpoint file."""
-        # Make the output directory if it does not exist
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Save the weighted ensemble to a checkpoint file
-        checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations):06d}'
-        checkpoint_file = output_dir / f'{checkpoint_name}.pkl'
-
-        # Save the weighted ensemble to the checkpoint file
-        with checkpoint_file.open('wb') as f:
-            pickle.dump(self, f)
+        return values
 
     @property
     def current_sims(self) -> list[SimMetadata]:
@@ -368,7 +348,9 @@ class WeightedEnsemble:
 
     def advance_iteration(
         self,
-        next_iteration: list[SimMetadata],
+        cur_sims: list[SimMetadata],
+        next_sims: list[SimMetadata],
+        metadata: IterationMetadata,
     ) -> None:
         """Advance the iteration of the weighted ensemble.
 
@@ -377,8 +359,168 @@ class WeightedEnsemble:
         iteration of the weighted ensemble.
         """
         # Create a list to store the new simulations for this iteration
-        self.simulations.append(next_iteration)
+        self.simulations.append(next_sims)
+        self.metadata = metadata
+        self.cur_sims = cur_sims
 
+
+class EnsembleCheckpointer:
+    """Checkpointer for the weighted ensemble."""
+
+    def __init__(self, output_dir: Path) -> None:
+        self.checkpoint_dir = output_dir / 'checkpoints'
+        self.h5file = WestpaH5File(westpa_h5file_path=output_dir / 'west.h5')
+
+        # Make the checkpoint directory if it does not exist
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    def save(self, weighted_ensemble: WeightedEnsembleV2) -> None:
+        """Save the weighted ensemble to a checkpoint file.
+
+        Parameters
+        ----------
+        weighted_ensemble : WeightedEnsembleV2
+            The weighted ensemble to save to the checkpoint file.
+        """
         # Save the weighted ensemble to a checkpoint file
-        if self.checkpoint_dir is not None:
-            self.save_checkpoint(self.checkpoint_dir)
+        name = f'checkpoint-{len(weighted_ensemble.simulations):06d}.json'
+        checkpoint_file = self.checkpoint_dir / name
+
+        # Save the weighted ensemble to the checkpoint file
+        with open(checkpoint_file, 'w') as fp:
+            fp.write(weighted_ensemble.json())
+
+        # Save the weighted ensemble to the HDF5 file
+        self.h5file.append(
+            cur_sims=weighted_ensemble.cur_sims,
+            basis_states=weighted_ensemble.basis_states,
+            target_states=weighted_ensemble.target_states,
+            metadata=weighted_ensemble.metadata,
+        )
+
+    def load(self, path: Path | None = None) -> WeightedEnsembleV2:
+        """Load the weighted ensemble from a checkpoint file.
+
+        Returns
+        -------
+        WeightedEnsembleV2
+            The weighted ensemble loaded from the checkpoint file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If no checkpoint file is found.
+        """
+        # TODO: In order to resume from a checkpoint in a different
+        #       output directory, we need to fix the output_dir
+        #       path prefix in each of the SimMetadata, etc objects.
+
+        # Get the latest checkpoint file
+        if path is None:
+            path = self.latest_checkpoint()
+            if path is None:
+                raise FileNotFoundError('No checkpoint file found.')
+
+        # Load the weighted ensemble from the checkpoint file
+        with open(path) as fp:
+            return WeightedEnsembleV2(**json.load(fp))
+
+    def latest_checkpoint(self) -> Path | None:
+        """Return the latest checkpoint file.
+
+        Returns
+        -------
+        Path or None
+            The latest checkpoint file or None if no checkpoint file exists.
+        """
+        return max(self.checkpoint_dir.glob('checkpoint-*.json'), default=None)
+
+
+# TODO: Unify this with the westh5 file since that is the checkpoint
+# class WeightedEnsemble:
+#     """Weighted ensemble."""
+
+#     # The list of simulations for each iteration
+#     simulations: list[list[SimMetadata]]
+
+#     def __init__(
+#         self,
+#         basis_states: BasisStates,
+#         checkpoint_dir: Path | None = None,
+#         resume_checkpoint: Path | None = None,
+#     ) -> None:
+#         """Initialize the weighted ensemble.
+
+#         Parameters
+#         ----------
+#         basis_states : BasisStates
+#             The basis states for the weighted ensemble.
+#         checkpoint_dir : Path or None
+#             The directory to save the weighted ensemble checkpoints.
+#         resume_checkpoint : Path or None
+#             The checkpoint file to resume the weighted ensemble from.
+#         """
+#         self.basis_states = basis_states
+#         self.checkpoint_dir = checkpoint_dir
+
+#         # Initialize the checkpoint dir
+#         if checkpoint_dir is not None:
+#             checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+#         # Initialize the weighted ensemble simulations
+#         if resume_checkpoint is None:
+#             # Initialize the ensemble with the basis states
+#             self.simulations = [deepcopy(self.basis_states.basis_states)]
+#         else:
+#             # Load the weighted ensemble from the checkpoint file
+#             self.load_checkpoint(resume_checkpoint)
+
+#     def load_checkpoint(self, checkpoint_file: Path) -> None:
+#         """Load the weighted ensemble from a checkpoint file."""
+#         # Load the weighted ensemble from the checkpoint file
+#         with checkpoint_file.open('rb') as f:
+#             weighted_ensemble = pickle.load(f)
+
+#         # Update the weighted ensemble
+#         self.__dict__.update(weighted_ensemble.__dict__)
+
+#     def save_checkpoint(self, output_dir: Path) -> None:
+#         """Save the weighted ensemble to a checkpoint file."""
+#         # Make the output directory if it does not exist
+#         output_dir.mkdir(parents=True, exist_ok=True)
+
+#         # Save the weighted ensemble to a checkpoint file
+#         checkpoint_name = f'weighted_ensemble-itr-{len(self.simulations):06d}'
+#         checkpoint_file = output_dir / f'{checkpoint_name}.pkl'
+
+#         # Save the weighted ensemble to the checkpoint file
+#         with checkpoint_file.open('wb') as f:
+#             pickle.dump(self, f)
+
+#     @property
+#     def current_sims(self) -> list[SimMetadata]:
+#         """Return the simulations for the current iteration."""
+#         return self.simulations[-1]
+
+#     @property
+#     def iteration(self) -> int:
+#         """Return the current iteration of the weighted ensemble."""
+#         # The first iteration is the basis states
+#         return len(self.simulations) - 1
+
+#     def advance_iteration(
+#         self,
+#         next_iteration: list[SimMetadata],
+#     ) -> None:
+#         """Advance the iteration of the weighted ensemble.
+
+#         The binner is responsible for determining which simulations to split
+#         and merge. The binner will then call this method to advance the
+#         iteration of the weighted ensemble.
+#         """
+#         # Create a list to store the new simulations for this iteration
+#         self.simulations.append(next_iteration)
+
+#         # Save the weighted ensemble to a checkpoint file
+#         if self.checkpoint_dir is not None:
+#             self.save_checkpoint(self.checkpoint_dir)
