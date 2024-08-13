@@ -43,8 +43,7 @@ from deepdrivewe.workflows.utils import ResultLogger
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
-# (3) Send cpptraj output to a separate log file to avoid polluting the main
-# (4) Address west.cfg file requirement for WESTPA analysis tools.
+# (3) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: It looks like this thinker implements all the base WESTPA cases.
 #       Maybe we should move it to the API.
@@ -224,7 +223,7 @@ class CustumBasisStateInitializer(BaseModel):
             'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
-        return run_cpptraj(command)
+        return run_cpptraj(command, verbose=True)
 
 
 class ExperimentSettings(BaseModel):

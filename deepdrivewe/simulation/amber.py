@@ -134,7 +134,7 @@ class AmberConfig(BaseModel):
     )
 
 
-def run_cpptraj(command: str) -> list[float]:
+def run_cpptraj(command: str, verbose: bool = False) -> list[float]:
     """Run cpptraj with the command and return the progress coordinate.
 
     Parameters
@@ -142,6 +142,9 @@ def run_cpptraj(command: str) -> list[float]:
     command : str
         The cpptraj command instructions to run (these get written to a
         cpptraj input file).
+    verbose : bool
+        Whether to print the stdout and stderr of the cpptraj command
+        (by default False).
 
     Returns
     -------
@@ -183,7 +186,9 @@ def run_cpptraj(command: str) -> list[float]:
                 f'Command: {_command}\nfailed '
                 f'with return code {result.returncode}.',
             )
-            # Print the stdout and stderr
+
+        # Print the stdout and stderr
+        if verbose or result.returncode != 0:
             with open(stdout) as out, open(stderr) as err:
                 print(f'{out.read()}\n\n{err.read()}')
 
