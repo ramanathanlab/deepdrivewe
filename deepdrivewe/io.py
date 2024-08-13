@@ -8,10 +8,10 @@ import h5py
 import numpy as np
 
 import deepdrivewe
-from deepdrivewe.ensemble import BasisStates
-from deepdrivewe.ensemble import IterationMetadata
-from deepdrivewe.ensemble import SimMetadata
-from deepdrivewe.ensemble import TargetState
+from deepdrivewe.api import BasisStates
+from deepdrivewe.api import IterationMetadata
+from deepdrivewe.api import SimMetadata
+from deepdrivewe.api import TargetState
 
 # Define data types for use in the HDF5 file
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from deepdrivewe.ensemble import WeightedEnsemble
+from deepdrivewe.api import WeightedEnsemble
 from deepdrivewe.io import WestpaH5File
 
 

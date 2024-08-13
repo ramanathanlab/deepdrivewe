@@ -10,8 +10,8 @@ from collections import defaultdict
 
 import numpy as np
 
-from deepdrivewe.ensemble import IterationMetadata
-from deepdrivewe.ensemble import SimMetadata
+from deepdrivewe.api import IterationMetadata
+from deepdrivewe.api import SimMetadata
 
 
 class Binner(ABC):

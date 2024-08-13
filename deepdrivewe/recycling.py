@@ -7,8 +7,9 @@ from abc import abstractmethod
 from copy import deepcopy
 
 import numpy as np
-from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import SimMetadata
+
+from deepdrivewe.api import BasisStates
+from deepdrivewe.api import SimMetadata
 
 
 class Recycler(ABC):

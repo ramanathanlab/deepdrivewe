@@ -9,12 +9,13 @@ from pathlib import Path
 
 import numpy as np
 from pydantic import Field
-from westpa_colmena.api import BaseModel
-from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.simulation.amber import AmberConfig
-from westpa_colmena.simulation.amber import AmberSimulation
-from westpa_colmena.simulation.amber import AmberTrajAnalyzer
-from westpa_colmena.simulation.amber import run_cpptraj
+
+from deepdrivewe import BaseModel
+from deepdrivewe import SimMetadata
+from deepdrivewe.simulation.amber import AmberConfig
+from deepdrivewe.simulation.amber import AmberSimulation
+from deepdrivewe.simulation.amber import AmberTrajAnalyzer
+from deepdrivewe.simulation.amber import run_cpptraj
 
 
 class SimulationConfig(BaseModel):
@@ -123,7 +124,7 @@ def run_simulation(
     output_dir: Path,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
-    from westpa_colmena.simulation.amber import AmberSimulation
+    from deepdrivewe.simulation.amber import AmberSimulation
 
     # Create the simulation output directory
     sim_output_dir = (

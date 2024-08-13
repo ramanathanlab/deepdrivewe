@@ -27,12 +27,11 @@ from proxystore.store import Store
 from pydantic import Field
 from pydantic import validator
 
-from deepdrivewe.api import BaseModel
-from deepdrivewe.api import ResultLogger
-from deepdrivewe.checkpoint import EnsembleCheckpointer
-from deepdrivewe.ensemble import BasisStates
-from deepdrivewe.ensemble import TargetState
-from deepdrivewe.ensemble import WeightedEnsemble
+from deepdrivewe import BaseModel
+from deepdrivewe import BasisStates
+from deepdrivewe import EnsembleCheckpointer
+from deepdrivewe import TargetState
+from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.amber_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_hk.inference import run_inference
 from deepdrivewe.examples.amber_hk.simulate import run_simulation
@@ -40,13 +39,13 @@ from deepdrivewe.examples.amber_hk.simulate import SimResult
 from deepdrivewe.examples.amber_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeSettingsTypes
 from deepdrivewe.simulation.amber import run_cpptraj
+from deepdrivewe.workflows.utils import ResultLogger
 
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
 # (3) Send cpptraj output to a separate log file to avoid polluting the main
-# (4) Forward some of the imports and unify api and ensemble imports.
-# (5) Address west.cfg file requirement for WESTPA analysis tools.
+# (4) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
@@ -59,7 +58,7 @@ from deepdrivewe.simulation.amber import run_cpptraj
 class SynchronousDDWE(BaseThinker):
     """A synchronous DDWE thinker."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         queue: ColmenaQueues,
         result_dir: Path,
@@ -67,14 +66,18 @@ class SynchronousDDWE(BaseThinker):
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
     ) -> None:
-        """Initialize the DeepDriveMD workflow.
+        """Initialize the synchronous DDWE thinker.
 
         Parameters
         ----------
         queue: ColmenaQueues
-            Queue used to communicate with the task server
+            Queue used to communicate with the task server.
         result_dir: Path
-            Directory in which to store outputs
+            Directory in which to store outputs.
+        ensemble: WeightedEnsemble
+            The weighted ensemble to use for the workflow.
+        checkpointer: EnsembleCheckpointer
+            Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
         """
