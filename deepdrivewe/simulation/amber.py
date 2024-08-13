@@ -73,13 +73,24 @@ class AmberSimulation:
         # Create the output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
+        # Create stderr log file (by default, stdout is captured
+        # in the log file).
+        stderr = self.output_dir / 'stderr.log'
+
         # Set the random seed
         if self.seed is None:
             self.seed = np.random.randint(0, 2**16)
 
         # Populate the md_input_file with the random seed
         command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
-        subprocess.run(command, check=False, shell=True)
+        with open(stderr, 'a') as err:
+            subprocess.run(
+                command,
+                check=False,
+                shell=True,
+                stdout=err,
+                stderr=err,
+            )
 
         # Setup the simulation
         command = (
@@ -97,7 +108,15 @@ class AmberSimulation:
         print(command)
 
         # Run the simulation
-        subprocess.run(command, shell=True, check=True, cwd=self.output_dir)
+        with open(stderr, 'a') as err:
+            subprocess.run(
+                command,
+                shell=True,
+                check=True,
+                cwd=self.output_dir,
+                stdout=err,
+                stderr=err,
+            )
 
 
 class AmberConfig(BaseModel):
@@ -115,7 +134,7 @@ class AmberConfig(BaseModel):
     )
 
 
-def run_cpptraj(command: str) -> list[float]:
+def run_cpptraj(command: str, verbose: bool = False) -> list[float]:
     """Run cpptraj with the command and return the progress coordinate.
 
     Parameters
@@ -123,6 +142,9 @@ def run_cpptraj(command: str) -> list[float]:
     command : str
         The cpptraj command instructions to run (these get written to a
         cpptraj input file).
+    verbose : bool
+        Whether to print the stdout and stderr of the cpptraj command
+        (by default False).
 
     Returns
     -------
@@ -140,9 +162,35 @@ def run_cpptraj(command: str) -> list[float]:
         input_file = Path(tmp) / 'cpptraj.in'
         input_file.write_text(command)
 
+        # Capture the stdout and stderr
+        stdout = Path(tmp) / 'stdout.log'
+        stderr = Path(tmp) / 'stderr.log'
+
         # Run cpptraj
         _command = f'cat {input_file} | cpptraj'
-        subprocess.run(_command, shell=True, check=True)
+
+        # Run the command and capture the output
+        with open(stdout, 'a') as out, open(stderr, 'a') as err:
+            result = subprocess.run(
+                _command,
+                shell=True,
+                # Do not raise an exception on a non-zero return code
+                check=False,
+                stdout=out,
+                stderr=err,
+            )
+
+        # Check the return code
+        if result.returncode != 0:
+            print(
+                f'Command: {_command}\nfailed '
+                f'with return code {result.returncode}.',
+            )
+
+        # Print the stdout and stderr
+        if verbose or result.returncode != 0:
+            with open(stdout) as out, open(stderr) as err:
+                print(f'{out.read()}\n\n{err.read()}')
 
         # Parse the cpptraj output file (first line is a header)
         lines = Path(output_file).read_text().splitlines()[1:]

@@ -35,7 +35,6 @@ from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.amber_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_hk.inference import run_inference
 from deepdrivewe.examples.amber_hk.simulate import run_simulation
-from deepdrivewe.examples.amber_hk.simulate import SimResult
 from deepdrivewe.examples.amber_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeSettingsTypes
 from deepdrivewe.simulation.amber import run_cpptraj
@@ -44,12 +43,7 @@ from deepdrivewe.workflows.utils import ResultLogger
 # TODO: Next steps:
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
-# (3) Send cpptraj output to a separate log file to avoid polluting the main
-# (4) Address west.cfg file requirement for WESTPA analysis tools.
-
-# TODO: Right now if any errors occur in the simulations, then it will
-# stop the entire workflow since no inference tasks will be submitted.
-# We should resubmit failed workers once and otherwise raise an error and exit.
+# (3) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: It looks like this thinker implements all the base WESTPA cases.
 #       Maybe we should move it to the API.
@@ -65,6 +59,7 @@ class SynchronousDDWE(BaseThinker):
         ensemble: WeightedEnsemble,
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
+        simulation_retry_limit: int = 2,
     ) -> None:
         """Initialize the synchronous DDWE thinker.
 
@@ -80,23 +75,51 @@ class SynchronousDDWE(BaseThinker):
             Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
+        simulation_retry_limit: int
+            Number of times to retry a simulation task if it fails.
         """
         super().__init__(queue)
 
         self.ensemble = ensemble
         self.checkpointer = checkpointer
         self.num_iterations = num_iterations
-
-        self.inference_input: list[SimResult] = []
+        self.simulation_retry_limit = simulation_retry_limit
         self.result_logger = ResultLogger(result_dir)
 
-    def submit_task(self, topic: str, *inputs: Any) -> None:
-        """Submit a task to the task server."""
+        # Store the inference input (the output of the simulations)
+        self.inference_input: list[Any] = []
+
+    def submit_task(
+        self,
+        topic: str,
+        *inputs: Any,
+        keep_inputs: bool = False,
+        retry_count: int | None = None,
+    ) -> None:
+        """Submit a task to the task server.
+
+        Parameters
+        ----------
+        topic: str
+            The topic of the task.
+        inputs: Any
+            The input args to the task.
+        keep_inputs: bool
+            Whether to keep the inputs in the task server.
+        retry_count: int | None
+            The number of times the task has been retried
+            (default to 0 when None is specified).
+        """
+        # Initialize the retry count
+        retry_count = 0 if retry_count is None else retry_count
+
+        # Submit the task to the task server
         self.queues.send_inputs(
             *inputs,
             method=f'run_{topic}',
             topic=topic,
-            keep_inputs=False,
+            keep_inputs=keep_inputs,
+            task_info={'retry_count': retry_count},
         )
 
     @agent(startup=True)
@@ -104,7 +127,7 @@ class SynchronousDDWE(BaseThinker):
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
         for sim in self.ensemble.current_sims:
-            self.submit_task('simulation', sim)
+            self.submit_task('simulation', sim, keep_inputs=True)
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
@@ -112,11 +135,27 @@ class SynchronousDDWE(BaseThinker):
         # Log simulation job results
         self.result_logger.log(result, topic='simulation')
 
+        # Resubmit the simulation task if it failed. If
+        # the task has failed too many times, then quit the workflow.
         if not result.success:
-            # TODO (wardlt): Should we submit a new simulation if one fails?
-            # (braceal): Yes, I think so. I think we can move this check to
-            # after submit_task()
-            self.logger.warning('Bad simulation result')
+            retry_count: int = result.task_info['retry_count']
+            if retry_count >= self.simulation_retry_limit:
+                self.logger.error(
+                    f'Simulation {result.task_id} '
+                    f'failed {retry_count} times, quitting workflow.',
+                )
+                self.done.set()
+                return
+
+            self.submit_task(
+                'simulation',
+                *result.args,
+                keep_inputs=True,
+                retry_count=retry_count + 1,
+            )
+            self.logger.warning(
+                f'Simulation {result.task_id} failed, resubmitted task',
+            )
             return
 
         # Collect simulation results
@@ -161,7 +200,7 @@ class SynchronousDDWE(BaseThinker):
         # Submit the next iteration of simulations
         self.logger.info('Submitting next iteration of simulations')
         for sim in self.ensemble.current_sims:
-            self.submit_task('simulation', sim)
+            self.submit_task('simulation', sim, keep_inputs=True)
 
 
 class CustumBasisStateInitializer(BaseModel):
@@ -184,7 +223,7 @@ class CustumBasisStateInitializer(BaseModel):
             'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
-        return run_cpptraj(command)
+        return run_cpptraj(command, verbose=False)
 
 
 class ExperimentSettings(BaseModel):
