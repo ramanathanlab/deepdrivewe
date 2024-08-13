@@ -46,10 +46,6 @@ from deepdrivewe.workflows.utils import ResultLogger
 # (3) Send cpptraj output to a separate log file to avoid polluting the main
 # (4) Address west.cfg file requirement for WESTPA analysis tools.
 
-# TODO: Right now if any errors occur in the simulations, then it will
-# stop the entire workflow since no inference tasks will be submitted.
-# We should resubmit failed workers once and otherwise raise an error and exit.
-
 # TODO: It looks like this thinker implements all the base WESTPA cases.
 #       Maybe we should move it to the API.
 
