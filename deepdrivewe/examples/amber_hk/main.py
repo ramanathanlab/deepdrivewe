@@ -45,8 +45,7 @@ from deepdrivewe.workflows.utils import ResultLogger
 # (1) Test the resampler and weighted ensemble logic using ntl9.
 # (2) Create a pytest for the WESTPA thinker.
 # (3) Send cpptraj output to a separate log file to avoid polluting the main
-# (4) Forward some of the imports and unify api and ensemble imports.
-# (5) Address west.cfg file requirement for WESTPA analysis tools.
+# (4) Address west.cfg file requirement for WESTPA analysis tools.
 
 # TODO: Right now if any errors occur in the simulations, then it will
 # stop the entire workflow since no inference tasks will be submitted.
