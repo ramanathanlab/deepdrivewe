@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import logging
 import sys
-import uuid
 from argparse import ArgumentParser
-from collections import defaultdict
 from functools import partial
 from functools import update_wrapper
 from pathlib import Path
@@ -37,7 +35,6 @@ from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.amber_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_hk.inference import run_inference
 from deepdrivewe.examples.amber_hk.simulate import run_simulation
-from deepdrivewe.examples.amber_hk.simulate import SimResult
 from deepdrivewe.examples.amber_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeSettingsTypes
 from deepdrivewe.simulation.amber import run_cpptraj
@@ -84,8 +81,7 @@ class SynchronousDDWE(BaseThinker):
         num_iterations: int
             Number of iterations to run the workflow.
         simulation_retry_limit: int
-            Number of times to retry a simulation task if
-            it fails.
+            Number of times to retry a simulation task if it fails.
         """
         super().__init__(queue)
 
@@ -93,17 +89,17 @@ class SynchronousDDWE(BaseThinker):
         self.checkpointer = checkpointer
         self.num_iterations = num_iterations
         self.simulation_retry_limit = simulation_retry_limit
-
-        self.inference_input: list[SimResult] = []
         self.result_logger = ResultLogger(result_dir)
-        self.task_retries: dict[str, int] = defaultdict(int)
+
+        # Store the inference input (the output of the simulations)
+        self.inference_input: list[Any] = []
 
     def submit_task(
         self,
         topic: str,
         *inputs: Any,
         keep_inputs: bool = False,
-        task_uuid: str | None = None,
+        retry_count: int | None = None,
     ) -> None:
         """Submit a task to the task server.
 
@@ -115,10 +111,12 @@ class SynchronousDDWE(BaseThinker):
             The input args to the task.
         keep_inputs: bool
             Whether to keep the inputs in the task server.
+        retry_count: int | None
+            The number of times the task has been retried
+            (default to 0 when None is specified).
         """
-        # Generate a task UUID if not provided to track retries
-        if task_uuid is None:
-            task_uuid = str(uuid.uuid4())
+        # Initialize the retry count
+        retry_count = 0 if retry_count is None else retry_count
 
         # Submit the task to the task server
         self.queues.send_inputs(
@@ -126,7 +124,7 @@ class SynchronousDDWE(BaseThinker):
             method=f'run_{topic}',
             topic=topic,
             keep_inputs=keep_inputs,
-            task_info={'task_uuid': task_uuid},
+            task_info={'retry_count': retry_count},
         )
 
     @agent(startup=True)
@@ -142,14 +140,14 @@ class SynchronousDDWE(BaseThinker):
         # Log simulation job results
         self.result_logger.log(result, topic='simulation')
 
-        # Resubmit the simulation task if it failed
+        # Resubmit the simulation task if it failed. If
+        # the task has failed too many times, then quit the workflow.
         if not result.success:
-            task_uuid: str = result.task_info['task_uuid']
-            self.task_retries[task_uuid] += 1
-
-            if self.task_retries[task_uuid] >= self.simulation_retry_limit:
+            retry_count: int = result.task_info['retry_count']
+            if retry_count >= self.simulation_retry_limit:
                 self.logger.error(
-                    f'Simulation {result.task_id} failed too many times',
+                    f'Simulation {result.task_id} '
+                    f'failed {retry_count} times, quitting workflow.',
                 )
                 self.done.set()
                 return
@@ -158,7 +156,7 @@ class SynchronousDDWE(BaseThinker):
                 'simulation',
                 *result.args,
                 keep_inputs=True,
-                task_uuid=task_uuid,
+                retry_count=retry_count + 1,
             )
             self.logger.warning(
                 f'Simulation {result.task_id} failed, resubmitted task',
