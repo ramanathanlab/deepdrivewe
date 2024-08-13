@@ -10,7 +10,6 @@ basis_state_initializer:
   reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9/common_files/reference.pdb
 
 num_iterations: 106
-resume_checkpoint: null
 
 simulation_config:
   amber_config:
