@@ -35,7 +35,7 @@ from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
 
 
-class CustumBasisStateInitializer(BaseModel):
+class CustomBasisStateInitializer(BaseModel):
     """Custom basis state initialization."""
 
     top_file: Path = Field(
@@ -71,7 +71,7 @@ class ExperimentSettings(BaseModel):
     basis_states: BasisStates = Field(
         description='The basis states for the weighted ensemble.',
     )
-    basis_state_initializer: CustumBasisStateInitializer = Field(
+    basis_state_initializer: CustomBasisStateInitializer = Field(
         description='Arguments for initializing the basis states.',
     )
     target_states: list[TargetState] = Field(
