@@ -73,8 +73,8 @@ class AmberSimulation:
         # Create the output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create files for stdout and stderr
-        stdout = self.output_dir / 'stdout.log'
+        # Create stderr log file (by default, stdout is captured
+        # in the log file).
         stderr = self.output_dir / 'stderr.log'
 
         # Set the random seed
@@ -83,12 +83,12 @@ class AmberSimulation:
 
         # Populate the md_input_file with the random seed
         command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
-        with open(stdout, 'a') as out, open(stderr, 'a') as err:
+        with open(stderr, 'a') as err:
             subprocess.run(
                 command,
                 check=False,
                 shell=True,
-                stdout=out,
+                stdout=err,
                 stderr=err,
             )
 
@@ -108,13 +108,13 @@ class AmberSimulation:
         print(command)
 
         # Run the simulation
-        with open(stdout, 'a') as out, open(stderr, 'a') as err:
+        with open(stderr, 'a') as err:
             subprocess.run(
                 command,
                 shell=True,
                 check=True,
                 cwd=self.output_dir,
-                stdout=out,
+                stdout=err,
                 stderr=err,
             )
 
