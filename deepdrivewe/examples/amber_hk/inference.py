@@ -24,9 +24,9 @@ class InferenceConfig(BaseModel):
         ' Default is 5.',
     )
     max_allowed_weight: float = Field(
-        default=0.25,
+        default=1.0,
         description='The maximum allowed weight for a simulation. Default '
-        'is 0.25.',
+        'is 1.0.',
     )
     min_allowed_weight: float = Field(
         default=10e-40,

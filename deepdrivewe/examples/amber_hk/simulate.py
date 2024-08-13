@@ -55,38 +55,6 @@ class SimResult:
     )
 
 
-class BackboneRMSDAnalyzer(AmberTrajAnalyzer):
-    """Analyze Amber simulations using cpptraj."""
-
-    def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
-        """Get the progress coordinate from the aligned trajectory.
-
-        Parameters
-        ----------
-        sim : AmberSimulation
-            The Amber simulation to analyze.
-
-        Returns
-        -------
-        np.ndarray
-            The progress coordinate from the aligned trajectory.
-        """
-        # Create the cpptraj command file
-        command = (
-            f'parm {sim.top_file} \n'
-            f'trajin {sim.checkpoint_file}\n'
-            f'trajin {sim.trajectory_file}\n'
-            f'reference {self.reference_file} [reference] \n'
-            'rms ALIGN @CA,C,O,N,H reference out {output_file} \n'
-            'go'
-        )
-
-        # Run the command
-        pcoords = run_cpptraj(command)
-
-        return np.array(pcoords)
-
-
 class DistanceAnalyzer(AmberTrajAnalyzer):
     """Analyze Amber simulations using cpptraj."""
 
