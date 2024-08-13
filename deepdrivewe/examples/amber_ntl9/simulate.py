@@ -116,10 +116,9 @@ def run_simulation(
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
     # Copy input files to the output directory
-    checkpoint_file = shutil.copy(
-        metadata.parent_restart_file,
-        sim_output_dir / 'parent.ncrst',
-    )
+    restart_file = metadata.parent_restart_file
+    checkpoint_file = sim_output_dir / f'parent{restart_file.suffix}'
+    checkpoint_file = shutil.copy(restart_file, checkpoint_file)
     md_input = shutil.copy(config.amber_config.md_input_file, sim_output_dir)
     top_file = shutil.copy(config.amber_config.top_file, sim_output_dir)
 
