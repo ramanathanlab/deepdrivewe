@@ -10,7 +10,7 @@ from deepdrivewe import IterationMetadata
 from deepdrivewe import SimMetadata
 from deepdrivewe import TargetState
 from deepdrivewe.binning import RectilinearBinner
-from deepdrivewe.examples.amber_hk.simulate import SimResult
+from deepdrivewe.examples.amber_ntl9.simulate import SimResult
 from deepdrivewe.recycling import LowRecycler
 from deepdrivewe.resampling import HuberKimResampler
 
@@ -54,31 +54,11 @@ def run_inference(
 
     # Create the binner
     binner = RectilinearBinner(
-        bins=[
-            0.00,
-            2.60,
-            2.80,
-            3.00,
-            3.20,
-            3.40,
-            3.60,
-            3.80,
-            4.00,
-            4.50,
-            5.00,
-            5.50,
-            6.00,
-            7.00,
-            8.0,
-            9.0,
-            10.0,
-            11.0,
-            12.0,
-            13.0,
-            14.0,
-            15.0,
-            float('inf'),
-        ],
+        bins=[0.0, 1.00]
+        + [1.10 + 0.1 * i for i in range(35)]
+        + [4.60 + 0.2 * i for i in range(10)]
+        + [6.60 + 0.6 * i for i in range(6)]
+        + [float('inf')],
         bin_target_counts=config.sims_per_bin,
     )
 

@@ -51,7 +51,7 @@ class AmberSimulation:
     @property
     def restart_file(self) -> Path:
         """The restart file for the Amber simulation."""
-        return self.output_dir / 'seg.ncrst'
+        return self.output_dir / f'seg{self.checkpoint_file.suffix}'
 
     @property
     def log_file(self) -> Path:

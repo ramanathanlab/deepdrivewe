@@ -55,7 +55,7 @@ class SimResult:
     )
 
 
-class DistanceAnalyzer(AmberTrajAnalyzer):
+class BackboneRMSDAnalyzer(AmberTrajAnalyzer):
     """Analyze Amber simulations using cpptraj."""
 
     def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
@@ -69,14 +69,14 @@ class DistanceAnalyzer(AmberTrajAnalyzer):
         Returns
         -------
         np.ndarray
-            The progress coordinate from the aligned trajectory (n_frames, 1).
+            The progress coordinate from the aligned trajectory.
         """
         # Create the cpptraj command file
         command = (
-            f'parm {sim.top_file} \n'
+            f'parm {sim.top_file}\n'
             f'trajin {sim.trajectory_file}\n'
-            f'reference {self.reference_file} [reference] \n'
-            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
+            f'reference {self.reference_file} [reference]\n'
+            'rms @CA reference out {output_file}\n'
             'go'
         )
 
@@ -138,7 +138,7 @@ def run_simulation(
     simulation.run()
 
     # Then run cpptraj to get the pcoord and coordinates
-    analyzer = DistanceAnalyzer(reference_file=config.reference_file)
+    analyzer = BackboneRMSDAnalyzer(reference_file=config.reference_file)
     pcoord = analyzer.get_pcoords(simulation)
     coords = analyzer.get_coords(simulation)
 

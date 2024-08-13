@@ -612,7 +612,7 @@ class HuberKimResampler(Resampler):
     def __init__(
         self,
         sims_per_bin: int = 5,
-        max_allowed_weight: float = 0.25,
+        max_allowed_weight: float = 1.0,
         min_allowed_weight: float = 10e-40,
     ) -> None:
         """Initialize the resampler.
@@ -623,7 +623,7 @@ class HuberKimResampler(Resampler):
             The number of simulations to have in each bin. Default is 5.
         max_allowed_weight : float
             The maximum allowed weight for each simulation. If the weight of a
-            simulation exceeds this value, it will be split. Default is 0.25.
+            simulation exceeds this value, it will be split. Default is 1.0.
         min_allowed_weight : float
             The minimum allowed weight for each simulation. All the simulations
             with a weight less than this value will be merged into a single
