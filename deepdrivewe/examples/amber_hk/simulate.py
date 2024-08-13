@@ -135,6 +135,13 @@ def run_simulation(
         / f'{metadata.iteration_id:06d}'
         / f'{metadata.simulation_id:06d}'
     )
+
+    # Remove the directory if it already exists
+    # (this would be from a task failure)
+    if sim_output_dir.exists():
+        shutil.rmtree(sim_output_dir)
+
+    # Create a fresh output directory
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
     # Copy input files to the output directory

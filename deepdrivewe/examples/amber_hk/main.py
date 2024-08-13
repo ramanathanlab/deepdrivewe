@@ -90,13 +90,28 @@ class SynchronousDDWE(BaseThinker):
         self.inference_input: list[SimResult] = []
         self.result_logger = ResultLogger(result_dir)
 
-    def submit_task(self, topic: str, *inputs: Any) -> None:
-        """Submit a task to the task server."""
+    def submit_task(
+        self,
+        topic: str,
+        *inputs: Any,
+        keep_inputs: bool = False,
+    ) -> None:
+        """Submit a task to the task server.
+
+        Parameters
+        ----------
+        topic: str
+            The topic of the task.
+        inputs: Any
+            The input args to the task.
+        keep_inputs: bool
+            Whether to keep the inputs in the task server.
+        """
         self.queues.send_inputs(
             *inputs,
             method=f'run_{topic}',
             topic=topic,
-            keep_inputs=False,
+            keep_inputs=keep_inputs,
         )
 
     @agent(startup=True)
@@ -104,7 +119,7 @@ class SynchronousDDWE(BaseThinker):
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
         for sim in self.ensemble.current_sims:
-            self.submit_task('simulation', sim)
+            self.submit_task('simulation', sim, keep_inputs=True)
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
@@ -112,11 +127,12 @@ class SynchronousDDWE(BaseThinker):
         # Log simulation job results
         self.result_logger.log(result, topic='simulation')
 
+        # Resubmit the simulation task if it failed
         if not result.success:
-            # TODO (wardlt): Should we submit a new simulation if one fails?
-            # (braceal): Yes, I think so. I think we can move this check to
-            # after submit_task()
-            self.logger.warning('Bad simulation result')
+            self.submit_task('simulation', result.args, keep_inputs=True)
+            self.logger.warning(
+                f'Simulation {result.task_id} failed, resubmitted task',
+            )
             return
 
         # Collect simulation results
@@ -161,7 +177,7 @@ class SynchronousDDWE(BaseThinker):
         # Submit the next iteration of simulations
         self.logger.info('Submitting next iteration of simulations')
         for sim in self.ensemble.current_sims:
-            self.submit_task('simulation', sim)
+            self.submit_task('simulation', sim, keep_inputs=True)
 
 
 class CustumBasisStateInitializer(BaseModel):
