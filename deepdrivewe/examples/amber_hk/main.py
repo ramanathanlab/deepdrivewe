@@ -129,7 +129,7 @@ class SynchronousDDWE(BaseThinker):
 
         # Resubmit the simulation task if it failed
         if not result.success:
-            self.submit_task('simulation', result.args, keep_inputs=True)
+            self.submit_task('simulation', *result.args, keep_inputs=True)
             self.logger.warning(
                 f'Simulation {result.task_id} failed, resubmitted task',
             )
