@@ -34,13 +34,6 @@ from deepdrivewe.parsl import ComputeSettingsTypes
 from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
 
-# TODO: Next steps:
-# (1) Create a pytest for the WESTPA thinker.
-# (2) Address west.cfg file requirement for WESTPA analysis tools.
-# (3) Try to unify the basis state initializer with the pcoord
-#     calculation used in the simulation logic. We can also clean
-#     up the AmberTrajAnalyzer class.
-
 
 class CustumBasisStateInitializer(BaseModel):
     """Custom basis state initialization."""
