@@ -223,7 +223,7 @@ class CustumBasisStateInitializer(BaseModel):
             'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
-        return run_cpptraj(command, verbose=True)
+        return run_cpptraj(command, verbose=False)
 
 
 class ExperimentSettings(BaseModel):
