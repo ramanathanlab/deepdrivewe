@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import logging
 import sys
+import uuid
 from argparse import ArgumentParser
+from collections import defaultdict
 from functools import partial
 from functools import update_wrapper
 from pathlib import Path
@@ -65,6 +67,7 @@ class SynchronousDDWE(BaseThinker):
         ensemble: WeightedEnsemble,
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
+        simulation_retry_limit: int = 2,
     ) -> None:
         """Initialize the synchronous DDWE thinker.
 
@@ -80,21 +83,27 @@ class SynchronousDDWE(BaseThinker):
             Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
+        simulation_retry_limit: int
+            Number of times to retry a simulation task if
+            it fails.
         """
         super().__init__(queue)
 
         self.ensemble = ensemble
         self.checkpointer = checkpointer
         self.num_iterations = num_iterations
+        self.simulation_retry_limit = simulation_retry_limit
 
         self.inference_input: list[SimResult] = []
         self.result_logger = ResultLogger(result_dir)
+        self.task_retries: dict[str, int] = defaultdict(int)
 
     def submit_task(
         self,
         topic: str,
         *inputs: Any,
         keep_inputs: bool = False,
+        task_uuid: str | None = None,
     ) -> None:
         """Submit a task to the task server.
 
@@ -107,11 +116,17 @@ class SynchronousDDWE(BaseThinker):
         keep_inputs: bool
             Whether to keep the inputs in the task server.
         """
+        # Generate a task UUID if not provided to track retries
+        if task_uuid is None:
+            task_uuid = str(uuid.uuid4())
+
+        # Submit the task to the task server
         self.queues.send_inputs(
             *inputs,
             method=f'run_{topic}',
             topic=topic,
             keep_inputs=keep_inputs,
+            task_info={'task_uuid': task_uuid},
         )
 
     @agent(startup=True)
@@ -129,7 +144,22 @@ class SynchronousDDWE(BaseThinker):
 
         # Resubmit the simulation task if it failed
         if not result.success:
-            self.submit_task('simulation', *result.args, keep_inputs=True)
+            task_uuid: str = result.task_info['task_uuid']
+            self.task_retries[task_uuid] += 1
+
+            if self.task_retries[task_uuid] >= self.simulation_retry_limit:
+                self.logger.error(
+                    f'Simulation {result.task_id} failed too many times',
+                )
+                self.done.set()
+                return
+
+            self.submit_task(
+                'simulation',
+                *result.args,
+                keep_inputs=True,
+                task_uuid=task_uuid,
+            )
             self.logger.warning(
                 f'Simulation {result.task_id} failed, resubmitted task',
             )
