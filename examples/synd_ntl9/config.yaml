@@ -2,7 +2,7 @@
 output_dir: runs/ntl9-synd-v1
 
 # The total number of iterations to run
-num_iterations: 50
+num_iterations: 150
 
 # The basis states for the simulation
 basis_states:
