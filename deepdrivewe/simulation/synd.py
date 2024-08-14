@@ -12,6 +12,7 @@ import numpy as np
 from pydantic import Field
 
 from deepdrivewe import BaseModel
+from deepdrivewe.workflows.registry import register
 
 
 class SynDConfig(BaseModel):
@@ -27,6 +28,7 @@ class SynDConfig(BaseModel):
     )
 
 
+@register()  # type: ignore[arg-type]
 class SynDSimulation:
     """Run a SynD simulation."""
 
