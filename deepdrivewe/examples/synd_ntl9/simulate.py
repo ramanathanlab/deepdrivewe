@@ -1,0 +1,83 @@
+"""Simulate a system using Amber and analyze the results using cpptraj."""
+
+from __future__ import annotations
+
+import shutil
+import time
+from pathlib import Path
+
+from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
+from deepdrivewe.simulation.synd import SynDConfig
+from deepdrivewe.simulation.synd import SynDSimulation
+from deepdrivewe.simulation.synd import SynDTrajAnalyzer
+
+
+def run_simulation(
+    metadata: SimMetadata,
+    config: SynDConfig,
+    output_dir: Path,
+) -> SimResult:
+    """Run a simulation and return the pcoord and coordinates."""
+    # Add performance logging
+    start_walltime, start_cputime = time.perf_counter(), time.process_time()
+
+    # Create the simulation output directory
+    sim_output_dir = (
+        output_dir
+        / f'{metadata.iteration_id:06d}'
+        / f'{metadata.simulation_id:06d}'
+    )
+
+    # Remove the directory if it already exists
+    # (this would be from a task failure)
+    if sim_output_dir.exists():
+        # Wait a bit to make sure the directory is not being
+        # used and avoid .nfs file race conditions
+        time.sleep(10)
+        shutil.rmtree(sim_output_dir)
+
+    # Create a fresh output directory
+    sim_output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy input files to the output directory
+    restart_file = metadata.parent_restart_file
+    checkpoint_file = sim_output_dir / f'parent{restart_file.suffix}'
+    checkpoint_file = shutil.copy(restart_file, checkpoint_file)
+
+    # Log the yaml config file to this directory
+    config.dump_yaml(sim_output_dir / 'config.yaml')
+
+    # TODO: We can warmstart register this simulation object
+    # Initialize the simulation
+    sim = SynDSimulation(
+        synd_model_file=config.synd_model_file,
+        n_steps=config.n_steps,
+    )
+
+    # Run the simulation
+    sim.run(checkpoint_file=checkpoint_file, output_dir=sim_output_dir)
+
+    # Analyze the trajectory
+    analyzer = SynDTrajAnalyzer()
+    pcoord = analyzer.get_pcoords(sim)
+    coords = analyzer.get_coords(sim)
+
+    # Update the simulation metadata
+    metadata = metadata.copy()
+    metadata.restart_file = sim.restart_file
+    metadata.pcoord = pcoord.tolist()
+
+    # Log the performance
+    stop_walltime, stop_cputime = time.perf_counter(), time.process_time()
+    metadata.walltime = stop_walltime - start_walltime
+    metadata.cputime = stop_cputime - start_cputime
+
+    # Return the results
+    result = SimResult(
+        pcoord=pcoord,
+        coords=coords,
+        metadata=metadata,
+    )
+
+    return result
