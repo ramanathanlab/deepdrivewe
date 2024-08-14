@@ -125,7 +125,7 @@ def run_simulation(
     # Log the yaml config file to this directory
     config.dump_yaml(sim_output_dir / 'config.yaml')
 
-    # First run the simulation
+    # Initialize the simulation
     simulation = AmberSimulation(
         amber_exe=config.amber_config.amber_exe,
         md_input_file=md_input,

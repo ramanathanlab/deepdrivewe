@@ -4,17 +4,46 @@ from __future__ import annotations
 
 import itertools
 import json
+import random
 from copy import deepcopy
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Iterator
 from typing import Protocol
 from typing import TypeVar
 
+import numpy as np
 import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel as _BaseModel
 from pydantic import Field
 
 T = TypeVar('T')
+
+
+@dataclass
+class SimResult:
+    """Store the results of a single simulation."""
+
+    # NOTE: This is a dataclass, not a Pydantic model since
+    #       we need to store the data products of a simulation
+    #       which require numpy arrays.
+
+    pcoord: np.ndarray = field(
+        metadata={
+            'help': 'The progress coordinate for the simulation.',
+        },
+    )
+    coords: np.ndarray = field(
+        metadata={
+            'help': 'The atomic coordinates for the simulation.',
+        },
+    )
+    metadata: SimMetadata = field(
+        metadata={
+            'help': 'The metadata for the simulation.',
+        },
+    )
 
 
 class BaseModel(_BaseModel):
@@ -180,6 +209,15 @@ class BasisStates(BaseModel):
         ge=1,
         description='The number of initial ensemble members.',
     )
+    randomly_initialize: bool = Field(
+        default=False,
+        description='Randomly initialize the basis states if there'
+        ' are more basis states than initial ensemble members.',
+    )
+    random_seed: int = Field(
+        default=0,
+        description='The random seed for initializing the basis states.',
+    )
     num_basis_files: int = Field(
         default=0,
         description='The number of unique basis state files.',
@@ -248,6 +286,16 @@ class BasisStates(BaseModel):
         sim_input_dirs = [
             p for p in self.basis_state_dir.glob('*') if p.is_dir()
         ]
+
+        # Check if there are more basis states than initial ensemble members
+        if (
+            len(sim_input_dirs) > self.initial_ensemble_members
+            and self.randomly_initialize
+        ):
+            # Set the random seed
+            random.seed(self.random_seed)
+            # Randomly shuffle the input directories
+            random.shuffle(sim_input_dirs)
 
         # Check if there are more input dirs than initial ensemble members
         sim_input_dirs = sim_input_dirs[: self.initial_ensemble_members]
