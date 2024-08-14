@@ -11,6 +11,7 @@ from deepdrivewe.api import BaseModel
 from deepdrivewe.api import BasisStates
 from deepdrivewe.api import IterationMetadata
 from deepdrivewe.api import SimMetadata
+from deepdrivewe.api import SimResult
 from deepdrivewe.api import TargetState
 from deepdrivewe.api import WeightedEnsemble
 from deepdrivewe.binning import Binner

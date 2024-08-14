@@ -42,6 +42,16 @@ To check the number of iterations completed:
 h5ls -d runs/naive_resampler_test_v2/west.h5/iterations
 ```
 
+### Running with SynD
+To use the SynD simulation engine, install the following dependencies:
+```bash
+pip install git+https://github.com/jeremyleung521/SynD.git@rng-fix
+```
+
+To generate the basis state .npy files from a .txt file, run the following command:
+```bash
+python -m deepdrivewe.simulation.synd --basis-states examples/synd_ntl9/bstates.txt --output-dir examples/synd_ntl9/bstates
+```
 
 ## Contributing
 
