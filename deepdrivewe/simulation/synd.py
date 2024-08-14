@@ -170,6 +170,7 @@ class SynDBasisStateInitializer:
         # Load the basis state with shape ()
         state = np.load(basis_file)
 
+        # Get the pcoord for the basis state
         pcoords = self.sim.model.backmap(state)
         pcoords = pcoords.reshape(-1).tolist()
 
