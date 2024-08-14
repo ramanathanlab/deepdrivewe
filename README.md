@@ -51,6 +51,10 @@ pip install git+https://github.com/jeremyleung521/SynD.git@rng-fix
 To generate the basis state .npy files from a .txt file, run the following command:
 ```bash
 python -m deepdrivewe.simulation.synd --basis-states examples/synd_ntl9/bstates.txt --output-dir examples/synd_ntl9/bstates
+
+To run the example, run the following command:
+```bash
+nohup python -m deepdrivewe.examples.synd_ntl9.main --config examples/synd_ntl9/config.yaml &> nohup.log &
 ```
 
 ## Contributing
