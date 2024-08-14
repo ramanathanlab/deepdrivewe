@@ -190,7 +190,7 @@ def generate_basis_states(state_indices: list[int], output_dir: Path) -> None:
         bstate_dir.mkdir(parents=True, exist_ok=True)
 
         # Save the basis state as an integer array with shape (1,)
-        np.save(bstate_dir / f'bstate-{idx}.npy', np.array(state_idx))
+        np.save(bstate_dir / f'bstate-{idx}.npy', np.array([state_idx]))
 
 
 if __name__ == '__main__':
