@@ -48,7 +48,6 @@ def run_simulation(
     # Log the yaml config file to this directory
     config.dump_yaml(sim_output_dir / 'config.yaml')
 
-    # TODO: We can warmstart register this simulation object
     # Initialize the simulation
     sim = SynDSimulation(
         synd_model_file=config.synd_model_file,
