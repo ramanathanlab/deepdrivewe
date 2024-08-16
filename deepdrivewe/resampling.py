@@ -732,13 +732,26 @@ class LOFLowResampler(Resampler):
         return min(self.max_resamples, num_split_sims, int(num_merge_sims / 2))
 
     def get_combination(self, tot: int, length: int) -> list[int]:
-        """Make all possible combinations of `length` that sums to `tot`."""
+        """Make all possible combinations of `length` that sums to `tot`.
+
+        Parameters
+        ----------
+        tot : int
+            The total number of segments to sum to (could require
+            adding or removing segments).
+        length : int
+            The number of available segments for resampling.
+        """
 
         # Define a recursive function to generate all possible combinations
-        def generate_combinations(target, length, cur_combo):
+        def generate_combinations(
+            target: int,
+            length: int,
+            cur_combo: list[int],
+        ) -> list[list[int]]:
             # Base cases
             if length == 0:
-                return [np.array(cur_combo)] if target == 0 else []
+                return [cur_combo] if target == 0 else []
             if target <= 0:
                 return []
 
@@ -761,7 +774,7 @@ class LOFLowResampler(Resampler):
             return combos
 
         # Initialize the list of combinations
-        combos = []
+        combos: list[list[int]] = []
 
         # Loop over the number of segments
         for segs in range(1, length + 1):
@@ -769,10 +782,13 @@ class LOFLowResampler(Resampler):
             combos.extend(generate_combinations(tot, segs, []))
 
         # Randomly select one of the combinations
-        chosen = combos[np.random.choice(len(combos))] + 1
+        chosen = combos[np.random.choice(len(combos))]
+        # Add 1 to each element in the chosen combination to adjust from
+        # the number to add or remove to the number of splits or merges)
+        chosen = (np.array(chosen) + 1).tolist()
 
         # Return a sorted list of the chosen combination
-        return sorted(chosen.tolist(), reverse=True)
+        return sorted(chosen, reverse=True)
 
     def split_with_combination(
         self,
@@ -863,9 +879,13 @@ class LOFLowResampler(Resampler):
         num_resamples = self.get_num_resamples(len(outliers), len(inliers))
 
         # If there are enough walkers in the thresholds, split and merge
-        if num_resamples != 0:
+        if num_resamples > 0:
             # Find the inlier sims before the list is modified
-            inlier_sims = [sim for i, sim in enumerate(_next) if i in inliers]
+            inlier_ids = [
+                sim.simulation_id
+                for i, sim in enumerate(_next)
+                if i in inliers
+            ]
 
             # Split the simulations
             _next = self.split_with_combination(_next, outliers, num_resamples)
@@ -873,7 +893,11 @@ class LOFLowResampler(Resampler):
             # Find the indices that correspond to the inliers
             # NOTE: This is pretty hokey but is necessary because the list of
             # simulations is modified in the split step
-            inliers = [i for i, sim in enumerate(_next) if sim in inlier_sims]
+            inliers = [
+                i
+                for i, sim in enumerate(_next)
+                if sim.simulation_id in inlier_ids
+            ]
 
             # Merge the simulations
             _next = self.merge_with_combination(
