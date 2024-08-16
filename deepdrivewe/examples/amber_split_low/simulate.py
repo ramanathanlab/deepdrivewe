@@ -21,14 +21,10 @@ class SimulationConfig(BaseModel):
     """Arguments for the naive resampler."""
 
     amber_config: AmberConfig = Field(
-        metadata={
-            'help': 'The configuration for the Amber simulation.',
-        },
+        description='The configuration for the Amber simulation.',
     )
     reference_file: Path = Field(
-        metadata={
-            'help': 'The reference PDB file for the cpptraj analysis.',
-        },
+        description='The reference PDB file for the cpptraj analysis.',
     )
 
 
