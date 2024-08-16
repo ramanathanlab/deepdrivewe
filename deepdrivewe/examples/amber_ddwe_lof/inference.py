@@ -1,18 +1,18 @@
-"""Inference module for the basic_amber example."""
+"""Inference module for the LOF example."""
 
 from __future__ import annotations
 
 from pydantic import BaseModel
 from pydantic import Field
 
-from westpa_colmena.binning import RectilinearBinner
-from westpa_colmena.ensemble import BasisStates
-from westpa_colmena.ensemble import IterationMetadata
-from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.ensemble import TargetState
-from westpa_colmena.examples.amber_split_low.simulate import SimResult
-from westpa_colmena.recycling import LowRecycler
-from westpa_colmena.resampling import SplitLowResampler
+from deepdrivewe import BasisStates
+from deepdrivewe import IterationMetadata
+from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
+from deepdrivewe import TargetState
+from deepdrivewe.binners import RectilinearBinner
+from deepdrivewe.recyclers import LowRecycler
+from deepdrivewe.resamplers import SplitLowResampler
 
 
 class InferenceConfig(BaseModel):

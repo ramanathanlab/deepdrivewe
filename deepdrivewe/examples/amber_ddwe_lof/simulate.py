@@ -3,54 +3,28 @@
 from __future__ import annotations
 
 import shutil
-from dataclasses import dataclass
-from dataclasses import field
 from pathlib import Path
 
 import numpy as np
 from pydantic import Field
 
-from westpa_colmena.api import BaseModel
-from westpa_colmena.ensemble import SimMetadata
-from westpa_colmena.simulation.amber import AmberConfig
-from westpa_colmena.simulation.amber import AmberSimulation
-from westpa_colmena.simulation.amber import AmberTrajAnalyzer
-from westpa_colmena.simulation.amber import run_cpptraj
+from deepdrivewe import BaseModel
+from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
+from deepdrivewe.simulation.amber import AmberConfig
+from deepdrivewe.simulation.amber import AmberSimulation
+from deepdrivewe.simulation.amber import AmberTrajAnalyzer
+from deepdrivewe.simulation.amber import run_cpptraj
 
 
 class SimulationConfig(BaseModel):
     """Arguments for the naive resampler."""
 
     amber_config: AmberConfig = Field(
-        metadata={
-            'help': 'The configuration for the Amber simulation.',
-        },
+        description='The configuration for the Amber simulation.',
     )
     reference_file: Path = Field(
-        metadata={
-            'help': 'The reference PDB file for the cpptraj analysis.',
-        },
-    )
-
-
-@dataclass
-class SimResult:
-    """Store the results of a single Amber simulation."""
-
-    pcoord: np.ndarray = field(
-        metadata={
-            'help': 'The progress coordinate for the Amber simulation.',
-        },
-    )
-    coords: np.ndarray = field(
-        metadata={
-            'help': 'The atomic coordinates for the Amber simulation.',
-        },
-    )
-    metadata: SimMetadata = field(
-        metadata={
-            'help': 'The metadata for the Amber simulation.',
-        },
+        description='The reference PDB file for the cpptraj analysis.',
     )
 
 
@@ -124,8 +98,6 @@ def run_simulation(
     output_dir: Path,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
-    from westpa_colmena.simulation.amber import AmberSimulation
-
     # Create the simulation output directory
     sim_output_dir = (
         output_dir
