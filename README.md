@@ -1,20 +1,20 @@
-# westpa_colmena
-Implementation of WESTPA using Colmena
+# deepdrivewe
+Implementation of [WESTPA](https://westpa.github.io/westpa/index.html) using [Colmena](https://github.com/exalearn/colmena/tree/master).
 
 ## Installation
 
 To install the package, run the following command:
 ```bash
-git clone git@github.com:braceal/westpa_colmena.git
-cd westpa_colmena
+git clone git@github.com:braceal/deepdrivewe.git
+cd deepdrivewe
 pip install -e .
 ```
 
 Full installation including dependencies:
 ```bash
-git clone git@github.com:braceal/westpa_colmena.git
-cd westpa_colmena
-conda create -n westpa_colmena python=3.10 -y
+git clone git@github.com:braceal/deepdrivewe.git
+cd deepdrivewe
+conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
 pip install mdtraj==1.9.9
 pip install -e .
@@ -23,7 +23,7 @@ pip install -e .
 ## Usage
 To run the example, run the following command:
 ```bash
-python -m westpa_colmena.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
+python -m deepdrivewe.examples.amber_hk.main --config examples/amber_nacl_hk/config.yaml
 ```
 
 To kill all the workers, run the following command:
@@ -42,6 +42,21 @@ To check the number of iterations completed:
 h5ls -d runs/naive_resampler_test_v2/west.h5/iterations
 ```
 
+### Running with SynD
+To use the SynD simulation engine, install the following dependencies:
+```bash
+pip install git+https://github.com/jeremyleung521/SynD.git@rng-fix
+```
+
+To generate the basis state .npy files from a .txt file, run the following command:
+```bash
+python -m deepdrivewe.simulation.synd --basis-states examples/synd_ntl9/bstates.txt --output-dir examples/synd_ntl9/bstates
+```
+
+To run the example, run the following command:
+```bash
+nohup python -m deepdrivewe.examples.synd_ntl9.main --config examples/synd_ntl9/config.yaml &> nohup.log &
+```
 
 ## Contributing
 
@@ -49,7 +64,7 @@ For development, it is recommended to use a virtual environment. The following
 commands will create a virtual environment, install the package in editable
 mode, and install the pre-commit hooks.
 ```bash
-python3.10 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -U pip setuptools wheel
 pip install -e '.[dev,docs]'
