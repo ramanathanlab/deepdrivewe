@@ -785,7 +785,7 @@ class LOFLowResampler(Resampler):
         chosen = combos[np.random.choice(len(combos))]
         # Add 1 to each element in the chosen combination to adjust from
         # the number to add or remove to the number of splits or merges)
-        chosen = (np.array(chosen) + 1).tolist()
+        chosen = [i + 1 for i in chosen]
 
         # Return a sorted list of the chosen combination
         return sorted(chosen, reverse=True)
