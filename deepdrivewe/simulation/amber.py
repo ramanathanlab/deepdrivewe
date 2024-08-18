@@ -94,7 +94,7 @@ class AmberSimulation(BaseModel):
 
         # Copy the static input files to the output directory
         if self.copy_input_files:
-            self.md_input_file = shutil.copy(self.input_file, self.output_dir)
+            self.input_file = shutil.copy(self.input_file, self.output_dir)
             self.top_file = shutil.copy(self.top_file, self.output_dir)
 
         # Create stderr log file (by default, stdout is captured
@@ -104,8 +104,8 @@ class AmberSimulation(BaseModel):
         # Set the random seed
         seed = np.random.randint(0, 2**16)
 
-        # Populate the md_input_file with the random seed
-        command = f"sed -i 's/RAND/{seed}/g' {self.md_input_file}"
+        # Populate the input_file with the random seed
+        command = f"sed -i 's/RAND/{seed}/g' {self.input_file}"
         with open(stderr, 'a') as err:
             subprocess.run(
                 command,
@@ -118,7 +118,7 @@ class AmberSimulation(BaseModel):
         # Setup the simulation
         command = (
             f'{self.amber_exe} -O '
-            f'-i {self.md_input_file} '
+            f'-i {self.input_file} '
             f'-o {self.log_file} '
             f'-p {self.top_file} '
             f'-c {self.parent_file} '
