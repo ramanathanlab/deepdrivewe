@@ -47,6 +47,11 @@ class AmberSimulation(BaseModel):
         default='.ncrst',
         description='The suffix for the checkpoint files.',
     )
+    copy_input_files: bool = Field(
+        default=True,
+        description='Whether to copy the input files to the output directory.'
+        'md_input_file and top_file will be copied by default.',
+    )
 
     @property
     def trajectory_file(self) -> str:
@@ -86,11 +91,14 @@ class AmberSimulation(BaseModel):
         # Create the output directory
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Copy the input files to the output directory
+        # Copy the restart checkpoint to the output directory
         restart_file = output_dir / self.checkpoint_file
         restart_file = shutil.copy(checkpoint_file, restart_file)
-        self.md_input_file = shutil.copy(self.md_input_file, output_dir)
-        self.top_file = shutil.copy(self.top_file, output_dir)
+
+        # Copy the static input files to the output directory
+        if self.copy_input_files:
+            self.md_input_file = shutil.copy(self.md_input_file, output_dir)
+            self.top_file = shutil.copy(self.top_file, output_dir)
 
         # Create stderr log file (by default, stdout is captured
         # in the log file).
