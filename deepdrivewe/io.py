@@ -217,7 +217,7 @@ class WestpaH5File:
         summary_row['max_seg_prob'] = max(x.weight for x in cur_sims)
 
         # Compute the total CPU time for this iteration (in seconds)
-        summary_row['cputime'] = sum(x.cputime for x in cur_sims)
+        summary_row['cputime'] = sum(x.walltime for x in cur_sims)
         # TODO: This should be the total workflow overhead time
         # for running an iteration. This is not currently tracked.
         # Update this once we refactor the thinker.
@@ -411,7 +411,7 @@ class WestpaH5File:
             seg_index[idx]['parent_id'] = sim.parent_simulation_id
             seg_index[idx]['wtg_n_parents'] = len(sim.wtg_parent_ids)
             seg_index[idx]['wtg_offset'] = total_parents
-            seg_index[idx]['cputime'] = sim.cputime
+            seg_index[idx]['cputime'] = sim.walltime
             seg_index[idx]['walltime'] = sim.walltime
             seg_index[idx]['endpoint_type'] = sim.endpoint_type
             # We set status to 2 to indicate the sim is complete

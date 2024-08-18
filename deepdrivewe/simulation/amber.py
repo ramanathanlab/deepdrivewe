@@ -7,7 +7,6 @@ import tempfile
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
-from dataclasses import field
 from pathlib import Path
 
 import mdtraj as md
@@ -16,31 +15,44 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-@dataclass
-class AmberSimulation:
+class AmberConfig(BaseModel):
+    """Config for an Amber simulation."""
+
+    amber_exe: str = Field(
+        default='sander',
+        description='The path to the Amber executable.',
+    )
+    md_input_file: Path = Field(
+        description='The input file for the Amber simulation.',
+    )
+    top_file: Path = Field(
+        description='The prmtop file for the Amber simulation.',
+    )
+
+
+class AmberSimulation(BaseModel):
     """Run an Amber simulation."""
 
-    amber_exe: str = field(
-        metadata={'help': 'The path to the Amber executable.'},
+    amber_exe: str = Field(
+        description='The path to the Amber executable.',
     )
-    md_input_file: Path = field(
-        metadata={'help': 'The input file for the Amber simulation.'},
+    md_input_file: Path = Field(
+        description='The input file for the Amber simulation.',
     )
-    top_file: Path = field(
-        metadata={'help': 'The prmtop file for the Amber simulation.'},
+    top_file: Path = Field(
+        description='The prmtop file for the Amber simulation.',
     )
 
     # These properties are different for each simulation
-    output_dir: Path = field(
-        metadata={'help': 'The output directory for the Amber simulation.'},
+    output_dir: Path = Field(
+        description='The output directory for the Amber simulation.',
     )
-    checkpoint_file: Path = field(
-        metadata={'help': 'The checkpoint file for the Amber simulation.'},
+    checkpoint_file: Path = Field(
+        description='The checkpoint file for the Amber simulation.',
     )
-
-    seed: int | None = field(
+    seed: int | None = Field(
         default=None,
-        metadata={'help': 'The random seed.'},
+        description='The random seed.',
     )
 
     @property
@@ -117,21 +129,6 @@ class AmberSimulation:
                 stdout=err,
                 stderr=err,
             )
-
-
-class AmberConfig(BaseModel):
-    """Config for an Amber simulation."""
-
-    amber_exe: str = Field(
-        default='sander',
-        description='The path to the Amber executable.',
-    )
-    md_input_file: Path = Field(
-        description='The input file for the Amber simulation.',
-    )
-    top_file: Path = Field(
-        description='The prmtop file for the Amber simulation.',
-    )
 
 
 def run_cpptraj(command: str, verbose: bool = False) -> list[float]:

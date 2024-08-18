@@ -66,10 +66,8 @@ def run_simulation(
     output_dir: Path,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
-    from deepdrivewe.simulation.amber import AmberSimulation
-
     # Add performance logging
-    start_walltime, start_cputime = time.perf_counter(), time.process_time()
+    metadata.mark_simulation_start()
 
     # Create the simulation output directory
     sim_output_dir = (
@@ -117,16 +115,13 @@ def run_simulation(
     coords = analyzer.get_coords(simulation)
 
     # Update the simulation metadata
-    metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
     metadata.pcoord = pcoord.tolist()
     # Save the full pcoord data to the auxdata
     metadata.auxdata = {'pcoord': pcoord.tolist()}
 
     # Log the performance
-    stop_walltime, stop_cputime = time.perf_counter(), time.process_time()
-    metadata.walltime = stop_walltime - start_walltime
-    metadata.cputime = stop_cputime - start_cputime
+    metadata.mark_simulation_end()
 
     result = SimResult(
         pcoord=pcoord,

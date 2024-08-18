@@ -5,6 +5,7 @@ from __future__ import annotations
 import itertools
 import json
 import random
+import time
 from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
@@ -153,16 +154,29 @@ class SimMetadata(BaseModel):
         'simulation ended in a merge, and 3 indicates the simulation '
         'ended by recycling.',
     )
-    cputime: float = Field(
+
+    # Performance metrics
+    simulation_start_time: float = Field(
         default=0.0,
-        ge=0.0,
-        description='The CPU time for the simulation (i.e., clock time).',
+        description='The start time for the simulation.',
     )
-    walltime: float = Field(
+    simulation_end_time: float = Field(
         default=0.0,
-        ge=0.0,
-        description='The wall time for the simulation (i.e., system wide).',
+        description='The end time for the simulation.',
     )
+
+    def mark_simulation_start(self) -> None:
+        """Mark the start time of the simulation."""
+        self.simulation_start_time = time.perf_counter()
+
+    def mark_simulation_end(self) -> None:
+        """Mark the end time of the simulation."""
+        self.simulation_end_time = time.perf_counter()
+
+    @property
+    def walltime(self) -> float:
+        """Return the walltime (seconds) of the simulation."""
+        return self.simulation_end_time - self.simulation_start_time
 
 
 class TargetState(BaseModel):

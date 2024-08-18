@@ -98,8 +98,6 @@ def run_simulation(
     output_dir: Path,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
-    from deepdrivewe.simulation.amber import AmberSimulation
-
     # Create the simulation output directory
     sim_output_dir = (
         output_dir
