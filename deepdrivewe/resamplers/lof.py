@@ -33,6 +33,13 @@ class LOFLowResampler(Resampler):
 
         Parameters
         ----------
+        consider_for_resampling : int
+            The number of simulations to consider for resampling.
+            Default is 12.
+        max_allowed_weight : float
+            The maximum allowed weight for a simulation. Default is 0.25.
+        min_allowed_weight : float
+            The minimum allowed weight for a simulation. Default is 10e-40.
         max_resamples : int
             The number of resamples to perform (i.e., the number of splits
             and merges to perform in each iteration). Default is 4.
