@@ -80,18 +80,23 @@ def run_simulation(
         time.sleep(10)
         shutil.rmtree(sim_output_dir)
 
-    # First run the simulation
+    # Create a fresh output directory
+    sim_output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Log the yaml config file to this directory
+    config.dump_yaml(sim_output_dir / 'config.yaml')
+
+    # Initialize the simulation
     simulation = AmberSimulation(
         amber_exe=config.amber_config.amber_exe,
-        md_input_file=config.amber_config.md_input_file,
+        input_file=config.amber_config.input_file,
         top_file=config.amber_config.top_file,
+        output_dir=sim_output_dir,
+        checkpoint_file=metadata.parent_restart_file,
     )
 
     # Run the simulation
-    simulation.run(
-        checkpoint_file=metadata.parent_restart_file,
-        output_dir=sim_output_dir,
-    )
+    simulation.run()
 
     # Then run cpptraj to get the pcoord and coordinates
     analyzer = DistanceAnalyzer(reference_file=config.reference_file)
@@ -99,14 +104,9 @@ def run_simulation(
     coords = analyzer.get_coords(simulation)
 
     # Update the simulation metadata
-    metadata.restart_file = sim_output_dir / simulation.restart_file
+    metadata.restart_file = simulation.restart_file
     metadata.pcoord = pcoord.tolist()
-
-    # Log the performance
     metadata.mark_simulation_end()
-
-    # Log the yaml config file to this directory
-    config.dump_yaml(sim_output_dir / 'config.yaml')
 
     result = SimResult(
         pcoord=pcoord,
