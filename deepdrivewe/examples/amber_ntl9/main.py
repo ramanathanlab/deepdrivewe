@@ -30,7 +30,7 @@ from deepdrivewe.examples.amber_ntl9.inference import InferenceConfig
 from deepdrivewe.examples.amber_ntl9.inference import run_inference
 from deepdrivewe.examples.amber_ntl9.simulate import run_simulation
 from deepdrivewe.examples.amber_ntl9.simulate import SimulationConfig
-from deepdrivewe.parsl import ComputeSettingsTypes
+from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
 
@@ -84,8 +84,8 @@ class ExperimentSettings(BaseModel):
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
     )
-    compute_settings: ComputeSettingsTypes = Field(
-        description='Settings for the compute resources.',
+    compute_config: ComputeConfigTypes = Field(
+        description='Config for the compute resources.',
     )
 
     @validator('output_dir')
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     # Define the parsl configuration (this can be done using the
     # get_parsl_config for common use cases or by defining your own config.)
-    parsl_config = cfg.compute_settings.get_parsl_config(
+    parsl_config = cfg.compute_config.get_parsl_config(
         cfg.output_dir / 'run-info',
     )
 

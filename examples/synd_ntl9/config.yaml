@@ -34,7 +34,7 @@ inference_config:
   sims_per_bin: 4
 
 # The settings for the compute environment
-compute_settings:
+compute_config:
   name: local
   # The maximum number of worker processes to use for parallelization
   max_workers: 53

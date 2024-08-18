@@ -28,7 +28,7 @@ from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.synd_ntl9.inference import InferenceConfig
 from deepdrivewe.examples.synd_ntl9.inference import run_inference
-from deepdrivewe.parsl import ComputeSettingsTypes
+from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.synd import run_simulation
 from deepdrivewe.simulation.synd import SynDBasisStateInitializer
 from deepdrivewe.simulation.synd import SynDConfig
@@ -58,7 +58,7 @@ class ExperimentSettings(BaseModel):
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
     )
-    compute_settings: ComputeSettingsTypes = Field(
+    compute_config: ComputeConfigTypes = Field(
         description='Settings for the compute resources.',
     )
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     # Define the parsl configuration (this can be done using the
     # get_parsl_config for common use cases or by defining your own config.)
-    parsl_config = cfg.compute_settings.get_parsl_config(
+    parsl_config = cfg.compute_config.get_parsl_config(
         cfg.output_dir / 'run-info',
     )
 

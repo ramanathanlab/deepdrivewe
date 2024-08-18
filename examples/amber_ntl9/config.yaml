@@ -28,6 +28,6 @@ target_states:
     - label: folded
       pcoord: [1.0]
 
-compute_settings:
+compute_config:
   name: local
   max_workers: 53

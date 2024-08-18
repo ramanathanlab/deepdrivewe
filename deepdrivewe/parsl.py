@@ -96,7 +96,7 @@ class WorkstationConfig(BaseComputeConfig):
         )
 
 
-ComputeSettingsTypes = Union[
+ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
 ]
