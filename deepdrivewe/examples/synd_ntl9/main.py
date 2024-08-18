@@ -106,9 +106,9 @@ if __name__ == '__main__':
         proxystore_threshold=10000,
     )
 
-    # Define the parsl configuration (this can be done using the config_factory
-    # for common use cases or by defining your own configuration.)
-    parsl_config = cfg.compute_settings.config_factory(
+    # Define the parsl configuration (this can be done using the
+    # get_parsl_config for common use cases or by defining your own config.)
+    parsl_config = cfg.compute_settings.get_parsl_config(
         cfg.output_dir / 'run-info',
     )
 

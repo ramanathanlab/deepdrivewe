@@ -6,6 +6,7 @@ https://github.com/jdrusso/SynD/tree/main
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -83,15 +84,26 @@ class SynDSimulation:
         """The restart file for the simulation."""
         return self.output_dir / 'checkpoint.npy'
 
+    @property
+    def parent_file(self) -> Path:
+        """The checkpoint file for the Amber simulation."""
+        return self.output_dir / 'parent.npy'
+
     def run(self, checkpoint_file: Path, output_dir: Path) -> None:
         """Run a SynD simulation."""
         # Set the output directory
         self._output_dir = output_dir
 
+        # Create the output directory
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy the checkpoint file to the output directory
+        shutil.copy(checkpoint_file, self.parent_file)
+
         # Load the initial states from the checkpoint file
         # (an array of integers with shape (1,) storing the
         # state index to start from).
-        initial_states = np.load(checkpoint_file)
+        initial_states = np.load(self.parent_file)
 
         # Generate a trajectory with shape (1, n_steps) storing the
         # state indices for each step (i.e., an integer array with

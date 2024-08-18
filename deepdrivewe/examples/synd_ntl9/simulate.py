@@ -23,11 +23,7 @@ def run_simulation(
     metadata.mark_simulation_start()
 
     # Create the simulation output directory
-    sim_output_dir = (
-        output_dir
-        / f'{metadata.iteration_id:06d}'
-        / f'{metadata.simulation_id:06d}'
-    )
+    sim_output_dir = output_dir / metadata.simulation_name
 
     # Remove the directory if it already exists
     # (this would be from a task failure)
@@ -40,11 +36,6 @@ def run_simulation(
     # Create a fresh output directory
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copy input files to the output directory
-    restart_file = metadata.parent_restart_file
-    checkpoint_file = sim_output_dir / f'parent{restart_file.suffix}'
-    checkpoint_file = shutil.copy(restart_file, checkpoint_file)
-
     # Log the yaml config file to this directory
     config.dump_yaml(sim_output_dir / 'config.yaml')
 
@@ -55,7 +46,10 @@ def run_simulation(
     )
 
     # Run the simulation
-    sim.run(checkpoint_file=checkpoint_file, output_dir=sim_output_dir)
+    sim.run(
+        checkpoint_file=metadata.parent_restart_file,
+        output_dir=sim_output_dir,
+    )
 
     # Analyze the trajectory
     analyzer = SynDTrajAnalyzer()
@@ -65,7 +59,6 @@ def run_simulation(
     # Update the simulation metadata
     metadata.restart_file = sim.restart_file
     metadata.pcoord = pcoord.tolist()
-    # Add performance logging
     metadata.mark_simulation_end()
 
     # Return the results
