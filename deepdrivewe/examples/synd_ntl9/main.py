@@ -28,8 +28,8 @@ from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.synd_ntl9.inference import InferenceConfig
 from deepdrivewe.examples.synd_ntl9.inference import run_inference
-from deepdrivewe.examples.synd_ntl9.simulate import run_simulation
 from deepdrivewe.parsl import ComputeSettingsTypes
+from deepdrivewe.simulation.synd import run_simulation
 from deepdrivewe.simulation.synd import SynDBasisStateInitializer
 from deepdrivewe.simulation.synd import SynDConfig
 from deepdrivewe.workflows.westpa import WESTPAThinker
