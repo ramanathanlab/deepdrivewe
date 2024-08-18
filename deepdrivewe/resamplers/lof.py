@@ -17,7 +17,7 @@ class LOFLowResampler(Resampler):
         1. Sort the walkers by LOF in latent space and divide the list into
             two groups: the outliers (up for splitting) and inliers (up for
             merging).
-        2. Sort the outliers and inliers by pcoord, splitting lowst pcoord
+        2. Sort the outliers and inliers by pcoord, splitting lowest pcoord
             outliers and highest pcoord inliers.
     """
 
@@ -33,9 +33,9 @@ class LOFLowResampler(Resampler):
 
         Parameters
         ----------
-        max_num_resamples : int
+        max_resamples : int
             The number of resamples to perform (i.e., the number of splits
-            and merges to perform in each iteration). Default is 1.
+            and merges to perform in each iteration). Default is 4.
         pcoord_idx : int
             The index of the progress coordinate to use for splitting and
             merging. Only applicable if a multi-dimensional pcoord is used,
@@ -125,6 +125,7 @@ class LOFLowResampler(Resampler):
 
         # Randomly select one of the combinations
         chosen = combos[np.random.choice(len(combos))]
+
         # Add 1 to each element in the chosen combination to adjust from
         # the number to add or remove to the number of splits or merges)
         chosen = [i + 1 for i in chosen]
