@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import tempfile
 from abc import ABC
@@ -42,59 +43,64 @@ class AmberSimulation(BaseModel):
     top_file: Path = Field(
         description='The prmtop file for the Amber simulation.',
     )
-
-    # These properties are different for each simulation
-    output_dir: Path = Field(
-        description='The output directory for the Amber simulation.',
-    )
-    checkpoint_file: Path = Field(
-        description='The checkpoint file for the Amber simulation.',
-    )
-    seed: int | None = Field(
-        default=None,
-        description='The random seed.',
+    suffix: str = Field(
+        default='.ncrst',
+        description='The suffix for the checkpoint files.',
     )
 
     @property
-    def trajectory_file(self) -> Path:
+    def trajectory_file(self) -> str:
         """The trajectory file for the Amber simulation."""
-        return self.output_dir / 'seg.nc'
+        return 'seg.nc'
 
     @property
-    def restart_file(self) -> Path:
+    def restart_file(self) -> str:
         """The restart file for the Amber simulation."""
-        return self.output_dir / f'seg{self.checkpoint_file.suffix}'
+        return f'seg{self.suffix}'
 
     @property
-    def log_file(self) -> Path:
+    def checkpoint_file(self) -> str:
+        """The checkpoint file for the Amber simulation."""
+        return f'parent{self.suffix}'
+
+    @property
+    def log_file(self) -> str:
         """The log file for the Amber simulation."""
-        return self.output_dir / 'seg.log'
+        return 'seg.log'
 
     @property
-    def info_file(self) -> Path:
+    def info_file(self) -> str:
         """The metadata file for the Amber simulation."""
-        return self.output_dir / 'seg.nfo'
+        return 'seg.nfo'
 
-    def run(self) -> None:
+    def run(self, checkpoint_file: Path, output_dir: Path) -> None:
         """Run an Amber simulation.
 
         Implementation of the following bash command:
         $PMEMD -O -i md.in -p hmr.prmtop -c parent.ncrst \
             -r seg.ncrst -x seg.nc -o seg.log -inf seg.nfo
         """
+        # Update the suffix of the checkpoint file
+        self.suffix = checkpoint_file.suffix
+
         # Create the output directory
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy the input files to the output directory
+        restart_file = output_dir / self.checkpoint_file
+        restart_file = shutil.copy(checkpoint_file, restart_file)
+        self.md_input_file = shutil.copy(self.md_input_file, output_dir)
+        self.top_file = shutil.copy(self.top_file, output_dir)
 
         # Create stderr log file (by default, stdout is captured
         # in the log file).
-        stderr = self.output_dir / 'stderr.log'
+        stderr = output_dir / 'stderr.log'
 
         # Set the random seed
-        if self.seed is None:
-            self.seed = np.random.randint(0, 2**16)
+        seed = np.random.randint(0, 2**16)
 
         # Populate the md_input_file with the random seed
-        command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
+        command = f"sed -i 's/RAND/{seed}/g' {self.md_input_file}"
         with open(stderr, 'a') as err:
             subprocess.run(
                 command,
@@ -108,16 +114,13 @@ class AmberSimulation(BaseModel):
         command = (
             f'{self.amber_exe} -O '
             f'-i {self.md_input_file} '
-            f'-o {self.log_file} '
+            f'-o {output_dir / self.log_file} '
             f'-p {self.top_file} '
-            f'-c {self.checkpoint_file} '
-            f'-r {self.restart_file} '
-            f'-x {self.trajectory_file} '
-            f'-inf {self.info_file}'
+            f'-c {output_dir / self.checkpoint_file} '
+            f'-r {output_dir / self.restart_file} '
+            f'-x {output_dir / self.trajectory_file} '
+            f'-inf {output_dir / self.info_file}'
         )
-
-        # Log the command
-        print(command)
 
         # Run the simulation
         with open(stderr, 'a') as err:
@@ -125,7 +128,7 @@ class AmberSimulation(BaseModel):
                 command,
                 shell=True,
                 check=True,
-                cwd=self.output_dir,
+                cwd=output_dir,
                 stdout=err,
                 stderr=err,
             )

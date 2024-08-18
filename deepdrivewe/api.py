@@ -178,6 +178,11 @@ class SimMetadata(BaseModel):
         """Return the walltime (seconds) of the simulation."""
         return self.simulation_end_time - self.simulation_start_time
 
+    @property
+    def simulation_name(self) -> str:
+        """Return the simulation name (used to create the output directory)."""
+        return f'{self.iteration_id:06d}/{self.simulation_id:06d}'
+
 
 class TargetState(BaseModel):
     """Target state for the weighted ensemble."""
