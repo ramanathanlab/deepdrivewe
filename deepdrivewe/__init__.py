@@ -14,7 +14,7 @@ from deepdrivewe.api import SimMetadata
 from deepdrivewe.api import SimResult
 from deepdrivewe.api import TargetState
 from deepdrivewe.api import WeightedEnsemble
-from deepdrivewe.binning import Binner
+from deepdrivewe.binners import Binner
 from deepdrivewe.checkpoint import EnsembleCheckpointer
-from deepdrivewe.recycling import Recycler
-from deepdrivewe.resampling import Resampler
+from deepdrivewe.recyclers import Recycler
+from deepdrivewe.resamplers import Resampler

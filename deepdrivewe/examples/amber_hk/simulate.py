@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import shutil
 import time
-from dataclasses import dataclass
-from dataclasses import field
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +11,7 @@ from pydantic import Field
 
 from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
 from deepdrivewe.simulation.amber import AmberConfig
 from deepdrivewe.simulation.amber import AmberSimulation
 from deepdrivewe.simulation.amber import AmberTrajAnalyzer
@@ -23,35 +22,10 @@ class SimulationConfig(BaseModel):
     """Arguments for the naive resampler."""
 
     amber_config: AmberConfig = Field(
-        metadata={
-            'help': 'The configuration for the Amber simulation.',
-        },
+        description='The configuration for the Amber simulation.',
     )
     reference_file: Path = Field(
-        metadata={
-            'help': 'The reference PDB file for the cpptraj analysis.',
-        },
-    )
-
-
-@dataclass
-class SimResult:
-    """Store the results of a single Amber simulation."""
-
-    pcoord: np.ndarray = field(
-        metadata={
-            'help': 'The progress coordinate for the Amber simulation.',
-        },
-    )
-    coords: np.ndarray = field(
-        metadata={
-            'help': 'The atomic coordinates for the Amber simulation.',
-        },
-    )
-    metadata: SimMetadata = field(
-        metadata={
-            'help': 'The metadata for the Amber simulation.',
-        },
+        description='The reference PDB file for the cpptraj analysis.',
     )
 
 

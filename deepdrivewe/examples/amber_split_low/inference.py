@@ -8,11 +8,11 @@ from pydantic import Field
 from deepdrivewe import BasisStates
 from deepdrivewe import IterationMetadata
 from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
 from deepdrivewe import TargetState
-from deepdrivewe.binning import RectilinearBinner
-from deepdrivewe.examples.amber_split_low.simulate import SimResult
-from deepdrivewe.recycling import LowRecycler
-from deepdrivewe.resampling import SplitLowResampler
+from deepdrivewe.binners import RectilinearBinner
+from deepdrivewe.recyclers import LowRecycler
+from deepdrivewe.resamplers import SplitLowResampler
 
 
 class InferenceConfig(BaseModel):

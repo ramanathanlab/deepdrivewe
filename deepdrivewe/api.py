@@ -101,27 +101,22 @@ class SimMetadata(BaseModel):
     """Metadata for a simulation in the weighted ensemble."""
 
     weight: float = Field(
-        ...,
         ge=0.0,
         le=1.0,
         description='The weight of the simulation.',
     )
     simulation_id: int = Field(
-        ...,
         description='The ID of the simulation.',
     )
     iteration_id: int = Field(
-        ...,
         ge=1,
         description='The ID of the iteration the simulation is in '
         '(1-indexed).',
     )
     parent_restart_file: Path = Field(
-        ...,
         description='The restart file for the parent simulation.',
     )
     parent_pcoord: list[float] = Field(
-        ...,
         description='The progress coordinate for the parent simulation.',
     )
     parent_simulation_id: int | None = Field(
@@ -174,11 +169,10 @@ class TargetState(BaseModel):
     """Target state for the weighted ensemble."""
 
     label: str = Field(
-        '',
+        default='',
         description='The label for the target state.',
     )
     pcoord: list[float] = Field(
-        ...,
         description='The progress coordinate for the target state.',
     )
 
@@ -205,7 +199,6 @@ class BasisStates(BaseModel):
         description='Extension for the basis states.',
     )
     initial_ensemble_members: int = Field(
-        ...,
         ge=1,
         description='The number of initial ensemble members.',
     )
@@ -365,11 +358,9 @@ class WeightedEnsemble(BaseModel):
     """Weighted ensemble."""
 
     basis_states: BasisStates = Field(
-        ...,
         description='The basis states for the weighted ensemble.',
     )
     target_states: list[TargetState] = Field(
-        ...,
         description='The target states for the weighted ensemble.',
     )
     simulations: list[list[SimMetadata]] = Field(
