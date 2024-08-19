@@ -66,17 +66,11 @@ def run_simulation(
     output_dir: Path,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
-    from deepdrivewe.simulation.amber import AmberSimulation
-
     # Add performance logging
-    start_walltime, start_cputime = time.perf_counter(), time.process_time()
+    metadata.mark_simulation_start()
 
     # Create the simulation output directory
-    sim_output_dir = (
-        output_dir
-        / f'{metadata.iteration_id:06d}'
-        / f'{metadata.simulation_id:06d}'
-    )
+    sim_output_dir = output_dir / metadata.simulation_name
 
     # Remove the directory if it already exists
     # (this would be from a task failure)
@@ -89,23 +83,16 @@ def run_simulation(
     # Create a fresh output directory
     sim_output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copy input files to the output directory
-    restart_file = metadata.parent_restart_file
-    checkpoint_file = sim_output_dir / f'parent{restart_file.suffix}'
-    checkpoint_file = shutil.copy(restart_file, checkpoint_file)
-    md_input = shutil.copy(config.amber_config.md_input_file, sim_output_dir)
-    top_file = shutil.copy(config.amber_config.top_file, sim_output_dir)
-
     # Log the yaml config file to this directory
     config.dump_yaml(sim_output_dir / 'config.yaml')
 
-    # First run the simulation
+    # Initialize the simulation
     simulation = AmberSimulation(
         amber_exe=config.amber_config.amber_exe,
-        md_input_file=md_input,
-        top_file=top_file,
+        input_file=config.amber_config.input_file,
+        top_file=config.amber_config.top_file,
         output_dir=sim_output_dir,
-        checkpoint_file=checkpoint_file,
+        checkpoint_file=metadata.parent_restart_file,
     )
 
     # Run the simulation
@@ -117,16 +104,9 @@ def run_simulation(
     coords = analyzer.get_coords(simulation)
 
     # Update the simulation metadata
-    metadata = metadata.copy()
     metadata.restart_file = simulation.restart_file
     metadata.pcoord = pcoord.tolist()
-    # Save the full pcoord data to the auxdata
-    metadata.auxdata = {'pcoord': pcoord.tolist()}
-
-    # Log the performance
-    stop_walltime, stop_cputime = time.perf_counter(), time.process_time()
-    metadata.walltime = stop_walltime - start_walltime
-    metadata.cputime = stop_cputime - start_cputime
+    metadata.mark_simulation_end()
 
     result = SimResult(
         pcoord=pcoord,

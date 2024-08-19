@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import tempfile
 from abc import ABC
 from abc import abstractmethod
-from dataclasses import dataclass
-from dataclasses import field
 from pathlib import Path
 
 import mdtraj as md
@@ -16,31 +15,43 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-@dataclass
-class AmberSimulation:
+class AmberConfig(BaseModel):
+    """Config for an Amber simulation."""
+
+    amber_exe: str = Field(
+        default='sander',
+        description='The path to the Amber executable.',
+    )
+    input_file: Path = Field(
+        description='The input file for the Amber simulation.',
+    )
+    top_file: Path = Field(
+        description='The prmtop file for the Amber simulation.',
+    )
+
+
+class AmberSimulation(BaseModel):
     """Run an Amber simulation."""
 
-    amber_exe: str = field(
-        metadata={'help': 'The path to the Amber executable.'},
+    amber_exe: str = Field(
+        description='The path to the Amber executable.',
     )
-    md_input_file: Path = field(
-        metadata={'help': 'The input file for the Amber simulation.'},
+    input_file: Path = Field(
+        description='The input file for the Amber simulation.',
     )
-    top_file: Path = field(
-        metadata={'help': 'The prmtop file for the Amber simulation.'},
+    top_file: Path = Field(
+        description='The prmtop file for the Amber simulation.',
     )
-
-    # These properties are different for each simulation
-    output_dir: Path = field(
-        metadata={'help': 'The output directory for the Amber simulation.'},
+    output_dir: Path = Field(
+        description='The output directory for the Amber simulation.',
     )
-    checkpoint_file: Path = field(
-        metadata={'help': 'The checkpoint file for the Amber simulation.'},
+    checkpoint_file: Path = Field(
+        description='The checkpoint file for the Amber simulation.',
     )
-
-    seed: int | None = field(
-        default=None,
-        metadata={'help': 'The random seed.'},
+    copy_input_files: bool = Field(
+        default=True,
+        description='Whether to copy the input files to the output directory.'
+        'input_file and top_file will be copied by default.',
     )
 
     @property
@@ -52,6 +63,11 @@ class AmberSimulation:
     def restart_file(self) -> Path:
         """The restart file for the Amber simulation."""
         return self.output_dir / f'seg{self.checkpoint_file.suffix}'
+
+    @property
+    def parent_file(self) -> Path:
+        """The checkpoint file for the Amber simulation."""
+        return self.output_dir / f'parent{self.checkpoint_file.suffix}'
 
     @property
     def log_file(self) -> Path:
@@ -73,16 +89,23 @@ class AmberSimulation:
         # Create the output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
+        # Copy the restart checkpoint to the output directory
+        shutil.copy(self.checkpoint_file, self.parent_file)
+
+        # Copy the static input files to the output directory
+        if self.copy_input_files:
+            self.input_file = shutil.copy(self.input_file, self.output_dir)
+            self.top_file = shutil.copy(self.top_file, self.output_dir)
+
         # Create stderr log file (by default, stdout is captured
         # in the log file).
         stderr = self.output_dir / 'stderr.log'
 
         # Set the random seed
-        if self.seed is None:
-            self.seed = np.random.randint(0, 2**16)
+        seed = np.random.randint(0, 2**16)
 
-        # Populate the md_input_file with the random seed
-        command = f"sed -i 's/RAND/{self.seed}/g' {self.md_input_file}"
+        # Populate the input_file with the random seed
+        command = f"sed -i 's/RAND/{seed}/g' {self.input_file}"
         with open(stderr, 'a') as err:
             subprocess.run(
                 command,
@@ -95,17 +118,14 @@ class AmberSimulation:
         # Setup the simulation
         command = (
             f'{self.amber_exe} -O '
-            f'-i {self.md_input_file} '
+            f'-i {self.input_file} '
             f'-o {self.log_file} '
             f'-p {self.top_file} '
-            f'-c {self.checkpoint_file} '
+            f'-c {self.parent_file} '
             f'-r {self.restart_file} '
             f'-x {self.trajectory_file} '
             f'-inf {self.info_file}'
         )
-
-        # Log the command
-        print(command)
 
         # Run the simulation
         with open(stderr, 'a') as err:
@@ -117,21 +137,6 @@ class AmberSimulation:
                 stdout=err,
                 stderr=err,
             )
-
-
-class AmberConfig(BaseModel):
-    """Config for an Amber simulation."""
-
-    amber_exe: str = Field(
-        default='sander',
-        description='The path to the Amber executable.',
-    )
-    md_input_file: Path = Field(
-        description='The input file for the Amber simulation.',
-    )
-    top_file: Path = Field(
-        description='The prmtop file for the Amber simulation.',
-    )
 
 
 def run_cpptraj(command: str, verbose: bool = False) -> list[float]:
@@ -200,11 +205,12 @@ def run_cpptraj(command: str, verbose: bool = False) -> list[float]:
     return pcoord
 
 
-@dataclass
-class AmberTrajAnalyzer(ABC):
+class AmberTrajAnalyzer(BaseModel, ABC):
     """Strategy for analyzing Amber trajectories."""
 
-    reference_file: Path
+    reference_file: Path = Field(
+        description='The reference PDB file for the cpptraj analysis.',
+    )
 
     @abstractmethod
     def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:

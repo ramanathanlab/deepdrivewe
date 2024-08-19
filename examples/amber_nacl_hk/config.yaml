@@ -14,7 +14,7 @@ num_iterations: 50
 simulation_config:
   amber_config:
     amber_exe: sander
-    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/md.in
+    input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/md.in
     top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/common_files/nacl.parm7
   reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_nacl_hk/inputs/bstates/bstate.ncrst
 
@@ -32,6 +32,6 @@ target_states:
     - label: bound_state
       pcoord: [2.6]
 
-compute_settings:
+compute_config:
   name: local
   max_workers: 53

@@ -16,14 +16,14 @@ from parsl.providers import LocalProvider
 from deepdrivewe.api import BaseModel
 
 
-class BaseComputeSettings(BaseModel, ABC):
-    """Compute settings (HPC platform, number of GPUs, etc)."""
+class BaseComputeConfig(BaseModel, ABC):
+    """Compute config (HPC platform, number of GPUs, etc)."""
 
     name: Literal[''] = ''
     """Name of the platform to use."""
 
     @abstractmethod
-    def config_factory(self, run_dir: str | Path) -> Config:
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Create a new Parsl configuration.
 
         Parameters
@@ -39,8 +39,8 @@ class BaseComputeSettings(BaseModel, ABC):
         ...
 
 
-class LocalSettings(BaseComputeSettings):
-    """Local compute settings."""
+class LocalConfig(BaseComputeConfig):
+    """Local compute config."""
 
     name: Literal['local'] = 'local'  # type: ignore[assignment]
     max_workers: int = 1
@@ -48,7 +48,7 @@ class LocalSettings(BaseComputeSettings):
     worker_port_range: tuple[int, int] = (10000, 20000)
     label: str = 'htex'
 
-    def config_factory(self, run_dir: str | Path) -> Config:
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for local execution."""
         return Config(
             run_dir=str(run_dir),
@@ -66,8 +66,8 @@ class LocalSettings(BaseComputeSettings):
         )
 
 
-class WorkstationSettings(BaseComputeSettings):
-    """Compute settings for a workstation."""
+class WorkstationConfig(BaseComputeConfig):
+    """Compute config for a workstation."""
 
     name: Literal['workstation'] = 'workstation'  # type: ignore[assignment]
     """Name of the platform."""
@@ -78,7 +78,7 @@ class WorkstationSettings(BaseComputeSettings):
     retries: int = 1
     label: str = 'htex'
 
-    def config_factory(self, run_dir: str | Path) -> Config:
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for workstation execution."""
         return Config(
             run_dir=str(run_dir),
@@ -96,7 +96,7 @@ class WorkstationSettings(BaseComputeSettings):
         )
 
 
-ComputeSettingsTypes = Union[
-    LocalSettings,
-    WorkstationSettings,
+ComputeConfigTypes = Union[
+    LocalConfig,
+    WorkstationConfig,
 ]

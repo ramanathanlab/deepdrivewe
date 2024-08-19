@@ -6,12 +6,16 @@ https://github.com/jdrusso/SynD/tree/main
 
 from __future__ import annotations
 
+import shutil
+import time
 from pathlib import Path
 
 import numpy as np
 from pydantic import Field
 
 from deepdrivewe import BaseModel
+from deepdrivewe import SimMetadata
+from deepdrivewe import SimResult
 from deepdrivewe.workflows.registry import register
 
 
@@ -83,15 +87,26 @@ class SynDSimulation:
         """The restart file for the simulation."""
         return self.output_dir / 'checkpoint.npy'
 
+    @property
+    def parent_file(self) -> Path:
+        """The checkpoint file for the Amber simulation."""
+        return self.output_dir / 'parent.npy'
+
     def run(self, checkpoint_file: Path, output_dir: Path) -> None:
         """Run a SynD simulation."""
         # Set the output directory
         self._output_dir = output_dir
 
+        # Create the output directory
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy the checkpoint file to the output directory
+        shutil.copy(checkpoint_file, self.parent_file)
+
         # Load the initial states from the checkpoint file
         # (an array of integers with shape (1,) storing the
         # state index to start from).
-        initial_states = np.load(checkpoint_file)
+        initial_states = np.load(self.parent_file)
 
         # Generate a trajectory with shape (1, n_steps) storing the
         # state indices for each step (i.e., an integer array with
@@ -152,6 +167,64 @@ class SynDTrajAnalyzer:
         coords = sim.model.backmap(sim.traj, mapper='full_coordinates')
         coords = coords.reshape(sim.n_steps, -1, 3)
         return coords
+
+
+def run_simulation(
+    metadata: SimMetadata,
+    config: SynDConfig,
+    output_dir: Path,
+) -> SimResult:
+    """Run a simulation and return the pcoord and coordinates."""
+    # Add performance logging
+    metadata.mark_simulation_start()
+
+    # Create the simulation output directory
+    sim_output_dir = output_dir / metadata.simulation_name
+
+    # Remove the directory if it already exists
+    # (this would be from a task failure)
+    if sim_output_dir.exists():
+        # Wait a bit to make sure the directory is not being
+        # used and avoid .nfs file race conditions
+        time.sleep(10)
+        shutil.rmtree(sim_output_dir)
+
+    # Create a fresh output directory
+    sim_output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Log the yaml config file to this directory
+    config.dump_yaml(sim_output_dir / 'config.yaml')
+
+    # Initialize the simulation
+    sim = SynDSimulation(
+        synd_model_file=config.synd_model_file,
+        n_steps=config.n_steps,
+    )
+
+    # Run the simulation
+    sim.run(
+        checkpoint_file=metadata.parent_restart_file,
+        output_dir=sim_output_dir,
+    )
+
+    # Analyze the trajectory
+    analyzer = SynDTrajAnalyzer()
+    pcoord = analyzer.get_pcoords(sim)
+    coords = analyzer.get_coords(sim)
+
+    # Update the simulation metadata
+    metadata.restart_file = sim.restart_file
+    metadata.pcoord = pcoord.tolist()
+    metadata.mark_simulation_end()
+
+    # Return the results
+    result = SimResult(
+        pcoord=pcoord,
+        coords=coords,
+        metadata=metadata,
+    )
+
+    return result
 
 
 class SynDBasisStateInitializer:
