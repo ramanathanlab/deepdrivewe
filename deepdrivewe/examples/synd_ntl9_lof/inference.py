@@ -97,7 +97,7 @@ def run_inference(
 
     # Extract the contact maps from each simulation
     data = [sim.data for sim in input_data]
-    contact_maps = np.array([x['contact_map'] for x in data])
+    contact_maps = np.array([x['contact_maps'] for x in data])
 
     # Compute the latent space representation
     z = model.predict(x=contact_maps)

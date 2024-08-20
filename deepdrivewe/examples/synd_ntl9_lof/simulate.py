@@ -142,17 +142,17 @@ def run_simulation(
         contact_cutoff=config.contact_cutoff,
         mdtraj_selection=config.mdtraj_selection,
     )
-    pcoord = analyzer.get_pcoords(sim)
+    pcoords = analyzer.get_pcoords(sim)
     contact_maps = analyzer.get_contact_maps(sim)
 
     # Update the simulation metadata
     metadata.restart_file = sim.restart_file
-    metadata.pcoord = pcoord.tolist()
+    metadata.pcoord = pcoords.tolist()
     metadata.mark_simulation_end()
 
     # Create the simulation result
     result = SimResult(
-        data={'contact_maps': contact_maps, 'pcoord': pcoord},
+        data={'contact_maps': contact_maps, 'pcoords': pcoords},
         metadata=metadata,
     )
 

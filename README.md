@@ -16,8 +16,13 @@ git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
-pip install mdtraj==1.9.9
 pip install -e .
+```
+
+To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/)
+for your system and drivers. For example, to install PyTorch with CUDA 12.4 on Linux, run the following command:
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cu124
 ```
 
 ## Usage
