@@ -45,6 +45,11 @@ class ExperimentSettings(BaseModel):
         ge=1,
         description='Number of iterations to run the weighted ensemble.',
     )
+    extra_pcoord_dims: int = Field(
+        default=1,
+        description='The number of extra progress coordinate dimensions to add'
+        ' to the basis states (to account for LOF).',
+    )
     basis_states: BasisStates = Field(
         description='The basis states for the weighted ensemble.',
     )
@@ -128,6 +133,7 @@ if __name__ == '__main__':
         # Setup the basis state initializer
         basis_state_initializer = SynDBasisStateInitializer(
             cfg.simulation_config,
+            extra_pcoord_dims=cfg.extra_pcoord_dims,
         )
 
         # Initialize the simulations with the basis states
