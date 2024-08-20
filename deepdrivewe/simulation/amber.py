@@ -9,7 +9,7 @@ from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
 
-import mdtraj as md
+import mdtraj
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
@@ -246,10 +246,10 @@ class AmberTrajAnalyzer(BaseModel, ABC):
             f' top file {sim.top_file}',
         )
         # Load the trajectory using mdtraj
-        traj = md.load(sim.trajectory_file, top=sim.top_file)
+        traj = mdtraj.load(sim.trajectory_file, top=sim.top_file)
 
         # Load the reference structure
-        ref_traj = md.load(self.reference_file, top=sim.top_file)
+        ref_traj = mdtraj.load(self.reference_file, top=sim.top_file)
 
         # Align the trajectory to the reference structure
         traj_aligned = traj.superpose(ref_traj)

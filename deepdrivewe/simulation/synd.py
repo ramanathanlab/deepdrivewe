@@ -217,10 +217,9 @@ def run_simulation(
     metadata.pcoord = pcoord.tolist()
     metadata.mark_simulation_end()
 
-    # Return the results
+    # Create the simulation result
     result = SimResult(
-        pcoord=pcoord,
-        coords=coords,
+        data={'coords': coords, 'pcoord': pcoord},
         metadata=metadata,
     )
 

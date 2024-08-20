@@ -24,7 +24,11 @@ dependencies = [
     "parsl",
     "pyyaml==6.0.1",
     "numpy",
-    "h5py==3.11.0"
+    "h5py==3.11.0",
+    "mdtraj==1.10.0",
+    "mdlearn==0.0.10a1",
+    "scikit-learn==1.5.1",
+    "natsort==8.4.0",
 ]
 
 [project.urls]

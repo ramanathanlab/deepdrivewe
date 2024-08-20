@@ -30,14 +30,12 @@ class SimResult:
     #       we need to store the data products of a simulation
     #       which require numpy arrays.
 
-    pcoord: np.ndarray = field(
+    data: dict[str, np.ndarray] = field(
         metadata={
-            'help': 'The progress coordinate for the simulation.',
-        },
-    )
-    coords: np.ndarray = field(
-        metadata={
-            'help': 'The atomic coordinates for the simulation.',
+            'help': 'The data products of the simulation '
+            '(e.g., 3D attomic coordinates, contact maps, etc).'
+            'Each key is the name of the data product and the value '
+            'is the data product itself as a numpy array.',
         },
     )
     metadata: SimMetadata = field(
