@@ -10,8 +10,8 @@ basis_states:
   basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/bstates
   # The extension for the basis state files
   basis_state_ext: .npy
-  # The number of initial ensemble members to use
-  initial_ensemble_members: 4
+  # The number of initial ensemble members to use (should be the same as sims_per_bin in this use case)
+  initial_ensemble_members: 72
   # Whether to randomly initialize the ensemble members if there
   # are more basis state files than initial ensemble members
   randomly_initialize: true
