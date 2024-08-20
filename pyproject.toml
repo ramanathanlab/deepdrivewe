@@ -28,6 +28,7 @@ dependencies = [
     "mdtraj==1.10.0",
     "mdlearn==0.0.10a1",
     "scikit-learn==1.5.1",
+    "scipy==1.14.0",
     "natsort==8.4.0",
 ]
 
