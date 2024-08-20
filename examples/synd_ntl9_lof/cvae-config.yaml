@@ -12,7 +12,7 @@ lambda_rec: 1.0 # How much to weight the reconstruction loss vs the KL divergenc
 num_data_workers: 4 # The number of parallel data workers for loading data (performance tuning)
 prefetch_factor: 2 # How many batches each data worker should prefetch (performance tuning)
 batch_size: 64 # The batch size to use during training
-device: cuda # The device to train/infer with (cuda or cpu)
+device: cpu # The device to train/infer with (cuda or cpu)
 optimizer_name: RMSprop # The optimizer used to train the model
 optimizer_hparams: # See the torch documentation for the above optimizer for details: https://pytorch.org/docs/stable/optim.html
     lr: 0.001 # Learning rate for the optimizer
