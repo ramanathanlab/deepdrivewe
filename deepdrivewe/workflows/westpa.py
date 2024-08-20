@@ -139,7 +139,8 @@ class WESTPAThinker(BaseThinker):
         # Log inference job results
         self.result_logger.log(result, topic='inference')
         if not result.success:
-            self.logger.warning('Bad inference result')
+            self.logger.warning('Bad inference result, quitting workflow.')
+            self.done.set()
             return
 
         # Unpack the output
