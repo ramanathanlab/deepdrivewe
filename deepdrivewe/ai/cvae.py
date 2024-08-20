@@ -13,7 +13,7 @@ from deepdrivewe import BaseModel
 
 
 class ConvolutionalVAEConfig(BaseModel):
-    """Settings for mdlearn SymmetricConv2dVAETrainer object."""
+    """Settings for mdlearn SymmetricConv2dVAETrainer."""
 
     input_shape: tuple[int, int, int] = Field(
         default=(1, 40, 40),

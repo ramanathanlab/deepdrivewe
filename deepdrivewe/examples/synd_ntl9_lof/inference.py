@@ -19,6 +19,7 @@ from deepdrivewe.ai import ConvolutionalVAEConfig
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
 from deepdrivewe.resamplers import LOFLowResampler
+from deepdrivewe.workflows.utils import batch_data
 
 
 class InferenceConfig(BaseModel):
@@ -32,7 +33,7 @@ class InferenceConfig(BaseModel):
         description='The path to the CVAE model checkpoint file.',
     )
 
-    # Local outlier settings
+    # Local outlier factor settings
     lof_n_neighbors: int = Field(
         default=20,
         description='The number of neighbors to use for LOF.',
@@ -44,9 +45,9 @@ class InferenceConfig(BaseModel):
 
     # Resampling settings
     sims_per_bin: int = Field(
-        default=5,
-        description='The number of simulations maintain in each bin.'
-        ' Default is 5.',
+        default=72,
+        description='The number of simulations to maintain in each bin.'
+        ' Default is 72.',
     )
     max_allowed_weight: float = Field(
         default=1.0,
@@ -73,14 +74,14 @@ def run_inference(
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
-    pcoords = [sim_result.metadata.pcoord[-1] for sim_result in input_data]
+    pcoords = [sim.metadata.pcoord[-1] for sim in input_data]
 
     print(f'Progress coordinates: {pcoords}')
     print(f'Best progress coordinate: {min(pcoords)}')
     print(f'Num input simulations: {len(input_data)}')
 
     # Extract the simulation metadata
-    cur_sims = [sim_result.metadata for sim_result in input_data]
+    cur_sims = [sim.metadata for sim in input_data]
 
     # Load the model configuration
     model_config = ConvolutionalVAEConfig.from_yaml(config.model_config_path)
@@ -91,8 +92,11 @@ def run_inference(
         checkpoint_path=config.model_checkpoint_path,
     )
 
-    # Extract the contact maps
-    data = [sim_result.data for sim_result in input_data]
+    # TODO: We may need to keep embedding data from all the iterations
+    # to compute reliable LOF scores.
+
+    # Extract the contact maps from each simulation
+    data = [sim.data for sim in input_data]
     contact_maps = np.array([x['contact_map'] for x in data])
 
     # Compute the latent space representation
@@ -105,17 +109,17 @@ def run_inference(
     ).fit(z)
 
     # Get the LOF scores
-    lof_scores = clf.negative_outlier_factor_
+    lof_scores = clf.negative_outlier_factor_.tolist()
 
-    # TODO: This currently assumes a single frame per simulation since
-    # sim.pcoord is shape (n_frames, pcoord_dim). We need to fix this
-    # (perhaps using parent_pcoord or something similar). It may also be
-    # better to include the first/last pcoord in the metadata for clarity
-    # and include the per-frame pcoord in the SimResult.data dictionary.
+    # Group the simulations by LOF score
+    sim_scores = batch_data(lof_scores, batch_size=len(cur_sims))
 
-    # Add the LOF scores into the pcoord metadata
-    for sim, score in zip(cur_sims, lof_scores):
-        sim.pcoord.append(score)
+    # Check that the number of simulations matches the batched scores
+    assert len(sim_scores) == len(cur_sims)
+
+    # Loop over each simulation and add the LOF scores
+    for sim, scores in zip(cur_sims, sim_scores):
+        sim.append_pcoord(scores)
 
     # Create the binner
     binner = RectilinearBinner(

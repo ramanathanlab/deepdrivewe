@@ -7,7 +7,7 @@ num_iterations: 150
 # The basis states for the simulation
 basis_states:
   # The nested directory containing the basis state files
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/bstates
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/bstates
   # The extension for the basis state files
   basis_state_ext: .npy
   # The number of initial ensemble members to use
@@ -25,13 +25,28 @@ target_states:
 # The configuration for the simulation
 simulation_config:
   # The path to the synd model file
-  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/ntl9_folding.synd
+  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/ntl9_folding.synd
   # The number of steps to run the simulation for (this includes the initial step)
   n_steps: 2
+  # The reference structure for computing contact maps (getting the CA atom indices)
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/ntl9_reference.pdb
 
 inference_config:
-  # The number of simulations to maintain per bin
-  sims_per_bin: 4
+  # The path to the CVAE model configuration file
+  model_config_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/cvae-config.yaml
+  # The path to the CVAE model weights file
+  model_checkpoint_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/checkpoint-epoch-100.pt
+
+  # The number of neighbors to use for LOF
+  lof_n_neighbors: 20
+  # The distance metric to use for LOF [cosine, minkowski]
+  lof_distance_metric: cosine
+
+  # The number of simulations to maintain per bin (we only have one bin)
+  # so this is the total number of simulations to maintain
+  sims_per_bin: 72
+  # The maximum number of resamples to perform in each iteration
+  max_resamples: 4
 
 # The settings for the compute environment
 compute_config:

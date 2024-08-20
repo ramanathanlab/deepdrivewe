@@ -181,6 +181,32 @@ class SimMetadata(BaseModel):
         """Return the simulation name (used to create the output directory)."""
         return f'{self.iteration_id:06d}/{self.simulation_id:06d}'
 
+    def append_pcoord(self, pcoords: list[float]) -> None:
+        """Append the progress coordinates to the simulation metadata.
+
+        Parameters
+        ----------
+        pcoords : list[float]
+            The progress coordinates to append to the simulation metadata
+            shape: (n_frames,)
+
+        Raises
+        ------
+        ValueError
+            If the number of frames in the progress coordinate does not match
+            the number of frames in the simulation metadata
+        """
+        if len(pcoords) != len(self.pcoord):
+            raise ValueError(
+                'The number of frames in the progress coordinate does not '
+                'match the number of frames in the simulation metadata.',
+            )
+
+        # Loop over each frame in the simulation
+        for orig_pcoord, pcoord in zip(self.pcoord, pcoords):
+            # Append the new pcoord to the original pcoord
+            orig_pcoord.append(pcoord)
+
 
 class TargetState(BaseModel):
     """Target state for the weighted ensemble."""
