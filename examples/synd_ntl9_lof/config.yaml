@@ -1,0 +1,40 @@
+# The output directory for the run
+output_dir: runs/ntl9-synd-v1
+
+# The total number of iterations to run
+num_iterations: 150
+
+# The basis states for the simulation
+basis_states:
+  # The nested directory containing the basis state files
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/bstates
+  # The extension for the basis state files
+  basis_state_ext: .npy
+  # The number of initial ensemble members to use
+  initial_ensemble_members: 4
+  # Whether to randomly initialize the ensemble members if there
+  # are more basis state files than initial ensemble members
+  randomly_initialize: true
+
+# The target threshold for the progress coordinate
+# to be considered in the target state.
+target_states:
+    - label: folded
+      pcoord: [1.0]
+
+# The configuration for the simulation
+simulation_config:
+  # The path to the synd model file
+  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/ntl9_folding.synd
+  # The number of steps to run the simulation for (this includes the initial step)
+  n_steps: 2
+
+inference_config:
+  # The number of simulations to maintain per bin
+  sims_per_bin: 4
+
+# The settings for the compute environment
+compute_config:
+  name: local
+  # The maximum number of worker processes to use for parallelization
+  max_workers: 53
