@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
         # Setup the basis state initializer
         basis_state_initializer = SynDBasisStateInitializer(
-            cfg.simulation_config,
+            config=cfg.simulation_config,
             extra_pcoord_dims=cfg.extra_pcoord_dims,
         )
 

@@ -93,7 +93,7 @@ class WESTPAThinker(BaseThinker):
     def start_simulations(self) -> None:
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
-        for sim in self.ensemble.current_sims:
+        for sim in self.ensemble.next_sims:
             self.submit_task('simulation', sim, keep_inputs=True)
 
     @result_processor(topic='simulation')
@@ -128,7 +128,7 @@ class WESTPAThinker(BaseThinker):
         # Collect simulation results
         self.inference_input.append(result.value)
 
-        if len(self.inference_input) == len(self.ensemble.current_sims):
+        if len(self.inference_input) == len(self.ensemble.next_sims):
             self.submit_task('inference', self.inference_input)
             self.inference_input = []  # Clear batched data
             self.logger.info('submitted inference task')
@@ -167,5 +167,5 @@ class WESTPAThinker(BaseThinker):
 
         # Submit the next iteration of simulations
         self.logger.info('Submitting next iteration of simulations')
-        for sim in self.ensemble.current_sims:
+        for sim in self.ensemble.next_sims:
             self.submit_task('simulation', sim, keep_inputs=True)

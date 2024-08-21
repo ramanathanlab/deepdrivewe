@@ -20,9 +20,9 @@ pip install -e .
 ```
 
 To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/)
-for your system and drivers. For example, to install PyTorch with CUDA 12.4 on Linux, run the following command:
+for your system and drivers. To use `mdlearn`, you may need an earlier version of PyTorch:
 ```bash
-pip install torch --index-url https://download.pytorch.org/whl/cu124
+pip install torch==1.12
 ```
 
 ## Usage

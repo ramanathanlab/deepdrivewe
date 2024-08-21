@@ -406,10 +406,6 @@ class WeightedEnsemble(BaseModel):
     target_states: list[TargetState] = Field(
         description='The target states for the weighted ensemble.',
     )
-    simulations: list[list[SimMetadata]] = Field(
-        default_factory=list,
-        description='The list of simulations for each iteration.',
-    )
     metadata: IterationMetadata = Field(
         default=IterationMetadata,
         description='The metadata for the current iteration.',
@@ -417,6 +413,10 @@ class WeightedEnsemble(BaseModel):
     cur_sims: list[SimMetadata] = Field(
         default_factory=list,
         description='The simulations for the current iteration.',
+    )
+    next_sims: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The simulations for the next iteration.',
     )
 
     def initialize_basis_states(
@@ -435,19 +435,14 @@ class WeightedEnsemble(BaseModel):
         # Load the basis states
         self.basis_states.load_basis_states(basis_state_initializer)
 
-        # Initialize the simulations with the basis states
-        self.simulations = [deepcopy(self.basis_states.basis_states)]
-
-    @property
-    def current_sims(self) -> list[SimMetadata]:
-        """Return the simulations for the current iteration."""
-        return self.simulations[-1]
+        # Initialize the next simulations with the basis states
+        self.next_sims = deepcopy(self.basis_states.basis_states)
 
     @property
     def iteration(self) -> int:
         """Return the current iteration of the weighted ensemble."""
-        # The first iteration is the basis states
-        return len(self.simulations) - 1
+        # TODO: Do we need a -1 here?
+        return self.metadata.iteration_id
 
     def advance_iteration(
         self,
@@ -461,7 +456,7 @@ class WeightedEnsemble(BaseModel):
         and merge. The binner will then call this method to advance the
         iteration of the weighted ensemble.
         """
-        # Create a list to store the new simulations for this iteration
-        self.simulations.append(next_sims)
+        # Store the latest data
         self.metadata = metadata
         self.cur_sims = cur_sims
+        self.next_sims = next_sims
