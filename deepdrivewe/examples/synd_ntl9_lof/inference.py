@@ -97,7 +97,12 @@ def run_inference(
 
     # Extract the contact maps from each simulation
     data = [sim.data for sim in input_data]
-    contact_maps = np.array([x['contact_maps'] for x in data])
+    contact_maps = np.concatenate([x['contact_maps'] for x in data])
+
+    print(f'{len(contact_maps)=}')
+    print(f'{contact_maps[0]=}', flush=True)
+    print(f'{contact_maps[0].shape=}')
+    print(f'{contact_maps.shape=}', flush=True)
 
     # Compute the latent space representation
     z = model.predict(x=contact_maps)
@@ -112,10 +117,18 @@ def run_inference(
     lof_scores = clf.negative_outlier_factor_.tolist()
 
     # Group the simulations by LOF score
-    sim_scores = batch_data(lof_scores, batch_size=len(cur_sims))
+    sim_scores = batch_data(
+        lof_scores,
+        batch_size=len(lof_scores) // len(cur_sims),
+    )
+
+    print(f'{len(sim_scores)=}')
+    print(f'{len(cur_sims)=}', flush=True)
 
     # Check that the number of simulations matches the batched scores
     assert len(sim_scores) == len(cur_sims)
+    # Check that there is one LOF score per simulation frame
+    assert len(sim_scores[0]) == len(cur_sims[0].pcoord)
 
     # Loop over each simulation and add the LOF scores
     for sim, scores in zip(cur_sims, sim_scores):
