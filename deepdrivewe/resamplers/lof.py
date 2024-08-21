@@ -14,11 +14,12 @@ class LOFLowResampler(Resampler):
     """Implements a two-step resampler utilizing LOF in latent space.
 
     The resampler is designed to be used without bins and follows 2 steps:
-        1. Sort the walkers by LOF in latent space and divide the list into
+        1.  Sort the walkers by LOF in latent space and divide the list into
             two groups: the outliers (up for splitting) and inliers (up for
-            merging).
-        2. Sort the outliers and inliers by pcoord, splitting lowest pcoord
-            outliers and highest pcoord inliers.
+            merging). `consider_for_resampling` determines the number of sims
+            in each group to consider for resampling (the rest are left alone).
+        2.  Sort the outliers and inliers by pcoord, splitting lowest pcoord
+            outliers and merging highest pcoord inliers.
     """
 
     def __init__(
@@ -71,14 +72,6 @@ class LOFLowResampler(Resampler):
     ) -> list[int]:
         """Remove simulations with weight greater than max_allowed_weight."""
         return [i for i in inds if sims[i].weight <= self.max_allowed_weight]
-
-    def get_num_resamples(
-        self,
-        num_split_sims: int,
-        num_merge_sims: int,
-    ) -> int:
-        """Determine the number of resamples to perform."""
-        return min(self.max_resamples, num_split_sims, int(num_merge_sims / 2))
 
     def get_combination(self, tot: int, length: int) -> list[int]:
         """Make all possible combinations of `length` that sums to `tot`.
@@ -205,37 +198,89 @@ class LOFLowResampler(Resampler):
         cur_sims: list[SimMetadata],
         next_sims: list[SimMetadata],
     ) -> tuple[list[SimMetadata], list[SimMetadata]]:
-        """Resample the weighted ensemble."""
+        """Resample the weighted ensemble.
+
+        Parameters
+        ----------
+        cur_sims : list[SimMetadata]
+            The current simulations.
+        next_sims : list[SimMetadata]
+            The next simulations.
+
+        Returns
+        -------
+        tuple[list[SimMetadata], list[SimMetadata]]
+            The resampled current and next simulations.
+
+        Raises
+        ------
+        ValueError
+            If consider_for_resampling is too large for the number of sims.
+        """
         # Make a copy of the simulations
         cur = deepcopy(cur_sims)
         _next = deepcopy(next_sims)
 
-        # Get the LOFs; assumes LOF is saved as a second parent pcoord in
-        # metadata
-        lof = self.get_pcoords(_next, 1)
+        # First get the LOF scores which assumes are saved as the second
+        # (parent) progress coordinate in the next simulations.
+        lof = self.get_pcoords(_next, pcoord_idx=1)
 
-        # Get the indices to sort the simulations
+        # Sort the simulations by LOF score (smaller scores are more outlying)
         sorted_indices = np.argsort(lof)
 
-        # Get the indices of the outliers and inliers
-        outliers = sorted_indices[: self.consider_for_resampling].tolist()
-        inliers = sorted_indices[self.consider_for_resampling :].tolist()
+        # Check if there are enough sims to resample
+        if len(sorted_indices) < 2 * self.consider_for_resampling:
+            raise ValueError(
+                f'consider_for_resampling={self.consider_for_resampling} '
+                f'is too large for the number of sims {len(sorted_indices)}.',
+                'Conisder increasing the number of simulations or decreasing',
+                'consider_for_resampling such that it is less than or equal '
+                'to half of the number of simulations.',
+            )
 
-        # Remove underweight and overweight sims
+        # Get the indices of the outliers and inliers. Note this may leave
+        # some sims out of the resampling (i.e., the ones that are not in
+        # the outliers or inliers)
+        outliers = sorted_indices[: self.consider_for_resampling].tolist()
+        inliers = sorted_indices[: -self.consider_for_resampling].tolist()
+
+        # Remove underweight simulations from the outliers so we don't split
+        # simulations that are too small. Note that it's fine to keep small
+        # weight simulations in the inliers because they will be merged and
+        # the weights will be increased.
         outliers = self.remove_underweight(_next, outliers)
+
+        # Remove overweight simulations from the inliers so we don't merge
+        # simulations that are too large. Note that it's fine to keep large
+        # weight simulations in the outliers because they will be split and
+        # the weights will be reduced.
         inliers = self.remove_overweight(_next, inliers)
 
-        # Determine the number of resamples to perform
-        num_resamples = self.get_num_resamples(len(outliers), len(inliers))
+        # Determine the number of resamples to perform. If removing the
+        # underweight or overweight sims results in not enough simulations
+        # to split or merge, then dynamically adjust the number of resamples
+        # to allow for the maximum number of splits and merges possible. This
+        # helps to balance the weights of the simulations by preventing very
+        # aggressive split (e.g., splitting a single sim to many) or merges
+        # (e.g., merging many sims to a single sim) which helps to prevent
+        # the weights from becoming too large (biased) or too small (not
+        # meaningful for rate constant estimation).
+        num_resamples = min(
+            self.max_resamples,  # The user defined maximum number of resamples
+            len(outliers),  # Roughly the number of possible splits
+            int(len(inliers) / 2),  # Roughly the number of possible merges
+        )
 
         # If there are enough walkers in the thresholds, split and merge
         if num_resamples > 0:
-            # Find the inlier sims before the list is modified
-            inlier_ids = [
-                sim.simulation_id
-                for i, sim in enumerate(_next)
-                if i in inliers
-            ]
+            # Find the inlier sims before the _next list is modified
+            inlier_ids = [_next[i].simulation_id for i in inliers]
+
+            # inlier_ids = [
+            #     sim.simulation_id
+            #     for i, sim in enumerate(_next)
+            #     if i in inliers
+            # ]
 
             # Split the simulations
             _next = self.split_with_combination(_next, outliers, num_resamples)
