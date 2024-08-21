@@ -81,7 +81,7 @@ class IterationMetadata(BaseModel):
     min_bin_prob: float = Field(
         default=0.0,
         ge=0.0,
-        le=1.0,
+        le=1.001,  # Allow for floating point errors
         description='The minimum bin probability for an iteration.',
     )
     max_bin_prob: float = Field(
