@@ -87,7 +87,7 @@ class IterationMetadata(BaseModel):
     max_bin_prob: float = Field(
         default=0.0,
         ge=0.0,
-        le=1.0,
+        le=1.001,  # Allow for floating point errors
         description='The maximum bin probability for an iteration.',
     )
     bin_target_counts: list[int] = Field(
