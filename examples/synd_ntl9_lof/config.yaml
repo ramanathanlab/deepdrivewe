@@ -45,6 +45,8 @@ inference_config:
   # The number of simulations to maintain per bin (we only have one bin)
   # so this is the total number of simulations to maintain
   sims_per_bin: 72
+  # The number of simulations to resample in each iteration
+  consider_for_resampling: 12
   # The maximum number of resamples to perform in each iteration
   max_resamples: 4
 

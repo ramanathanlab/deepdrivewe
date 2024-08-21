@@ -49,6 +49,15 @@ class InferenceConfig(BaseModel):
         description='The number of simulations to maintain in each bin.'
         ' Default is 72.',
     )
+    consider_for_resampling: int = Field(
+        default=12,
+        description='The number of simulations to consider for resampling.',
+    )
+    max_resamples: int = Field(
+        default=4,
+        description='The maximum number of resamples to perform in each '
+        'iteration. Default is 4.',
+    )
     max_allowed_weight: float = Field(
         default=1.0,
         description='The maximum allowed weight for a simulation. Default '
@@ -58,11 +67,6 @@ class InferenceConfig(BaseModel):
         default=10e-40,
         description='The minimum allowed weight for a simulation. Default '
         'is 10e-40.',
-    )
-    max_resamples: int = Field(
-        default=4,
-        description='The maximum number of resamples to perform in each '
-        'iteration. Default is 4.',
     )
 
 
@@ -148,7 +152,7 @@ def run_inference(
 
     # Resamlpe the ensemble
     resampler = LOFLowResampler(
-        consider_for_resampling=config.sims_per_bin,
+        consider_for_resampling=config.consider_for_resampling,
         max_resamples=config.max_resamples,
         max_allowed_weight=config.max_allowed_weight,
         min_allowed_weight=config.min_allowed_weight,

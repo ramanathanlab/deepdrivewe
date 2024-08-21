@@ -233,7 +233,7 @@ class LOFLowResampler(Resampler):
             raise ValueError(
                 f'consider_for_resampling={self.consider_for_resampling} '
                 f'is too large for the number of sims {len(sorted_indices)}.',
-                'Conisder increasing the number of simulations or decreasing',
+                'Consider increasing the number of simulations or decreasing',
                 'consider_for_resampling such that it is less than or equal '
                 'to half of the number of simulations.',
             )
