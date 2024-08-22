@@ -68,6 +68,8 @@ class ContactMapAnalyzer(BaseModel, SynDTrajAnalyzer):
         # Get the atomic coordinates from the aligned trajectory
         coords = self.get_coords(sim)
 
+        np.save(sim.output_dir / 'coords.npy', coords)
+
         # Load the reference structure
         ref_traj: mdtraj.Topology = mdtraj.load_topology(self.reference_file)
 
@@ -76,6 +78,8 @@ class ContactMapAnalyzer(BaseModel, SynDTrajAnalyzer):
 
         # Index into the CA atom coords (n_steps, n_ca_atoms, 3)
         ca_coords = coords[:, ca_indices]
+
+        np.save(sim.output_dir / 'ca_coords.npy', ca_coords)
 
         # Compute a distance matrix for each frame
         distance_matrices = [distance_matrix(x, x) for x in ca_coords]
@@ -93,6 +97,8 @@ class ContactMapAnalyzer(BaseModel, SynDTrajAnalyzer):
 
         # Concatenate the row and col indices into a single array
         contact_maps = [np.concatenate(x) for x in zip(rows, cols)]
+
+        np.save(sim.output_dir / 'contact_maps.npy', np.array(contact_maps))
 
         # Return the contact maps as a ragged numpy array
         return np.array(contact_maps)
