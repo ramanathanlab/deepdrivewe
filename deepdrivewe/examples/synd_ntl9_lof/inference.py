@@ -196,7 +196,7 @@ def run_inference(
         sim.append_pcoord(scores)
 
     # Log the latent space
-    pcoords = np.array([sim.pcoord for sim in cur_sims]).reshape(-1, 1)
+    pcoords = np.array(pcoords).reshape(-1, 1)
     itetation = input_data[0].metadata.iteration_id
     output_dir = output_dir / f'{itetation:06d}'
     output_dir.mkdir(parents=True, exist_ok=True)
