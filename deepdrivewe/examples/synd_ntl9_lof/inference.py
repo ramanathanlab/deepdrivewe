@@ -18,7 +18,9 @@ from deepdrivewe.ai import ConvolutionalVAE
 from deepdrivewe.ai import ConvolutionalVAEConfig
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
-from deepdrivewe.resamplers import LOFLowResampler
+
+# from deepdrivewe.resamplers import LOFLowResampler
+from deepdrivewe.resamplers.lof_v2 import LOFLowResamplerV2
 from deepdrivewe.workflows.utils import batch_data
 
 
@@ -151,7 +153,7 @@ def run_inference(
     )
 
     # Resamlpe the ensemble
-    resampler = LOFLowResampler(
+    resampler = LOFLowResamplerV2(
         consider_for_resampling=config.consider_for_resampling,
         max_resamples=config.max_resamples,
         max_allowed_weight=config.max_allowed_weight,
