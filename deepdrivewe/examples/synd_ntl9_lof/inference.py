@@ -175,6 +175,7 @@ def run_inference(
     if config.ai_model_latent_history_path is not None:
         # Remove the history from the LOF scores
         lof_scores = lof_scores[: -z_history.shape[0]]
+        z = z[: -z_history.shape[0]]
 
     # Group the simulations by LOF score
     sim_scores = batch_data(
