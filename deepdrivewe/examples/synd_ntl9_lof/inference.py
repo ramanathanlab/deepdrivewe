@@ -117,7 +117,7 @@ def scatter_plot(
     plt.close()
 
 
-def run_inference(
+def run_inference(  # noqa: PLR0915
     input_data: list[SimResult],
     basis_states: BasisStates,
     target_states: list[TargetState],
@@ -151,8 +151,9 @@ def run_inference(
     contact_maps = np.concatenate([x['contact_maps'] for x in data])
 
     print(f'{len(contact_maps)=}')
-    print(f'{contact_maps[0]=}', flush=True)
     print(f'{contact_maps[0].shape=}')
+    print(f'{contact_maps[0]=}')
+    print(f'{contact_maps[1]=}')
     print(f'{contact_maps.shape=}', flush=True)
 
     # Compute the latent space representation
