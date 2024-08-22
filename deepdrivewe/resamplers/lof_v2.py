@@ -195,7 +195,7 @@ class LOFLowResamplerV2(Resampler):
                     'rmsd': rmsd,
                     'lof': lof,
                     'indices': list(range(len(_next))),
-                    'weights': [sim.weight for sim in _next],
+                    'weight': [sim.weight for sim in _next],
                 },
             ).sort_values('lof')  # First sort by lof (small are outliers)
         )
