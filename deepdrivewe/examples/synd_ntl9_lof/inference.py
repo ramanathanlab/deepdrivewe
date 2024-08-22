@@ -77,11 +77,52 @@ class InferenceConfig(BaseModel):
     )
 
 
+def scatter_plot(
+    x: np.ndarray,
+    y: np.ndarray,
+    color_data: np.ndarray,
+    output_path: Path,
+    xlabel: str = 'X-axis',
+    ylabel: str = 'Y-axis',
+    title: str = '',
+) -> None:
+    """Create a scatter plot.
+
+    Parameters
+    ----------
+    x: array-like
+        X data for the scatter plot
+    y: array-like
+        Y data for the scatter plot
+    color_data: array-like
+        Data used for coloring the points
+    filename: str
+        Filename for the saved image (default: 'scatter_plot.png')
+    xlabel: str
+        Label for the X-axis
+    ylabel: str
+        Label for the Y-axis
+    title: str
+        Title of the plot
+    """
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(x, y, c=color_data, cmap='viridis')
+    plt.colorbar(scatter, label='Color Intensity')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.savefig(output_path, bbox_inches='tight', dpi=300)
+    plt.close()
+
+
 def run_inference(
     input_data: list[SimResult],
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
+    output_dir: Path,
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
@@ -104,9 +145,6 @@ def run_inference(
         model_config,
         checkpoint_path=config.ai_model_checkpoint_path,
     )
-
-    # TODO: We may need to keep embedding data from all the iterations
-    # to compute reliable LOF scores.
 
     # Extract the contact maps from each simulation
     data = [sim.data for sim in input_data]
@@ -155,6 +193,17 @@ def run_inference(
     # Loop over each simulation and add the LOF scores
     for sim, scores in zip(cur_sims, sim_scores):
         sim.append_pcoord(scores)
+
+    # Log the latent space
+    pcoords = np.array([sim.pcoord for sim in cur_sims]).reshape(-1, 1)
+    itetation = input_data[0].metadata.iteration_id
+    output_dir = output_dir / f'{itetation:06d}'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    np.save(output_dir / 'z.npy', z)
+    np.save(output_dir / 'lof.npy', lof_scores)
+    np.save(output_dir / 'pcoord.npy', pcoords)
+    scatter_plot(z[:, 0], z[:, 1], lof_scores, output_dir / 'lof.png')
+    scatter_plot(z[:, 0], z[:, 1], pcoords, output_dir / 'pcoord.png')
 
     # Create the binner
     binner = RectilinearBinner(
