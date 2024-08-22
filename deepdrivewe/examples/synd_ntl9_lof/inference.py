@@ -150,7 +150,9 @@ def run_inference(  # noqa: PLR0915
     data = [sim.data for sim in input_data]
     contact_maps = []
     for sim_data in data:
-        contact_maps.extend(sim_data['contact_maps'].astype(np.int16))
+        contact_maps.extend(sim_data['contact_maps'])
+    # Convert to int16
+    contact_maps = [x.astype(np.int16) for x in contact_maps]
     # contact_maps = np.array(cmaps, dtype=object)
 
     print(f'{len(contact_maps)=}')
