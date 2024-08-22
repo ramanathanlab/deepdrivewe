@@ -33,9 +33,11 @@ simulation_config:
 
 inference_config:
   # The path to the CVAE model configuration file
-  model_config_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/cvae-config.yaml
+  ai_model_config_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/cvae-config.yaml
   # The path to the CVAE model weights file
-  model_checkpoint_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/checkpoint-epoch-100.pt
+  ai_model_checkpoint_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/checkpoint-epoch-100.pt
+  # The path to the CVAE latent space history
+  ai_model_latent_history_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/z.npy
 
   # The number of neighbors to use for LOF
   lof_n_neighbors: 20

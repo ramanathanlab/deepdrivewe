@@ -28,11 +28,16 @@ class InferenceConfig(BaseModel):
     """Arguments for the inference module."""
 
     # AI model settings
-    model_config_path: Path = Field(
+    ai_model_config_path: Path = Field(
         description='The path to the CVAE model YAML configuration file.',
     )
-    model_checkpoint_path: Path = Field(
+    ai_model_checkpoint_path: Path = Field(
         description='The path to the CVAE model checkpoint file.',
+    )
+    ai_model_latent_history_path: Path | None = Field(
+        default=None,
+        description='The path to the latent space history file (z.npy).'
+        'A small batch of latent coordinates used to provide context for LOF.',
     )
 
     # Local outlier factor settings
@@ -90,12 +95,14 @@ def run_inference(
     cur_sims = [sim.metadata for sim in input_data]
 
     # Load the model configuration
-    model_config = ConvolutionalVAEConfig.from_yaml(config.model_config_path)
+    model_config = ConvolutionalVAEConfig.from_yaml(
+        config.ai_model_config_path,
+    )
 
     # Load the model
     model = ConvolutionalVAE(
         model_config,
-        checkpoint_path=config.model_checkpoint_path,
+        checkpoint_path=config.ai_model_checkpoint_path,
     )
 
     # TODO: We may need to keep embedding data from all the iterations
@@ -113,6 +120,11 @@ def run_inference(
     # Compute the latent space representation
     z = model.predict(x=contact_maps)
 
+    # Load the latent history if provided
+    if config.ai_model_latent_history_path is not None:
+        z_history = np.load(config.ai_model_latent_history_path)
+        z = np.concatenate([z, z_history])
+
     # Run LOF on the latent space
     clf = LocalOutlierFactor(
         n_neighbors=config.lof_n_neighbors,
@@ -121,6 +133,10 @@ def run_inference(
 
     # Get the LOF scores
     lof_scores = clf.negative_outlier_factor_.tolist()
+
+    if config.ai_model_latent_history_path is not None:
+        # Remove the history from the LOF scores
+        lof_scores = lof_scores[: -z_history.shape[0]]
 
     # Group the simulations by LOF score
     sim_scores = batch_data(
