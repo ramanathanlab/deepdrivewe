@@ -202,7 +202,7 @@ class LOFLowResamplerV2(Resampler):
             ).sort_values('lof')  # First sort by lof (small are outliers)
         )
 
-        print(df)
+        print(df, flush=True)
 
         # Take the smallest num_outliers lof scores
         outliers = df.head(self.consider_for_resampling)
