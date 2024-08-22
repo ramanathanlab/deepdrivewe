@@ -198,7 +198,7 @@ def run_inference(
     # Log the latent space
     all_pcoords = [sim.metadata.pcoord for sim in input_data]
     pcoords = np.array(
-        [rmsd for pcoord in all_pcoords for rmsd, _ in pcoord],
+        [frame[0] for sim in all_pcoords for frame in sim],
     ).reshape(-1, 1)
 
     itetation = input_data[0].metadata.iteration_id
