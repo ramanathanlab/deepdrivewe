@@ -125,8 +125,8 @@ def run_inference(
     output_dir: Path,
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
-    # Extract the pcoord from the last frame of each simulation
-    pcoords = [sim.metadata.pcoord[-1] for sim in input_data]
+    # Extract the rmsd pcoord from the last frame of each simulation
+    pcoords = [sim.metadata.pcoord[-1][0] for sim in input_data]
 
     print(f'Progress coordinates: {pcoords}')
     print(f'Best progress coordinate: {min(pcoords)}')
