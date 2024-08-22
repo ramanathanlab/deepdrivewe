@@ -148,7 +148,10 @@ def run_inference(  # noqa: PLR0915
 
     # Extract the contact maps from each simulation
     data = [sim.data for sim in input_data]
-    contact_maps = np.concatenate([x['contact_maps'] for x in data])
+    cmaps = []
+    for sim_data in data:
+        cmaps.extend(sim_data['contact_maps'])
+    contact_maps = np.array(cmaps, dtype=object)
 
     print(f'{len(contact_maps)=}')
     print(f'{contact_maps[0].shape=}')
