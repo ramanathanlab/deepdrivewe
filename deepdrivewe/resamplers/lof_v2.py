@@ -108,7 +108,7 @@ class LOFLowResamplerV2(Resampler):
         indices = (
             outliers.sort_values('rmsd')  # Sort by RMSD
             .tail(len(n_splits))  # Take the N lowest RMSD values
-            .indices  # Get the indices
+            .index  # Get the indices
         )
 
         # Split the simulations
@@ -134,10 +134,12 @@ class LOFLowResamplerV2(Resampler):
         # Loop over the number of merges
         for merge in n_merges:
             # Get the indices of the sims to merge based on the combination
-            indices = inliers.sort_values('rmsd').tail(merge).indices
+            indices = inliers.sort_values('rmsd').tail(merge).index
 
             # Remove the used indices from the dataframe
-            inliers = inliers[inliers.indices != indices]
+            inliers = inliers.drop(indices)
+
+            # inliers = inliers[inliers.indices != indices]
 
             # Merge the simulations
             next_sims = self.merge_sims(cur_sims, next_sims, indices.tolist())
@@ -194,7 +196,7 @@ class LOFLowResamplerV2(Resampler):
                 {
                     'rmsd': rmsd,
                     'lof': lof,
-                    'indices': list(range(len(_next))),
+                    #'indices': list(range(len(_next))),
                     'weight': [sim.weight for sim in _next],
                 },
             ).sort_values('lof')  # First sort by lof (small are outliers)
