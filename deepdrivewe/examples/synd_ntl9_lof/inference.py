@@ -117,7 +117,7 @@ def scatter_plot(
     plt.close()
 
 
-def run_inference(  # noqa: PLR0915
+def run_inference(
     input_data: list[SimResult],
     basis_states: BasisStates,
     target_states: list[TargetState],
@@ -153,13 +153,6 @@ def run_inference(  # noqa: PLR0915
         contact_maps.extend(sim_data['contact_maps'])
     # Convert to int16
     contact_maps = [x.astype(np.int16) for x in contact_maps]
-    # contact_maps = np.array(cmaps, dtype=object)
-
-    print(f'{len(contact_maps)=}')
-    print(f'{contact_maps[0].shape=}')
-    print(f'{contact_maps[0]=}')
-    print(f'{contact_maps[1]=}')
-    # print(f'{contact_maps.shape=}', flush=True)
 
     # Compute the latent space representation
     z = model.predict(x=contact_maps)
@@ -188,9 +181,6 @@ def run_inference(  # noqa: PLR0915
         lof_scores,
         batch_size=len(lof_scores) // len(cur_sims),
     )
-
-    print(f'{len(sim_scores)=}')
-    print(f'{len(cur_sims)=}', flush=True)
 
     # Check that the number of simulations matches the batched scores
     assert len(sim_scores) == len(cur_sims)
