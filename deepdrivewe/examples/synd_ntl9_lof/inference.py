@@ -148,16 +148,16 @@ def run_inference(  # noqa: PLR0915
 
     # Extract the contact maps from each simulation
     data = [sim.data for sim in input_data]
-    cmaps = []
+    contact_maps = []
     for sim_data in data:
-        cmaps.extend(sim_data['contact_maps'])
-    contact_maps = np.array(cmaps, dtype=object)
+        contact_maps.extend(sim_data['contact_maps'])
+    # contact_maps = np.array(cmaps, dtype=object)
 
     print(f'{len(contact_maps)=}')
     print(f'{contact_maps[0].shape=}')
     print(f'{contact_maps[0]=}')
     print(f'{contact_maps[1]=}')
-    print(f'{contact_maps.shape=}', flush=True)
+    # print(f'{contact_maps.shape=}', flush=True)
 
     # Compute the latent space representation
     z = model.predict(x=contact_maps)
