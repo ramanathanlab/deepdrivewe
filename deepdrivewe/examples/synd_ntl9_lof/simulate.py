@@ -18,6 +18,7 @@ from deepdrivewe import SimResult
 from deepdrivewe.simulation.synd import SynDConfig
 from deepdrivewe.simulation.synd import SynDSimulation
 from deepdrivewe.simulation.synd import SynDTrajAnalyzer
+from deepdrivewe.stream import ProxyStreamConfig
 
 
 class SimulationConfig(SynDConfig):
@@ -110,6 +111,7 @@ def run_simulation(
     metadata: SimMetadata,
     config: SimulationConfig,
     output_dir: Path,
+    stream_config: StreamConfig | None = None,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
     # Add performance logging
@@ -131,6 +133,9 @@ def run_simulation(
 
     # Log the yaml config file to this directory
     config.dump_yaml(sim_output_dir / 'config.yaml')
+
+    if stream_config is not None:
+        producer = stream_config.get_producer()
 
     # Initialize the simulation
     sim = SynDSimulation(
@@ -163,5 +168,8 @@ def run_simulation(
         data={'contact_maps': contact_maps, 'pcoords': pcoords},
         metadata=metadata,
     )
+
+    if stream_config:
+        producer.send(stream_config.store_name, result, evict=True)
 
     return result

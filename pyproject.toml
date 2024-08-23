@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "colmena>=0.7.0",
-    "proxystore>=0.7.0",
+    "proxystore[redis]>=0.7.0",
     "parsl>=2024.8.26",
     "pyyaml>=6.0.1",
     "numpy",

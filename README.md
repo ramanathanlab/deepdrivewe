@@ -19,7 +19,7 @@ Full installation including dependencies:
 git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
-conda install omnia::ambertools -y
+conda install anaconda::redis omnia::ambertools -y
 pip install -e .
 ```
 
@@ -65,6 +65,22 @@ python -m deepdrivewe.simulation.synd --basis-states examples/synd_ntl9/bstates.
 To run the example, run the following command:
 ```bash
 nohup python -m deepdrivewe.examples.synd_ntl9.main --config examples/synd_ntl9/config.yaml &> nohup.log &
+```
+
+To run with streaming, add the following to the config:
+```yaml
+stream_config:
+  redis_host: localhost
+  redis_port: 6379
+```
+Then start a redis server in the background:
+```bash
+redis-server redis-server --port 6379 --save "" --appendonly no --protected-mode no &> redis.log &
+```
+The redis server can later be killed using the job number:
+```bash
+jobs
+kill %<num>
 ```
 
 ## Contributing

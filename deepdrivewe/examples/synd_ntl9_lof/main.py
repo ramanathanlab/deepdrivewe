@@ -30,6 +30,7 @@ from deepdrivewe.examples.synd_ntl9_lof.inference import run_inference
 from deepdrivewe.examples.synd_ntl9_lof.simulate import run_simulation
 from deepdrivewe.examples.synd_ntl9_lof.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeConfigTypes
+from deepdrivewe.stream import ProxyStreamConfig
 from deepdrivewe.simulation.synd import SynDBasisStateInitializer
 from deepdrivewe.workflows.westpa import WESTPAThinker
 
@@ -64,6 +65,10 @@ class ExperimentSettings(BaseModel):
     )
     compute_config: ComputeConfigTypes = Field(
         description='Settings for the compute resources.',
+    )
+    stream_config: ProxyStreamConfig | None = Field(
+        None,
+        description='Stream configuration for simulation data',
     )
 
     @field_validator('output_dir')
@@ -148,6 +153,7 @@ if __name__ == '__main__':
         run_simulation,
         config=cfg.simulation_config,
         output_dir=cfg.output_dir / 'simulation',
+        stream_config=cfg.stream_config,
     )
     my_run_inference = partial(
         run_inference,
