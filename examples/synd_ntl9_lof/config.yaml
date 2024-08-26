@@ -59,6 +59,7 @@ compute_config:
     name: local
     # The maximum number of worker processes to use for parallelization
     max_workers: 53
+
   gpu_config:
     # Specify we want the workstation parsl configuration
     name: workstation
