@@ -54,6 +54,15 @@ inference_config:
 
 # The settings for the compute environment
 compute_config:
-  name: local
-  # The maximum number of worker processes to use for parallelization
-  max_workers: 53
+  cpu_config:
+    # Specify we want the local parsl configuration
+    name: local
+    # The maximum number of worker processes to use for parallelization
+    max_workers: 53
+  gpu_config:
+    # Specify we want the workstation parsl configuration
+    name: workstation
+    # Identify which GPUs to assign tasks to. It's generally recommended to first check
+    # nvidia-smi to see which GPUs are available. The numbers below are analogous to
+    # setting CUDA_VISIBLE_DEVICES=7
+    available_accelerators: ["7"]
