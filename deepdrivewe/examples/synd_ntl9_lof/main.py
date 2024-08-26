@@ -171,7 +171,6 @@ if __name__ == '__main__':
         ],
         queues,
         parsl_config,
-        default_executors=['cpu_htex', 'gpu_htex'],
     )
 
     # Create the workflow thinker

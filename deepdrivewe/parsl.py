@@ -100,6 +100,8 @@ class WorkstationConfig(BaseComputeConfig):
 class HybridWorkstationConfig(BaseComputeConfig):
     """Run simulations on CPU and AI models on GPU."""
 
+    name: Literal['hybrid_workstation'] = 'hybrid_workstation'  # type: ignore[assignment]
+
     cpu_config: LocalConfig = Field(
         description='Config for the CPU executor to run simulations.',
     )

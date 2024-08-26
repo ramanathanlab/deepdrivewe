@@ -54,6 +54,9 @@ inference_config:
 
 # The settings for the compute environment
 compute_config:
+  # The name of the compute environment to use (hybrid is CPU + GPU)
+  name: hybrid_workstation
+
   cpu_config:
     # Specify we want the local parsl configuration
     name: local
