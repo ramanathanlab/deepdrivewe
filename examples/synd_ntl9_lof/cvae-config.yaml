@@ -9,7 +9,7 @@ affine_widths: [128] # The number of neurons in the linear layers (should be sam
 affine_dropouts: [0.5] # The dropout to use in the linear layers
 latent_dim: 3 # The latent dimension of the autoencoder
 lambda_rec: 1.0 # How much to weight the reconstruction loss vs the KL divergence
-num_data_workers: 4 # The number of parallel data workers for loading data (performance tuning)
+num_data_workers: 1 # The number of parallel data workers for loading data (performance tuning)
 prefetch_factor: 2 # How many batches each data worker should prefetch (performance tuning)
 batch_size: 64 # The batch size to use during training
 device: cuda # The device to train/infer with (cuda or cpu)
