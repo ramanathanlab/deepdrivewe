@@ -126,16 +126,6 @@ class ConvolutionalVAE:
         if checkpoint_path is not None:
             self.update_model(checkpoint_path)
 
-    def __del__(self) -> None:
-        """Clean up the model trainer and free memory."""
-        import gc
-
-        import torch
-
-        del self.trainer
-        gc.collect()
-        torch.cuda.empty_cache()
-
     def update_model(self, checkpoint_path: Path) -> None:
         """Update the model with a new checkpoint.
 
