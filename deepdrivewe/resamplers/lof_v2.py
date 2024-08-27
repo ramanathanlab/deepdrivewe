@@ -116,7 +116,7 @@ class LOFLowResamplerV2(Resampler):
         )
 
         print(f'[split_with_combination] {outliers=}')
-        print(f'[split_with_combination] {outliers.sort_values('rmsd')=}')
+        print(f'[split_with_combination] {outliers.sort_values("rmsd")=}')
         print(f'[split_with_combination] {indices=}', flush=True)
 
         # Split the simulations
