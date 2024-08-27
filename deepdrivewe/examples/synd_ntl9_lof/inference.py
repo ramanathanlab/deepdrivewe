@@ -139,8 +139,8 @@ class LatentSpaceHistory:
         color = self.pcoords if color is None else color
 
         print(
-            f'Plotting latent space to with {self.z.shape} '
-            f'and color with shape {color.shape} frames to {output_path}',
+            f'Plotting latent space to with {len(self.z)} '
+            f'and color with shape {len(color)} frames to {output_path}',
         )
 
         # Create the 3D scatter plot
