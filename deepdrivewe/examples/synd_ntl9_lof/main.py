@@ -99,10 +99,6 @@ if __name__ == '__main__':
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
     )
 
-    # TODO: This won't be needed in the next colmena release
-    # Register the store
-    # register_store(store)
-
     # Make the queues
     queues = PipeQueues(
         serialization_method='pickle',
