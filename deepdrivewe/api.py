@@ -181,6 +181,11 @@ class SimMetadata(BaseModel):
         """Return the simulation name (used to create the output directory)."""
         return f'{self.iteration_id:06d}/{self.simulation_id:06d}'
 
+    @property
+    def num_frames(self) -> int:
+        """Return the number of frames in the simulation."""
+        return len(self.pcoord)
+
     def append_pcoord(self, pcoords: list[float]) -> None:
         """Append the progress coordinates to the simulation metadata.
 

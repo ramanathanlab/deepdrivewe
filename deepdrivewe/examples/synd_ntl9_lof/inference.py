@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -21,7 +22,6 @@ from deepdrivewe.recyclers import LowRecycler
 
 # from deepdrivewe.resamplers import LOFLowResampler
 from deepdrivewe.resamplers.lof_v2 import LOFLowResamplerV2
-from deepdrivewe.workflows.utils import batch_data
 
 
 class InferenceConfig(BaseModel):
@@ -77,44 +77,117 @@ class InferenceConfig(BaseModel):
     )
 
 
-def scatter_plot(
-    x: np.ndarray,
-    y: np.ndarray,
-    color_data: np.ndarray,
-    output_path: Path,
-    xlabel: str = 'X-axis',
-    ylabel: str = 'Y-axis',
-    title: str = '',
-) -> None:
-    """Create a scatter plot.
+# TODO: We are not checkpointing the latent space history. This is
+# may cause an issue if we find the latent history is very important
+# for convergence and we have a restart. We should consider checkpointing.
+class LatentSpaceHistory:
+    """A class to store the latent space history."""
+
+    def __init__(self) -> None:
+        """Initialize the latent space history."""
+        # A (n, d) array where n is the number of frames and d is
+        # the latent space dimensionality
+        self.z = np.array([])
+        # A (n, 1) array of progress coordinates for each frame
+        self.pcoords = np.array([])
+
+    def update(self, z: np.ndarray, pcoords: np.ndarray) -> None:
+        """Update the latent space history.
+
+        Parameters
+        ----------
+        z: array-like
+            The latent space coordinates (n_frames, d)
+        pcords: array-like
+            The progress coordinates (n_frames, 1)
+        """
+        self.z = z
+        self.pcoords = pcoords
+
+    def plot(
+        self,
+        output_path: Path,
+        color: np.ndarray | None = None,
+        xlabel: str = r'$z_1$',
+        ylabel: str = r'$z_2$',
+        cblabel: str = 'Progress Coordinate',
+        title: str = '',
+    ) -> None:
+        """Create a scatter plot.
+
+        Parameters
+        ----------
+        x: array-like
+            X data for the scatter plot
+        y: array-like
+            Y data for the scatter plot
+        color: array-like
+            Data used for coloring the points
+        xlabel: str
+            Label for the X-axis
+        ylabel: str
+            Label for the Y-axis
+        title: str
+            Title of the plot
+        """
+        import matplotlib.pyplot as plt
+
+        # Set the color data to the progress coordinates if not provided
+        color = self.pcoords if color is None else color
+
+        # Create the scatter plot
+        plt.figure(figsize=(8, 6))
+        scatter = plt.scatter(
+            x=self.z[:, 0],
+            y=self.z[:, 0],
+            c=color,
+            cmap='viridis',
+        )
+        plt.colorbar(scatter, label=cblabel)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.savefig(output_path, bbox_inches='tight', dpi=300)
+        plt.close()
+
+
+@lru_cache(maxsize=1)
+def warmstart_model(
+    config_path: Path,
+    checkpoint_path: Path,
+) -> tuple[ConvolutionalVAE, LatentSpaceHistory]:
+    """Load the model once and then return a cached version.
 
     Parameters
     ----------
-    x: array-like
-        X data for the scatter plot
-    y: array-like
-        Y data for the scatter plot
-    color_data: array-like
-        Data used for coloring the points
-    filename: str
-        Filename for the saved image (default: 'scatter_plot.png')
-    xlabel: str
-        Label for the X-axis
-    ylabel: str
-        Label for the Y-axis
-    title: str
-        Title of the plot
-    """
-    import matplotlib.pyplot as plt
+    config_path : Path
+        The path to the model configuration file.
+    checkpoint_path : Path
+        The path to the model checkpoint file.
 
-    plt.figure(figsize=(8, 6))
-    scatter = plt.scatter(x, y, c=color_data, cmap='viridis')
-    plt.colorbar(scatter, label='Color Intensity')
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.savefig(output_path, bbox_inches='tight', dpi=300)
-    plt.close()
+    Returns
+    -------
+    ConvolutionalVAE
+        The ConvolutionalVAE model.
+    LatentSpaceHistory
+        The latent space history.
+    """
+    # Print the warmstart message
+    print(f'Cold start model from checkpoint {checkpoint_path}')
+
+    # Load the model configuration
+    model_config = ConvolutionalVAEConfig.from_yaml(config_path)
+
+    # Load the model
+    model = ConvolutionalVAE(
+        model_config,
+        checkpoint_path=checkpoint_path,
+    )
+
+    # Initialize the latent space history
+    history = LatentSpaceHistory()
+
+    return model, history
 
 
 def run_inference(
@@ -125,6 +198,11 @@ def run_inference(
     output_dir: Path,
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
+    # Make the output directory
+    itetation = input_data[0].metadata.iteration_id
+    output_dir = output_dir / f'{itetation:06d}'
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # Extract the rmsd pcoord from the last frame of each simulation
     pcoords = [sim.metadata.pcoord[-1][0] for sim in input_data]
 
@@ -135,32 +213,25 @@ def run_inference(
     # Extract the simulation metadata
     cur_sims = [sim.metadata for sim in input_data]
 
-    # Load the model configuration
-    model_config = ConvolutionalVAEConfig.from_yaml(
+    # Load the model and history
+    model, history = warmstart_model(
         config.ai_model_config_path,
+        config.ai_model_checkpoint_path,
     )
 
-    # Load the model
-    model = ConvolutionalVAE(
-        model_config,
-        checkpoint_path=config.ai_model_checkpoint_path,
-    )
+    # Extract the last frame contact maps and rmsd from each simulation
+    contact_maps = [sim.data['contact_maps'][-1] for sim in input_data]
+    pcoords = [sim.data['pcoords'][-1] for sim in input_data]
 
-    # Extract the contact maps from each simulation
-    data = [sim.data for sim in input_data]
-    contact_maps = []
-    for sim_data in data:
-        contact_maps.extend(sim_data['contact_maps'])
     # Convert to int16
     contact_maps = [x.astype(np.int16) for x in contact_maps]
 
     # Compute the latent space representation
     z = model.predict(x=contact_maps)
 
-    # Load the latent history if provided
-    if config.ai_model_latent_history_path is not None:
-        z_history = np.load(config.ai_model_latent_history_path)
-        z = np.concatenate([z, z_history])
+    # Concatenate the latent history
+    z = np.concatenate([history.z, z])
+    pcoords = np.concatenate([history.pcoords, pcoords])
 
     # Run LOF on the latent space
     clf = LocalOutlierFactor(
@@ -169,42 +240,24 @@ def run_inference(
     ).fit(z)
 
     # Get the LOF scores
-    lof_scores = clf.negative_outlier_factor_.tolist()
+    lof_scores = clf.negative_outlier_factor_
 
-    if config.ai_model_latent_history_path is not None:
-        # Remove the history from the LOF scores
-        lof_scores = lof_scores[: -z_history.shape[0]]
-        z = z[: -z_history.shape[0]]
+    # Update the latent space history
+    history.update(z, pcoords)
 
-    # Group the simulations by LOF score
-    sim_scores = batch_data(
-        lof_scores,
-        batch_size=len(lof_scores) // len(cur_sims),
+    # Plot the latent space
+    history.plot(output_dir / 'pcoord.png')
+    history.plot(
+        output_dir / 'pcoord_lof.png',
+        color=lof_scores,
+        cblabel='LOF Score',
     )
 
-    # Check that the number of simulations matches the batched scores
-    assert len(sim_scores) == len(cur_sims)
-    # Check that there is one LOF score per simulation frame
-    assert len(sim_scores[0]) == len(cur_sims[0].pcoord)
-
-    # Loop over each simulation and add the LOF scores
-    for sim, scores in zip(cur_sims, sim_scores):
-        sim.append_pcoord(scores)
-
-    # Log the latent space
-    all_pcoords = [sim.metadata.pcoord for sim in input_data]
-    pcoords = np.array(
-        [frame[0] for sim in all_pcoords for frame in sim],
-    ).reshape(-1, 1)
-
-    itetation = input_data[0].metadata.iteration_id
-    output_dir = output_dir / f'{itetation:06d}'
-    output_dir.mkdir(parents=True, exist_ok=True)
-    np.save(output_dir / 'z.npy', z)
-    np.save(output_dir / 'lof.npy', lof_scores)
-    np.save(output_dir / 'pcoord.npy', pcoords)
-    scatter_plot(z[:, 0], z[:, 1], lof_scores, output_dir / 'lof.png')
-    scatter_plot(z[:, 0], z[:, 1], pcoords, output_dir / 'pcoord.png')
+    # Add the LOF scores to the last frame of each simulation pcoord
+    for sim, score in zip(cur_sims, lof_scores[-len(cur_sims) :]):
+        sim_scores = [-1.0 for _ in range(sim.num_frames)]
+        sim_scores[-1] = score
+        sim.append_pcoord(sim_scores)
 
     # Create the binner
     binner = RectilinearBinner(
