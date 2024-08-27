@@ -81,14 +81,19 @@ class LOFLowResamplerV2(Resampler):
 
         print(f'[_get_combination] {combs=}')
 
-        # Randomly select one of the combinations
-        chosen = random.choice(combs)
+        # Only keep the unique combinations
+        unique_combs = {tuple(sorted(combo)) for combo in combs}
 
-        print(f'[_get_combination] {chosen=}')
+        print(f'[_get_combination] {unique_combs=}')
+
+        # Randomly select one of the combinations
+        choice = random.choice(list(unique_combs))
+
+        print(f'[_get_combination] {choice=}')
 
         # Add 1 to each element in the chosen combination to adjust from
         # the number to add or remove to the number of splits or merges
-        chosen = [i + 1 for i in chosen]
+        chosen = [i + 1 for i in choice]
 
         print('[_get_combination] chosen + 1', chosen, flush=True)
 
