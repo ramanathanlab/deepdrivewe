@@ -289,7 +289,7 @@ def run_inference(
         target_threshold=target_states[0].pcoord[0],
     )
 
-    # Resamlpe the ensemble
+    # Define the resampling policy
     resampler = LOFLowResampler(
         consider_for_resampling=config.consider_for_resampling,
         max_resamples=config.max_resamples,
