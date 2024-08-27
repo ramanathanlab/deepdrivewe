@@ -48,7 +48,7 @@ inference_config:
   # The number of simulations to resample in each iteration
   consider_for_resampling: 36 #12
   # The maximum number of resamples to perform in each iteration
-  max_resamples: 4
+  max_resamples: 8 #4
 
 # The settings for the compute environment
 compute_config:
