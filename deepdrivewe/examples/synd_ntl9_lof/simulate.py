@@ -144,6 +144,11 @@ def run_simulation(
         output_dir=sim_output_dir,
     )
 
+    # Randomly fail the simulation for testing purposes
+    failure_rate = 0.1
+    if np.random.rand() < failure_rate:
+        raise RuntimeError('Random error for testing purposes')
+
     # Analyze the trajectory
     analyzer = ContactMapAnalyzer(
         reference_file=config.reference_file,
