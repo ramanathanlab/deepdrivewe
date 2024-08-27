@@ -113,8 +113,6 @@ class LatentSpaceHistory:
         self,
         output_path: Path,
         color: ArrayLike | None = None,
-        xlabel: str = r'$z_1$',
-        ylabel: str = r'$z_2$',
         cblabel: str = 'Progress Coordinate',
         title: str = '',
     ) -> None:
@@ -140,19 +138,23 @@ class LatentSpaceHistory:
         # Set the color data to the progress coordinates if not provided
         color = self.pcoords if color is None else color
 
-        # Create the scatter plot
-        plt.figure(figsize=(8, 6))
-        scatter = plt.scatter(
-            x=self.z[:, 0],
-            y=self.z[:, 0],
+        # Create the 3D scatter plot
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        scatter = ax.scatter(
+            xs=self.z[:, 0],
+            ys=self.z[:, 1],
+            zs=self.z[:, 2],
             c=color,
             cmap='viridis',
         )
-        plt.colorbar(scatter, label=cblabel)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.title(title)
-        plt.savefig(output_path, bbox_inches='tight', dpi=300)
+        fig.colorbar(scatter, label=cblabel)
+        ax.set_xlabel(r'$z_1$')
+        ax.set_ylabel(r'$z_2$')
+        ax.set_zlabel(r'$z_3$')
+        ax.set_title(title)
+        # plt.savefig(output_path, bbox_inches='tight', dpi=300)
+        plt.savefig(output_path)
         plt.close()
 
 
