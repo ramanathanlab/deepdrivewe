@@ -145,7 +145,7 @@ def run_simulation(
     )
 
     # Randomly fail the simulation for testing purposes
-    failure_rate = 0.1
+    failure_rate = 0.05
     if np.random.rand() < failure_rate:
         raise RuntimeError('Random error for testing purposes')
 
