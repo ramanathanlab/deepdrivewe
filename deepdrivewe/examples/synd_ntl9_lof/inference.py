@@ -6,6 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import ArrayLike
 from pydantic import BaseModel
 from pydantic import Field
 from sklearn.neighbors import LocalOutlierFactor
@@ -91,7 +92,11 @@ class LatentSpaceHistory:
         # A (n, 1) array of progress coordinates for each frame
         self.pcoords = np.array([])
 
-    def update(self, z: np.ndarray, pcoords: np.ndarray) -> None:
+    def __bool__(self) -> bool:
+        """Return True if the history is not empty."""
+        return bool(len(self.z))
+
+    def update(self, z: ArrayLike, pcoords: ArrayLike) -> None:
         """Update the latent space history.
 
         Parameters
@@ -107,7 +112,7 @@ class LatentSpaceHistory:
     def plot(
         self,
         output_path: Path,
-        color: np.ndarray | None = None,
+        color: ArrayLike | None = None,
         xlabel: str = r'$z_1$',
         ylabel: str = r'$z_2$',
         cblabel: str = 'Progress Coordinate',
@@ -230,8 +235,9 @@ def run_inference(
     z = model.predict(x=contact_maps)
 
     # Concatenate the latent history
-    z = np.concatenate([history.z, z])
-    pcoords = np.concatenate([history.pcoords, pcoords])
+    if history:
+        z = np.concatenate([history.z, z])
+        pcoords = np.concatenate([history.pcoords, pcoords])
 
     # Run LOF on the latent space
     clf = LocalOutlierFactor(
