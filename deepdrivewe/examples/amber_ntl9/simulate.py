@@ -109,8 +109,7 @@ def run_simulation(
     metadata.mark_simulation_end()
 
     result = SimResult(
-        pcoord=pcoord,
-        coords=coords,
+        data={'coords': coords, 'pcoord': pcoord},
         metadata=metadata,
     )
 

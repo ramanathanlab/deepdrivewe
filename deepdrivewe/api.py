@@ -30,14 +30,12 @@ class SimResult:
     #       we need to store the data products of a simulation
     #       which require numpy arrays.
 
-    pcoord: np.ndarray = field(
+    data: dict[str, np.ndarray] = field(
         metadata={
-            'help': 'The progress coordinate for the simulation.',
-        },
-    )
-    coords: np.ndarray = field(
-        metadata={
-            'help': 'The atomic coordinates for the simulation.',
+            'help': 'The data products of the simulation '
+            '(e.g., 3D attomic coordinates, contact maps, etc).'
+            'Each key is the name of the data product and the value '
+            'is the data product itself as a numpy array.',
         },
     )
     metadata: SimMetadata = field(
@@ -83,13 +81,13 @@ class IterationMetadata(BaseModel):
     min_bin_prob: float = Field(
         default=0.0,
         ge=0.0,
-        le=1.0,
+        le=1.001,  # Allow for floating point errors
         description='The minimum bin probability for an iteration.',
     )
     max_bin_prob: float = Field(
         default=0.0,
         ge=0.0,
-        le=1.0,
+        le=1.001,  # Allow for floating point errors
         description='The maximum bin probability for an iteration.',
     )
     bin_target_counts: list[int] = Field(
@@ -182,6 +180,37 @@ class SimMetadata(BaseModel):
     def simulation_name(self) -> str:
         """Return the simulation name (used to create the output directory)."""
         return f'{self.iteration_id:06d}/{self.simulation_id:06d}'
+
+    @property
+    def num_frames(self) -> int:
+        """Return the number of frames in the simulation."""
+        return len(self.pcoord)
+
+    def append_pcoord(self, pcoords: list[float]) -> None:
+        """Append the progress coordinates to the simulation metadata.
+
+        Parameters
+        ----------
+        pcoords : list[float]
+            The progress coordinates to append to the simulation metadata
+            shape: (n_frames,)
+
+        Raises
+        ------
+        ValueError
+            If the number of frames in the progress coordinate does not match
+            the number of frames in the simulation metadata
+        """
+        if len(pcoords) != len(self.pcoord):
+            raise ValueError(
+                'The number of frames in the progress coordinate does not '
+                'match the number of frames in the simulation metadata.',
+            )
+
+        # Loop over each frame in the simulation
+        for orig_pcoord, pcoord in zip(self.pcoord, pcoords):
+            # Append the new pcoord to the original pcoord
+            orig_pcoord.append(pcoord)
 
 
 class TargetState(BaseModel):
@@ -382,10 +411,6 @@ class WeightedEnsemble(BaseModel):
     target_states: list[TargetState] = Field(
         description='The target states for the weighted ensemble.',
     )
-    simulations: list[list[SimMetadata]] = Field(
-        default_factory=list,
-        description='The list of simulations for each iteration.',
-    )
     metadata: IterationMetadata = Field(
         default=IterationMetadata,
         description='The metadata for the current iteration.',
@@ -393,6 +418,10 @@ class WeightedEnsemble(BaseModel):
     cur_sims: list[SimMetadata] = Field(
         default_factory=list,
         description='The simulations for the current iteration.',
+    )
+    next_sims: list[SimMetadata] = Field(
+        default_factory=list,
+        description='The simulations for the next iteration.',
     )
 
     def initialize_basis_states(
@@ -411,19 +440,13 @@ class WeightedEnsemble(BaseModel):
         # Load the basis states
         self.basis_states.load_basis_states(basis_state_initializer)
 
-        # Initialize the simulations with the basis states
-        self.simulations = [deepcopy(self.basis_states.basis_states)]
-
-    @property
-    def current_sims(self) -> list[SimMetadata]:
-        """Return the simulations for the current iteration."""
-        return self.simulations[-1]
+        # Initialize the next simulations with the basis states
+        self.next_sims = deepcopy(self.basis_states.basis_states)
 
     @property
     def iteration(self) -> int:
         """Return the current iteration of the weighted ensemble."""
-        # The first iteration is the basis states
-        return len(self.simulations) - 1
+        return self.metadata.iteration_id
 
     def advance_iteration(
         self,
@@ -437,7 +460,7 @@ class WeightedEnsemble(BaseModel):
         and merge. The binner will then call this method to advance the
         iteration of the weighted ensemble.
         """
-        # Create a list to store the new simulations for this iteration
-        self.simulations.append(next_sims)
+        # Store the latest data
         self.metadata = metadata
         self.cur_sims = cur_sims
+        self.next_sims = next_sims

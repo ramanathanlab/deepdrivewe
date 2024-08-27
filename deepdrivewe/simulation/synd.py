@@ -217,10 +217,9 @@ def run_simulation(
     metadata.pcoord = pcoord.tolist()
     metadata.mark_simulation_end()
 
-    # Return the results
+    # Create the simulation result
     result = SimResult(
-        pcoord=pcoord,
-        coords=coords,
+        data={'coords': coords, 'pcoord': pcoord},
         metadata=metadata,
     )
 
@@ -230,8 +229,22 @@ def run_simulation(
 class SynDBasisStateInitializer:
     """SynD basis state initialization."""
 
-    def __init__(self, config: SynDConfig) -> None:
-        """Initialize the basis state initializer."""
+    def __init__(self, config: SynDConfig, extra_pcoord_dims: int = 0) -> None:
+        """Initialize the basis state initializer.
+
+        Parameters
+        ----------
+        config : SynDConfig
+            The SynD configuration.
+
+        extra_pcoord_dims : int
+            The number of extra progress coordinate dimensions.
+            Useful for adding additional progress coordinate dimensions
+            that are not part of the SynD model but are added during
+            the analysis of the trajectory, defaults to 0.
+        """
+        self.extra_pcoord_dims = extra_pcoord_dims
+
         # Initialize the simulation to use the backmap function
         self.sim = SynDSimulation(
             synd_model_file=config.synd_model_file,
@@ -246,6 +259,9 @@ class SynDBasisStateInitializer:
         # Get the pcoord for the basis state
         pcoords = self.sim.model.backmap(state)
         pcoords = pcoords.reshape(-1).tolist()
+
+        # Add extra progress coordinate dimensions
+        pcoords.extend([0.0] * self.extra_pcoord_dims)
 
         return pcoords
 
