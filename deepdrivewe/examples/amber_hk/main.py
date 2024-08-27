@@ -19,7 +19,7 @@ from proxystore.connectors.file import FileConnector
 from proxystore.store import register_store
 from proxystore.store import Store
 from pydantic import Field
-from pydantic import validator
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
@@ -88,7 +88,7 @@ class ExperimentSettings(BaseModel):
         description='Settings for the compute resources.',
     )
 
-    @validator('output_dir')
+    @field_validator('output_dir')
     @classmethod
     def mkdir_validator(cls, value: Path) -> Path:
         """Resolve and make the output directory."""
