@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import random
 from copy import deepcopy
 
-import numpy as np
+import pandas as pd
 
 from deepdrivewe.api import SimMetadata
 from deepdrivewe.resamplers.base import Resampler
@@ -57,139 +58,104 @@ class LOFLowResampler(Resampler):
         self.max_resamples = max_resamples
         self.pcoord_idx = pcoord_idx
 
-    def remove_underweight(
-        self,
-        sims: list[SimMetadata],
-        inds: list[int],
-    ) -> list[int]:
-        """Remove simulations with weight less than min_allowed_weight."""
-        return [i for i in inds if sims[i].weight >= self.min_allowed_weight]
-
-    def remove_overweight(
-        self,
-        sims: list[SimMetadata],
-        inds: list[int],
-    ) -> list[int]:
-        """Remove simulations with weight greater than max_allowed_weight."""
-        return [i for i in inds if sims[i].weight <= self.max_allowed_weight]
-
-    def get_combination(self, tot: int, length: int) -> list[int]:
-        """Make all possible combinations of `length` that sums to `tot`.
+    def _get_combination(self, total: int, length: int) -> list[int]:
+        """Get the number of splits or merges to perform for each simulation.
 
         Parameters
         ----------
-        tot : int
-            The total number of segments to sum to (could require
-            adding or removing segments).
+        total : int
+            The total number of simulations to sum to (could require
+            adding or removing simulations).
         length : int
-            The number of available segments for resampling.
+            The number of available simulations for resampling.
+
+        Returns
+        -------
+        list[int]
+            The number of splits or merges to perform for each simulation.
         """
 
-        # Define a recursive function to generate all possible combinations
-        def generate_combinations(
-            target: int,
-            length: int,
-            cur_combo: list[int],
-        ) -> list[list[int]]:
-            # Base cases
-            if length == 0:
-                return [cur_combo] if target == 0 else []
-            if target <= 0:
+        def generate_combinations(n: int, max_length: int) -> list[list[int]]:
+            if n == 0:
+                return [[]]
+            if max_length == 0:
                 return []
 
-            # Initialize the list of combinations
-            combos = []
+            combinations = []
+            for i in range(1, n + 1):
+                for tail in generate_combinations(n - i, max_length - 1):
+                    combinations.append([i, *tail])
+            return combinations
 
-            # Start the loop from the last number in the current combo
-            start = cur_combo[-1] if cur_combo else 1
+        # Generate all possible combinations of splits or merges
+        combs = generate_combinations(total, length)
 
-            # Generate all possible combinations
-            for num in range(start, tot + 1):
-                # Generate a new combination
-                new_combo = [*cur_combo, num]
+        # Filter out combinations that don't match the required length
+        combs = [x for x in combs if len(x) <= length]
 
-                # Recursively generate the combinations
-                combos.extend(
-                    generate_combinations(target - num, length - 1, new_combo),
-                )
-
-            return combos
-
-        # Initialize the list of combinations
-        combos: list[list[int]] = []
-
-        # Loop over the number of segments
-        for segs in range(1, length + 1):
-            # Call the recursive function to generate the combinations
-            combos.extend(generate_combinations(tot, segs, []))
+        # Only keep the unique combinations
+        unique_combs = {tuple(sorted(x)) for x in combs}
 
         # Randomly select one of the combinations
-        chosen = combos[np.random.choice(len(combos))]
+        choice = random.choice(list(unique_combs))
 
         # Add 1 to each element in the chosen combination to adjust from
-        # the number to add or remove to the number of splits or merges)
-        chosen = [i + 1 for i in chosen]
+        # the number to add or remove to the number of splits or merges
+        chosen = [i + 1 for i in choice]
 
-        # Return a sorted list of the chosen combination
-        return sorted(chosen, reverse=True)
+        return chosen
 
     def split_with_combination(
         self,
+        outliers: pd.DataFrame,
         next_sims: list[SimMetadata],
-        inds: list[int],
         num_resamples: int,
     ) -> list[SimMetadata]:
         """Split the outlying simulations with the lowest pcoords."""
-        # Get the sims that correspond to the outliers
-        outlier_sims = [next_sims[i] for i in inds]
+        # Compute a random combination of splits to perform
+        n_splits = self._get_combination(num_resamples, len(outliers))
 
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(outlier_sims, self.pcoord_idx)
+        # Sort the number of splits in descending order so that the
+        # smallest RMSD simulations are split the most.
+        n_splits = sorted(n_splits, reverse=True)
 
-        # Get the sims with the lowest progress coordinates
-        sorted_indices = np.argsort(pcoords)
-
-        # Get the list of number of splits
-        num_splits = self.get_combination(num_resamples, len(inds))
-
-        # Get the indices of the sims to split based on the combination
-        indices = [inds[i] for i in sorted_indices[: len(num_splits)]]
+        # Get the indices of the N simulations with lowest RMSD values
+        indices = (
+            outliers.sort_values('rmsd')  # Sort by RMSD
+            .head(len(n_splits))  # Take the N lowest RMSD values
+            .index  # Get the indices
+        )
 
         # Split the simulations
-        new_sims = self.split_sims(next_sims, indices, num_splits)
+        new_sims = self.split_sims(next_sims, indices.tolist(), n_splits)
 
         return new_sims
 
     def merge_with_combination(
         self,
+        inliers: pd.DataFrame,
         cur_sims: list[SimMetadata],
         next_sims: list[SimMetadata],
-        inds: list[int],
         num_resamples: int,
     ) -> list[SimMetadata]:
         """Merge the simulations with the highest progress coordinate."""
-        # Get the sims that correspond to the inliers
-        inlier_sims = [next_sims[i] for i in inds]
-
-        # Extract the progress coordinates
-        pcoords = self.get_pcoords(inlier_sims, self.pcoord_idx)
-
-        # Find the simulations with the highest progress coordinate
-        sorted_indices = np.argsort(pcoords)
-
         # Get the list of number of merges
-        num_merges = self.get_combination(num_resamples, len(inds))
+        n_merges = self._get_combination(num_resamples, len(inliers))
+
+        # Sort the number of merges in ascending order so that the
+        # largest RMSD simulations are merged the most.
+        n_merges = sorted(n_merges)
 
         # Loop over the number of merges
-        for merge in range(len(num_merges)):
+        for merge in n_merges:
             # Get the indices of the sims to merge based on the combination
-            indices = [inds[i] for i in sorted_indices[-num_merges[merge] :]]
+            indices = inliers.sort_values('rmsd').tail(merge).index
 
-            # Remove the used indices from the end of the sorted indices
-            sorted_indices = sorted_indices[: -num_merges[merge]]
+            # Remove the used indices from the dataframe
+            inliers = inliers.drop(indices)
 
             # Merge the simulations
-            next_sims = self.merge_sims(cur_sims, next_sims, indices)
+            next_sims = self.merge_sims(cur_sims, next_sims, indices.tolist())
 
         return next_sims
 
@@ -217,44 +183,53 @@ class LOFLowResampler(Resampler):
         ValueError
             If consider_for_resampling is too large for the number of sims.
         """
-        # Make a copy of the simulations
-        cur = deepcopy(cur_sims)
-        _next = deepcopy(next_sims)
-
-        # First get the LOF scores which assumes are saved as the second
-        # (parent) progress coordinate in the next simulations.
-        lof = self.get_pcoords(_next, pcoord_idx=1)
-
-        # Sort the simulations by LOF score (smaller scores are more outlying)
-        sorted_indices = np.argsort(lof)
-
         # Check if there are enough sims to resample
-        if len(sorted_indices) < 2 * self.consider_for_resampling:
+        if len(next_sims) < 2 * self.consider_for_resampling:
             raise ValueError(
                 f'consider_for_resampling={self.consider_for_resampling} '
-                f'is too large for the number of sims {len(sorted_indices)}.',
+                f'is too large for the number of sims {len(next_sims)}.',
                 'Consider increasing the number of simulations or decreasing',
                 'consider_for_resampling such that it is less than or equal '
                 'to half of the number of simulations.',
             )
 
-        # Get the indices of the outliers and inliers. Note this may leave
-        # some sims out of the resampling (i.e., the ones that are not in
-        # the outliers or inliers)
-        outliers = sorted_indices[: self.consider_for_resampling].tolist()
-        inliers = sorted_indices[: -self.consider_for_resampling].tolist()
+        # Make a copy of the simulations
+        cur = deepcopy(cur_sims)
+        _next = deepcopy(next_sims)
+
+        # Get the RMSD values which assumes are saved as the first pcoord
+        rmsd = self.get_pcoords(_next, pcoord_idx=0)
+
+        # First get the LOF scores which assumes are saved as the second
+        # (parent) progress coordinate in the next simulations.
+        lof = self.get_pcoords(_next, pcoord_idx=1)
+
+        # Get the weights of the simulations
+        weights = [sim.weight for sim in _next]
+
+        # Create a dataframe with the RMSD, LOF, and weights
+        df = pd.DataFrame({'rmsd': rmsd, 'lof': lof, 'weight': weights})
+
+        # Sort the simulations by LOF (small are outliers)
+        df = df.sort_values('lof')
+
+        # Take the smallest num_outliers lof scores
+        outliers = df.head(self.consider_for_resampling)
+
+        # Take the largest num_inliers lof scores
+        inliers = df.tail(self.consider_for_resampling)
 
         # Remove underweight simulations from the outliers so we don't split
         # simulations that are too small. Note that it's fine to keep small
         # weight simulations in the inliers because they will be merged and
         # the weights will be increased.
-        outliers = self.remove_underweight(_next, outliers)
+        outliers = outliers[outliers.weight >= self.min_allowed_weight]
 
         # Remove overweight simulations from the inliers so we don't merge
         # simulations that are too large. Note that it's fine to keep large
         # weight simulations in the outliers because they will be split and
         # the weights will be reduced.
-        inliers = self.remove_overweight(_next, inliers)
+        inliers = inliers[inliers.weight <= self.max_allowed_weight]
 
         # Determine the number of resamples to perform. If removing the
         # underweight or overweight sims results in not enough simulations
@@ -273,32 +248,14 @@ class LOFLowResampler(Resampler):
 
         # If there are enough walkers in the thresholds, split and merge
         if num_resamples > 0:
-            # Find the inlier sims before the _next list is modified
-            inlier_ids = [_next[i].simulation_id for i in inliers]
-
-            # inlier_ids = [
-            #     sim.simulation_id
-            #     for i, sim in enumerate(_next)
-            #     if i in inliers
-            # ]
-
             # Split the simulations
-            _next = self.split_with_combination(_next, outliers, num_resamples)
-
-            # Find the indices that correspond to the inliers
-            # NOTE: This is pretty hokey but is necessary because the list of
-            # simulations is modified in the split step
-            inliers = [
-                i
-                for i, sim in enumerate(_next)
-                if sim.simulation_id in inlier_ids
-            ]
+            _next = self.split_with_combination(outliers, _next, num_resamples)
 
             # Merge the simulations
             _next = self.merge_with_combination(
+                inliers,
                 cur,
                 _next,
-                inliers,
                 num_resamples,
             )
 
