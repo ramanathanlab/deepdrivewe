@@ -196,7 +196,6 @@ class LOFLowResamplerV2(Resampler):
                 {
                     'rmsd': rmsd,
                     'lof': lof,
-                    #'indices': list(range(len(_next))),
                     'weight': [sim.weight for sim in _next],
                 },
             ).sort_values('lof')  # First sort by lof (small are outliers)
@@ -236,6 +235,8 @@ class LOFLowResamplerV2(Resampler):
             len(outliers),  # Roughly the number of possible splits
             int(len(inliers) / 2),  # Roughly the number of possible merges
         )
+
+        print(f'Resampling with {num_resamples=}', flush=True)
 
         # If there are enough walkers in the thresholds, split and merge
         if num_resamples > 0:
