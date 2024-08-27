@@ -262,7 +262,7 @@ def run_inference(
     # Add the LOF scores to the last frame of each simulation pcoord
     for sim, score in zip(cur_sims, lof_scores[-len(cur_sims) :]):
         sim_scores = [-1.0 for _ in range(sim.num_frames)]
-        sim_scores[-1] = score
+        sim_scores[-1] = float(score)
         sim.append_pcoord(sim_scores)
 
     # Create the binner
