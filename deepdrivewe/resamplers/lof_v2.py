@@ -76,11 +76,7 @@ class LOFLowResamplerV2(Resampler):
             The number of splits or merges to perform for each simulation.
         """
         # Generate all combinations of numbers from 1 to length - 1
-        combinations = list(
-            combinations_with_replacement(range(1, length), total),
-        )
-
-        print(f'[_get_combination] {combinations=}')
+        combinations = combinations_with_replacement(range(1, length), total)
 
         # Filter the combinations to only include those that sum to total
         combs = [list(comb) for comb in combinations if sum(comb) == total]
