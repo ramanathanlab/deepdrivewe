@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import random
 from copy import deepcopy
-from itertools import combinations_with_replacement
 
 import pandas as pd
 
@@ -60,6 +59,22 @@ class LOFLowResamplerV2(Resampler):
         self.pcoord_idx = pcoord_idx
 
     def _get_combination(self, total: int, length: int) -> list[int]:
+        """Get the number of splits or merges to perform for each simulation.
+
+        Parameters
+        ----------
+        total : int
+            The total number of simulations to sum to (could require
+            adding or removing simulations).
+        length : int
+            The number of available simulations for resampling.
+
+        Returns
+        -------
+        list[int]
+            The number of splits or merges to perform for each simulation.
+        """
+
         def generate_combinations(n: int, max_length: int) -> list[list[int]]:
             if n == 0:
                 return [[]]
@@ -79,60 +94,15 @@ class LOFLowResamplerV2(Resampler):
             if len(combo) <= length
         ]
 
-        print(f'[_get_combination] {combs=}')
-
         # Only keep the unique combinations
         unique_combs = {tuple(sorted(combo)) for combo in combs}
-
-        print(f'[_get_combination] {unique_combs=}')
 
         # Randomly select one of the combinations
         choice = random.choice(list(unique_combs))
 
-        print(f'[_get_combination] {choice=}')
-
         # Add 1 to each element in the chosen combination to adjust from
         # the number to add or remove to the number of splits or merges
         chosen = [i + 1 for i in choice]
-
-        print('[_get_combination] chosen + 1', chosen, flush=True)
-
-        return chosen
-
-    def _get_combination_old_v(self, total: int, length: int) -> list[int]:
-        """Get the number of splits or merges to perform for each simulation.
-
-        Parameters
-        ----------
-        total : int
-            The total number of simulations to sum to (could require
-            adding or removing simulations).
-        length : int
-            The number of available simulations for resampling.
-
-        Returns
-        -------
-        list[int]
-            The number of splits or merges to perform for each simulation.
-        """
-        # Generate all combinations of numbers from 1 to length - 1
-        combinations = combinations_with_replacement(range(1, length), total)
-
-        # Filter the combinations to only include those that sum to total
-        combs = [list(comb) for comb in combinations if sum(comb) == total]
-
-        print(f'[_get_combination] {combs=}')
-
-        # Randomly select one of the combinations
-        chosen = random.choice(combs)
-
-        print(f'[_get_combination] {chosen=}')
-
-        # Add 1 to each element in the chosen combination to adjust from
-        # the number to add or remove to the number of splits or merges
-        chosen = [i + 1 for i in chosen]
-
-        print('[_get_combination] chosen + 1', chosen, flush=True)
 
         return chosen
 
@@ -146,13 +116,9 @@ class LOFLowResamplerV2(Resampler):
         # Compute a random combination of splits to perform
         n_splits = self._get_combination(num_resamples, len(outliers))
 
-        # print(f'[split_with_combination] {n_splits=}')
-
         # Sort the number of splits in descending order so that the
         # smallest RMSD simulations are split the most.
         n_splits = sorted(n_splits, reverse=True)
-
-        # print(f'[split_with_combination] reverse sorted {n_splits=}')
 
         # Get the indices of the N simulations with lowest RMSD values
         indices = (
@@ -160,10 +126,6 @@ class LOFLowResamplerV2(Resampler):
             .head(len(n_splits))  # Take the N lowest RMSD values
             .index  # Get the indices
         )
-
-        # print(f'[split_with_combination] {outliers=}')
-        # print(f'[split_with_combination] {outliers.sort_values("rmsd")=}')
-        # print(f'[split_with_combination] {indices=}', flush=True)
 
         # Split the simulations
         new_sims = self.split_sims(next_sims, indices.tolist(), n_splits)
@@ -181,29 +143,17 @@ class LOFLowResamplerV2(Resampler):
         # Get the list of number of merges
         n_merges = self._get_combination(num_resamples, len(inliers))
 
-        # print(f'[merge_with_combination] {n_merges=}')
-
         # Sort the number of merges in ascending order so that the
         # largest RMSD simulations are merged the most.
         n_merges = sorted(n_merges)
-
-        # print(f'[merge_with_combination] sorted {n_merges=}')
 
         # Loop over the number of merges
         for merge in n_merges:
             # Get the indices of the sims to merge based on the combination
             indices = inliers.sort_values('rmsd').tail(merge).index
 
-            # print(f'[merge_with_combination] {inliers=}')
-            # print(f'[merge_with_combination] {indices=}', flush=True)
-
             # Remove the used indices from the dataframe
             inliers = inliers.drop(indices)
-
-            # print(
-            #     f'[merge_with_combination] after drop {inliers=}',
-            #     flush=True,
-            # )
 
             # Merge the simulations
             next_sims = self.merge_sims(cur_sims, next_sims, indices.tolist())
@@ -265,8 +215,6 @@ class LOFLowResamplerV2(Resampler):
             ).sort_values('lof')  # First sort by lof (small are outliers)
         )
 
-        print(df, flush=True)
-
         # Take the smallest num_outliers lof scores
         outliers = df.head(self.consider_for_resampling)
 
@@ -299,8 +247,6 @@ class LOFLowResamplerV2(Resampler):
             len(outliers),  # Roughly the number of possible splits
             int(len(inliers) / 2),  # Roughly the number of possible merges
         )
-
-        print(f'Resampling with {num_resamples=}', flush=True)
 
         # If there are enough walkers in the thresholds, split and merge
         if num_resamples > 0:
