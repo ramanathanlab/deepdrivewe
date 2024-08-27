@@ -138,6 +138,11 @@ class LatentSpaceHistory:
         # Set the color data to the progress coordinates if not provided
         color = self.pcoords if color is None else color
 
+        print(
+            f'Plotting latent space to with {self.z.shape} '
+            f'and color with shape {color.shape} frames to {output_path}',
+        )
+
         # Create the 3D scatter plot
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
