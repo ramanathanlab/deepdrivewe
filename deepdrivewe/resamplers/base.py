@@ -9,7 +9,10 @@ from abc import abstractmethod
 
 import numpy as np
 
+from deepdrivewe.api import IterationMetadata
 from deepdrivewe.api import SimMetadata
+from deepdrivewe.binners.base import Binner
+from deepdrivewe.recyclers.base import Recycler
 
 
 class Resampler(ABC):
@@ -19,7 +22,55 @@ class Resampler(ABC):
         """Initialize the resampler."""
         self._index_counter = itertools.count()
 
-    def get_next_sims(self, cur_sims: list[SimMetadata]) -> list[SimMetadata]:
+    def run(
+        self,
+        cur_sims: list[SimMetadata],
+        binner: Binner,
+        recycler: Recycler,
+    ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
+        """Assign simulations to bins and resample the weighted ensemble.
+
+        Parameters
+        ----------
+        cur_sims : list[SimMetadata]
+            The list of current simulations.
+        binner : Binner
+            The binner to use for binning the simulations.
+        recycler : Recycler
+            The recycler to use for recycling the simulations.
+
+        Returns
+        -------
+        tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]
+            The current sims, the new sims, and the iteration metadata.
+        """
+        # Get the next iteration of simulation metadata
+        next_sims = self._get_next_sims(cur_sims)
+
+        # Recycle the current iteration
+        cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
+
+        # Assign the simulations to bins
+        bin_assignments = binner.bin_simulations(next_sims)
+
+        # Compute the iteration metadata
+        metadata = binner.compute_iteration_metadata(cur_sims)
+
+        # Resample the simulations in each bin
+        new_sims = []
+        for bin_sims in bin_assignments.values():
+            # Get the simulations in the bin
+            binned_sims = [next_sims[sim_idx] for sim_idx in bin_sims]
+
+            # Resample the bin and add them to the new simulations
+            cur_sims, resampled_sims = self.resample(cur_sims, binned_sims)
+
+            # Add the resampled simulations to the new simulations
+            new_sims.extend(resampled_sims)
+
+        return cur_sims, new_sims, metadata
+
+    def _get_next_sims(self, cur_sims: list[SimMetadata]) -> list[SimMetadata]:
         """Return the simulations for the next iteration."""
         # Create a list to store the new simulations for this iteration
         simulations = []

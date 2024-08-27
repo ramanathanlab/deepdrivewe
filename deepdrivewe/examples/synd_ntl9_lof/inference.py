@@ -297,28 +297,7 @@ def run_inference(
         min_allowed_weight=config.min_allowed_weight,
     )
 
-    # Get the next iteration of simulation metadata
-    next_sims = resampler.get_next_sims(cur_sims)
+    # Assign simulations to bins and resample the weighted ensemble
+    result = resampler.run(cur_sims, binner, recycler)
 
-    # Recycle the current iteration
-    cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
-
-    # Assign the simulations to bins
-    bin_assignments = binner.bin_simulations(next_sims)
-
-    # Compute the iteration metadata
-    metadata = binner.compute_iteration_metadata(cur_sims)
-
-    # Resample the simulations in each bin
-    new_sims = []
-    for bin_sims in bin_assignments.values():
-        # Get the simulations in the bin
-        binned_sims = [next_sims[sim_idx] for sim_idx in bin_sims]
-
-        # Resample the bin and add them to the new simulations
-        cur_sims, resampled_sims = resampler.resample(cur_sims, binned_sims)
-
-        # Add the resampled simulations to the new simulations
-        new_sims.extend(resampled_sims)
-
-    return cur_sims, new_sims, metadata
+    return result
