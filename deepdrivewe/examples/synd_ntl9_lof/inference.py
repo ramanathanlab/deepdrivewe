@@ -38,6 +38,10 @@ class InferenceConfig(BaseModel):
         description='The path to the latent space history file (z.npy).'
         'A small batch of latent coordinates used to provide context for LOF.',
     )
+    ai_model_inference_batch_size: int = Field(
+        default=128,
+        description='The batch size for inference.',
+    )
 
     # Local outlier factor settings
     lof_n_neighbors: int = Field(
@@ -237,7 +241,10 @@ def run_inference(
     contact_maps = [x.astype(np.int16) for x in contact_maps]
 
     # Compute the latent space representation
-    z = model.predict(x=contact_maps)
+    z = model.predict(
+        x=contact_maps,
+        inference_batch_size=config.ai_model_inference_batch_size,
+    )
 
     # Concatenate the latent history
     if history:
