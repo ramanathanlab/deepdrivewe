@@ -60,6 +60,41 @@ class LOFLowResamplerV2(Resampler):
         self.pcoord_idx = pcoord_idx
 
     def _get_combination(self, total: int, length: int) -> list[int]:
+        def generate_combinations(n: int, max_length: int) -> list[list[int]]:
+            if n == 0:
+                return [[]]
+            if max_length == 0:
+                return []
+
+            combinations = []
+            for i in range(1, n + 1):
+                for tail in generate_combinations(n - i, max_length - 1):
+                    combinations.append([i, *tail])
+            return combinations
+
+        # Filter out combinations that don't match the required length
+        combs = [
+            combo
+            for combo in generate_combinations(total, length)
+            if len(combo) <= length
+        ]
+
+        print(f'[_get_combination] {combs=}')
+
+        # Randomly select one of the combinations
+        chosen = random.choice(combs)
+
+        print(f'[_get_combination] {chosen=}')
+
+        # Add 1 to each element in the chosen combination to adjust from
+        # the number to add or remove to the number of splits or merges
+        chosen = [i + 1 for i in chosen]
+
+        print('[_get_combination] chosen + 1', chosen, flush=True)
+
+        return chosen
+
+    def _get_combination_old_v(self, total: int, length: int) -> list[int]:
         """Get the number of splits or merges to perform for each simulation.
 
         Parameters
