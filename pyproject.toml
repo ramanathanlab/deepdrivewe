@@ -19,17 +19,16 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "colmena==0.6.1",
-    "proxystore==0.6.5",
-    "parsl",
-    "pyyaml==6.0.1",
+    "colmena>=0.7.0",
+    "proxystore>=0.7.0",
+    "parsl>=2024.8.26",
+    "pyyaml>=6.0.1",
     "numpy",
     "h5py==3.11.0",
     "mdtraj==1.10.0",
-    "mdlearn==0.0.10a1",
     "scikit-learn==1.5.1",
     "scipy==1.14.0",
-    "natsort==8.4.0",
+    "natsort>=8.4.0",
     "matplotlib>=3.9.2",
 ]
 

@@ -16,7 +16,6 @@ from pathlib import Path
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from proxystore.connectors.file import FileConnector
-from proxystore.store import register_store
 from proxystore.store import Store
 from pydantic import Field
 from pydantic import validator
@@ -101,7 +100,7 @@ if __name__ == '__main__':
 
     # TODO: This won't be needed in the next colmena release
     # Register the store
-    register_store(store)
+    # register_store(store)
 
     # Make the queues
     queues = PipeQueues(
