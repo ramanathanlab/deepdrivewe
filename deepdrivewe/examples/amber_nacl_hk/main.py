@@ -1,7 +1,7 @@
 """WESTPA example.
 
 Adapted from:
-https://github.com/westpa/westpa2_tutorials/tree/main/tutorial7.7-hamsm
+https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_nacl_amber
 """
 
 from __future__ import annotations
@@ -16,20 +16,19 @@ from pathlib import Path
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from proxystore.connectors.file import FileConnector
-from proxystore.store import register_store
 from proxystore.store import Store
 from pydantic import Field
-from pydantic import validator
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.amber_ntl9.inference import InferenceConfig
-from deepdrivewe.examples.amber_ntl9.inference import run_inference
-from deepdrivewe.examples.amber_ntl9.simulate import run_simulation
-from deepdrivewe.examples.amber_ntl9.simulate import SimulationConfig
+from deepdrivewe.examples.amber_nacl_hk.inference import InferenceConfig
+from deepdrivewe.examples.amber_nacl_hk.inference import run_inference
+from deepdrivewe.examples.amber_nacl_hk.simulate import run_simulation
+from deepdrivewe.examples.amber_nacl_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
@@ -49,10 +48,10 @@ class CustomBasisStateInitializer(BaseModel):
         """Initialize the basis state parent coordinates."""
         # Create the cpptraj command file
         command = (
-            f'parm {self.top_file}\n'
+            f'parm {self.top_file} \n'
             f'trajin {basis_file}\n'
-            f'reference {self.reference_file} [reference]\n'
-            'rms @CA reference out {output_file}\n'
+            f'reference {self.reference_file} [reference] \n'
+            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
         return run_cpptraj(command, verbose=False)
@@ -85,10 +84,10 @@ class ExperimentSettings(BaseModel):
         description='Arguments for the inference.',
     )
     compute_config: ComputeConfigTypes = Field(
-        description='Config for the compute resources.',
+        description='Settings for the compute resources.',
     )
 
-    @validator('output_dir')
+    @field_validator('output_dir')
     @classmethod
     def mkdir_validator(cls, value: Path) -> Path:
         """Resolve and make the output directory."""
@@ -117,12 +116,9 @@ if __name__ == '__main__':
     # Make the store
     store = Store(
         name='file-store',
+        register=True,
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
     )
-
-    # TODO: This won't be needed in the next colmena release
-    # Register the store
-    register_store(store)
 
     # Make the queues
     queues = PipeQueues(

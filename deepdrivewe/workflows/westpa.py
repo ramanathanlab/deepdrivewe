@@ -17,7 +17,7 @@ from deepdrivewe.workflows.utils import ResultLogger
 
 
 class WESTPAThinker(BaseThinker):
-    """A synchronous DDWE thinker."""
+    """A thinker for the WESTPA workflow."""
 
     def __init__(
         self,
@@ -26,9 +26,9 @@ class WESTPAThinker(BaseThinker):
         ensemble: WeightedEnsemble,
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
-        simulation_retry_limit: int = 2,
+        max_retries: int = 2,
     ) -> None:
-        """Initialize the synchronous DDWE thinker.
+        """Initialize the WESTPA workflow thinker.
 
         Parameters
         ----------
@@ -42,27 +42,21 @@ class WESTPAThinker(BaseThinker):
             Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
-        simulation_retry_limit: int
-            Number of times to retry a simulation task if it fails.
+        max_retries: int
+            Number of times to retry a task if it fails (default to 2).
         """
         super().__init__(queue)
 
         self.ensemble = ensemble
         self.checkpointer = checkpointer
         self.num_iterations = num_iterations
-        self.simulation_retry_limit = simulation_retry_limit
+        self.max_retries = max_retries
         self.result_logger = ResultLogger(result_dir)
 
         # Store the inference input (the output of the simulations)
         self.inference_input: list[Any] = []
 
-    def submit_task(
-        self,
-        topic: str,
-        *inputs: Any,
-        keep_inputs: bool = False,
-        retry_count: int | None = None,
-    ) -> None:
+    def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server.
 
         Parameters
@@ -71,22 +65,13 @@ class WESTPAThinker(BaseThinker):
             The topic of the task.
         inputs: Any
             The input args to the task.
-        keep_inputs: bool
-            Whether to keep the inputs in the task server.
-        retry_count: int | None
-            The number of times the task has been retried
-            (default to 0 when None is specified).
         """
-        # Initialize the retry count
-        retry_count = 0 if retry_count is None else retry_count
-
         # Submit the task to the task server
         self.queues.send_inputs(
             *inputs,
             method=f'run_{topic}',
             topic=topic,
-            keep_inputs=keep_inputs,
-            task_info={'retry_count': retry_count},
+            max_retries=self.max_retries,
         )
 
     @agent(startup=True)
@@ -94,7 +79,7 @@ class WESTPAThinker(BaseThinker):
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
         for sim in self.ensemble.next_sims:
-            self.submit_task('simulation', sim, keep_inputs=True)
+            self.submit_task('simulation', sim)
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
@@ -102,27 +87,14 @@ class WESTPAThinker(BaseThinker):
         # Log simulation job results
         self.result_logger.log(result, topic='simulation')
 
-        # Resubmit the simulation task if it failed. If
-        # the task has failed too many times, then quit the workflow.
+        # Check if the task failed
         if not result.success:
-            retry_count: int = result.task_info['retry_count']
-            if retry_count >= self.simulation_retry_limit:
-                self.logger.error(
-                    f'Simulation {result.task_id} '
-                    f'failed {retry_count} times, quitting workflow.',
-                )
-                self.done.set()
-                return
-
-            self.submit_task(
-                'simulation',
-                *result.args,
-                keep_inputs=True,
-                retry_count=retry_count + 1,
+            self.logger.error(
+                f'Simulation failed after {result.retries}'
+                f'/{result.max_retries} attempts, quitting workflow.',
+                f' result={result}',
             )
-            self.logger.warning(
-                f'Simulation {result.task_id} failed, resubmitted task',
-            )
+            self.done.set()
             return
 
         # Collect simulation results
@@ -138,8 +110,10 @@ class WESTPAThinker(BaseThinker):
         """Process an inference result."""
         # Log inference job results
         self.result_logger.log(result, topic='inference')
+
+        # Check if the task failed
         if not result.success:
-            self.logger.warning('Bad inference result, quitting workflow.')
+            self.logger.warning('Inference failed, quitting workflow.')
             self.done.set()
             return
 
@@ -168,4 +142,4 @@ class WESTPAThinker(BaseThinker):
         # Submit the next iteration of simulations
         self.logger.info('Submitting next iteration of simulations')
         for sim in self.ensemble.next_sims:
-            self.submit_task('simulation', sim, keep_inputs=True)
+            self.submit_task('simulation', sim)

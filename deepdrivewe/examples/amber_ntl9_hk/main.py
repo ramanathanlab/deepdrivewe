@@ -16,23 +16,45 @@ from pathlib import Path
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from proxystore.connectors.file import FileConnector
-from proxystore.store import register_store
 from proxystore.store import Store
 from pydantic import Field
-from pydantic import validator
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.synd_ntl9.inference import InferenceConfig
-from deepdrivewe.examples.synd_ntl9.inference import run_inference
+from deepdrivewe.examples.amber_ntl9_hk.inference import InferenceConfig
+from deepdrivewe.examples.amber_ntl9_hk.inference import run_inference
+from deepdrivewe.examples.amber_ntl9_hk.simulate import run_simulation
+from deepdrivewe.examples.amber_ntl9_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeConfigTypes
-from deepdrivewe.simulation.synd import run_simulation
-from deepdrivewe.simulation.synd import SynDBasisStateInitializer
-from deepdrivewe.simulation.synd import SynDConfig
+from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
+
+
+class CustomBasisStateInitializer(BaseModel):
+    """Custom basis state initialization."""
+
+    top_file: Path = Field(
+        description='Topology file for the cpptraj command.',
+    )
+    reference_file: Path = Field(
+        description='Reference file for the cpptraj command.',
+    )
+
+    def __call__(self, basis_file: str) -> list[float]:
+        """Initialize the basis state parent coordinates."""
+        # Create the cpptraj command file
+        command = (
+            f'parm {self.top_file}\n'
+            f'trajin {basis_file}\n'
+            f'reference {self.reference_file} [reference]\n'
+            'rms @CA reference out {output_file}\n'
+            'go'
+        )
+        return run_cpptraj(command, verbose=False)
 
 
 class ExperimentSettings(BaseModel):
@@ -48,21 +70,24 @@ class ExperimentSettings(BaseModel):
     basis_states: BasisStates = Field(
         description='The basis states for the weighted ensemble.',
     )
+    basis_state_initializer: CustomBasisStateInitializer = Field(
+        description='Arguments for initializing the basis states.',
+    )
     target_states: list[TargetState] = Field(
         description='The target threshold for the progress coordinate to be'
         ' considered in the target state.',
     )
-    simulation_config: SynDConfig = Field(
+    simulation_config: SimulationConfig = Field(
         description='Arguments for the simulation.',
     )
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
     )
     compute_config: ComputeConfigTypes = Field(
-        description='Settings for the compute resources.',
+        description='Config for the compute resources.',
     )
 
-    @validator('output_dir')
+    @field_validator('output_dir')
     @classmethod
     def mkdir_validator(cls, value: Path) -> Path:
         """Resolve and make the output directory."""
@@ -91,12 +116,9 @@ if __name__ == '__main__':
     # Make the store
     store = Store(
         name='file-store',
+        register=True,
         connector=FileConnector(store_dir=str(cfg.output_dir / 'proxy-store')),
     )
-
-    # TODO: This won't be needed in the next colmena release
-    # Register the store
-    register_store(store)
 
     # Make the queues
     queues = PipeQueues(
@@ -125,13 +147,8 @@ if __name__ == '__main__':
             target_states=cfg.target_states,
         )
 
-        # Setup the basis state initializer
-        basis_state_initializer = SynDBasisStateInitializer(
-            cfg.simulation_config,
-        )
-
         # Initialize the simulations with the basis states
-        ensemble.initialize_basis_states(basis_state_initializer)
+        ensemble.initialize_basis_states(cfg.basis_state_initializer)
     else:
         # Load the ensemble from a checkpoint if it exists
         ensemble = checkpointer.load(checkpoint)

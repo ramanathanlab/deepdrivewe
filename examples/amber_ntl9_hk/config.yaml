@@ -1,0 +1,33 @@
+output_dir: runs/ntl9-v1
+
+basis_states:
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/inputs
+  basis_state_ext: .rst7
+  initial_ensemble_members: 4
+
+basis_state_initializer:
+  top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/ntl9.prmtop
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/reference.pdb
+
+num_iterations: 106
+
+simulation_config:
+  amber_config:
+    amber_exe: sander
+    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/md.in
+    top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/ntl9.prmtop
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/reference.pdb
+
+inference_config:
+  # The number of simulations to maintain per bin
+  sims_per_bin: 4
+
+# The target threshold for the progress coordinate
+# to be considered in the target state.
+target_states:
+    - label: folded
+      pcoord: [1.0]
+
+compute_config:
+  name: local
+  max_workers: 53

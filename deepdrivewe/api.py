@@ -51,7 +51,12 @@ class BaseModel(_BaseModel):
     def dump_yaml(self, filename: str | Path) -> None:
         """Dump settings to a YAML file."""
         with open(filename, mode='w') as fp:
-            yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
+            yaml.dump(
+                json.loads(self.model_dump_json()),
+                fp,
+                indent=4,
+                sort_keys=False,
+            )
 
     @classmethod
     def from_yaml(cls: type[T], filename: str | Path) -> T:
