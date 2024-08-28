@@ -70,12 +70,27 @@ nohup python -m deepdrivewe.examples.synd_ntl9.main --config examples/synd_ntl9/
 To run with streaming, add the following to the config:
 ```yaml
 stream_config:
+  # A redis server is used as the stream message broker
   redis_host: localhost
   redis_port: 6379
+  # The Store used for stream items is configurable
+  store_config:
+    name: stream-store
+    # Use the same redis server for object storage 
+    connector:
+      kind: redis
+      options:
+        hostname: localhost
+        port: 6379
+    # FileConnector example
+    # connector:
+    #   kind: file
+    #   options:
+    #     store_dir: /tmp/proxystore-cache
 ```
 Then start a redis server in the background:
 ```bash
-redis-server redis-server --port 6379 --save "" --appendonly no --protected-mode no &> redis.log &
+redis-server --port 6379 --save "" --appendonly no --protected-mode no &> redis.log &
 ```
 The redis server can later be killed using the job number:
 ```bash
