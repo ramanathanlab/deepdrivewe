@@ -12,8 +12,12 @@ class HuberKimResampler(Resampler):
     """
     Run Huber and Kim resampling.
 
-    The resampling procedure is outlined in Huber, Kim 1996:
+    The resampling procedure is mostly outlined in Huber, Kim 1996:
         https://doi.org/10.1016/S0006-3495(96)79552-8
+    
+    with the additions of the adjust counts and weight thresholds that make 
+    this more closely replicate the base implementation of fixed bins from
+    WESTPA: http://dx.doi.org/10.1021/ct5010615
 
     This resampler is designed to be used with bins and follows 3 steps:
         1. Resample based on weight
