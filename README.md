@@ -8,6 +8,10 @@ To install the package, run the following command:
 git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
 pip install -e .
+
+# TODO: remove this after next colmena release
+pip uninstall colmena
+pip install git+https://github.com/braceal/colmena.git --no-cache-dir
 ```
 
 Full installation including dependencies:
