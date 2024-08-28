@@ -245,8 +245,8 @@ class WESTPAThinker(BaseThinker):
         # Check if the task failed
         if not result.success:
             self.logger.error(
-                f'Simulation failed after {result.retries} attempts,'
-                ' quitting workflow.',
+                f'Simulation failed after {result.retries}'
+                f'/{result.max_retries} attempts, quitting workflow.',
             )
             self.done.set()
             return
