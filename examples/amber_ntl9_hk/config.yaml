@@ -14,7 +14,7 @@ num_iterations: 106
 simulation_config:
   amber_config:
     amber_exe: sander
-    md_input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/md.in
+    input_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/md.in
     top_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/ntl9.prmtop
   reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/amber_ntl9_hk/common_files/reference.pdb
 
