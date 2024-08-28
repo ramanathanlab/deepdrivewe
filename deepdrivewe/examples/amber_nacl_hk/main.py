@@ -1,7 +1,7 @@
 """WESTPA example.
 
 Adapted from:
-https://github.com/westpa/westpa2_tutorials/tree/main/tutorial7.7-hamsm
+https://github.com/westpa/westpa_tutorials/tree/main/additional_tutorials/basic_nacl_amber
 """
 
 from __future__ import annotations
@@ -25,10 +25,10 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.amber_ntl9.inference import InferenceConfig
-from deepdrivewe.examples.amber_ntl9.inference import run_inference
-from deepdrivewe.examples.amber_ntl9.simulate import run_simulation
-from deepdrivewe.examples.amber_ntl9.simulate import SimulationConfig
+from deepdrivewe.examples.amber_nacl_hk.inference import InferenceConfig
+from deepdrivewe.examples.amber_nacl_hk.inference import run_inference
+from deepdrivewe.examples.amber_nacl_hk.simulate import run_simulation
+from deepdrivewe.examples.amber_nacl_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
@@ -48,10 +48,10 @@ class CustomBasisStateInitializer(BaseModel):
         """Initialize the basis state parent coordinates."""
         # Create the cpptraj command file
         command = (
-            f'parm {self.top_file}\n'
+            f'parm {self.top_file} \n'
             f'trajin {basis_file}\n'
-            f'reference {self.reference_file} [reference]\n'
-            'rms @CA reference out {output_file}\n'
+            f'reference {self.reference_file} [reference] \n'
+            'distance na-cl :1@Na+ :2@Cl- out {output_file} \n'
             'go'
         )
         return run_cpptraj(command, verbose=False)
@@ -84,7 +84,7 @@ class ExperimentSettings(BaseModel):
         description='Arguments for the inference.',
     )
     compute_config: ComputeConfigTypes = Field(
-        description='Config for the compute resources.',
+        description='Settings for the compute resources.',
     )
 
     @field_validator('output_dir')

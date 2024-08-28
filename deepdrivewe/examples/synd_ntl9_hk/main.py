@@ -25,8 +25,8 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.synd_ntl9.inference import InferenceConfig
-from deepdrivewe.examples.synd_ntl9.inference import run_inference
+from deepdrivewe.examples.synd_ntl9_hk.inference import InferenceConfig
+from deepdrivewe.examples.synd_ntl9_hk.inference import run_inference
 from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.synd import run_simulation
 from deepdrivewe.simulation.synd import SynDBasisStateInitializer
