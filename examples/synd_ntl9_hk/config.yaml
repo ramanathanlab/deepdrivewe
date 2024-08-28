@@ -7,7 +7,7 @@ num_iterations: 150
 # The basis states for the simulation
 basis_states:
   # The nested directory containing the basis state files
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/bstates
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_hk/bstates
   # The extension for the basis state files
   basis_state_ext: .npy
   # The number of initial ensemble members to use
@@ -25,7 +25,7 @@ target_states:
 # The configuration for the simulation
 simulation_config:
   # The path to the synd model file
-  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9/ntl9_folding.synd
+  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_hk/ntl9_folding.synd
   # The number of steps to run the simulation for (this includes the initial step)
   n_steps: 2
 
