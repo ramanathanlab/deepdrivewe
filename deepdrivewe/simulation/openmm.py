@@ -468,15 +468,24 @@ class OpenMMSimulation(BaseModel):
         # Copy the restart checkpoint to the output directory
         shutil.copy(self.checkpoint_file, self.parent_file)
 
+        # We need the PDB file and the checkpoint to initialize the simulation.
+        # On the first iteration, we will start with a pdb file.
+        # On subsequent iterations, we will start with a checkpoint file.
+        # So we copy the basis state PDB file to the output directory.
+        if self.checkpoint_file.suffix == '.chk':
+            # The subsequent iteration case where we start with a checkpoint
+            pdb_file = self.checkpoint_file.parent / 'parent.pdb'
+            pdb_file = shutil.copy(pdb_file, self.output_dir)
+        else:
+            # The first iteration case where we start with a PDB file
+            pdb_file = self.parent_file
+
         # Copy the static input files to the output directory
         if self.copy_input_files and self.top_file is not None:
             self.top_file = shutil.copy(self.top_file, self.output_dir)
 
         # Initialize an OpenMM simulation
-        sim = self.config.configure_simulation(
-            pdb_file=self.parent_file,
-            top_file=self.top_file,
-        )
+        sim = self.config.configure_simulation(pdb_file, self.top_file)
 
         # Set up a reporter to write a simulation trajectory file
         sim.reporters.append(
