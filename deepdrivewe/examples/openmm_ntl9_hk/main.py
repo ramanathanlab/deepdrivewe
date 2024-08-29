@@ -196,6 +196,7 @@ if __name__ == '__main__':
         ensemble=ensemble,
         checkpointer=checkpointer,
         num_iterations=cfg.num_iterations,
+        max_retries=0,
     )
     logging.info('Created the task server and task generator')
 

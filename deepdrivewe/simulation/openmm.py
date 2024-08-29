@@ -115,7 +115,7 @@ class OpenMMConfig(BaseModel):
         ' Options are: MonteCarloBarostat, MonteCarloAnisotropicBarostat.',
     )
     run_minimization: bool = Field(
-        default=False,
+        default=True,
         description='Whether to run energy minimization.',
     )
     set_positions: bool = Field(
@@ -123,8 +123,8 @@ class OpenMMConfig(BaseModel):
         description='Whether to set positions.',
     )
     randomize_velocities: bool = Field(
-        default=False,
-        description='Whether to randomize the initial velocities.',
+        default=True,
+        description='Whether to randomize the basis state initial velocities.',
     )
     hardware_platform: str = Field(
         default='CUDA',
