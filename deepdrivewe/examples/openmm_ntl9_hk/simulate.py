@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
-import time
 from pathlib import Path
 
 from pydantic import Field
@@ -46,10 +44,9 @@ def run_simulation(
     # Remove the directory if it already exists
     # (this would be from a task failure)
     if sim_output_dir.exists():
-        # Wait a bit to make sure the directory is not being
-        # used and avoid .nfs file race conditions
-        time.sleep(10)
-        shutil.rmtree(sim_output_dir)
+        # Remove each file in the directory
+        for file in sim_output_dir.iterdir():
+            file.unlink()
 
     # Create a fresh output directory
     sim_output_dir.mkdir(parents=True, exist_ok=True)
