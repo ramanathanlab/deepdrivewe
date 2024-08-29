@@ -1,0 +1,59 @@
+# Configuration file for the NTL9 folding example using OpenMM
+
+# The output directory for the runs
+output_dir: runs/ntl9-v1
+
+# The number of iterations to run the ensemble for
+num_iterations: 106
+
+# The basis states to use for the ensemble
+basis_states:
+  # The directory containing the basis states sub directories
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/inputs
+  # The file extension for the basis state files
+  basis_state_ext: .pdb
+  # The number of basis states to use
+  initial_ensemble_members: 4
+
+# Strategy for initializing the basis state progress coordinates
+basis_state_initializer:
+  # The path to the reference PDB file
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+
+# The configuration for the simulation
+simulation_config:
+  # The OpenMM configuration
+  openmm_config:
+    # The number of nanoseconds to run each simulation for (10 ps)
+    simulation_length_ns: 0.01
+    # How often to report frames in picoseconds
+    report_interval_ps: 2.0
+    # The time step to use in picoseconds
+    dt_ps: 0.002
+    # The temperature to run the simulation at
+    temperature: 300.0
+    # The solvent type
+    solvent_type: implicit
+    # The hardware platform to run the simulation on
+    platform: CPU
+
+  # The analysis configuration
+  analyzer:
+    # The path to the reference PDB file
+    reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+
+# The configuration for the inference
+inference_config:
+  # The number of simulations to maintain per bin
+  sims_per_bin: 4
+
+# The target threshold for the progress coordinate
+# to be considered in the target state.
+target_states:
+    - label: folded
+      pcoord: [1.0]
+
+# The Parsl compute configuration
+compute_config:
+  name: local
+  max_workers: 53

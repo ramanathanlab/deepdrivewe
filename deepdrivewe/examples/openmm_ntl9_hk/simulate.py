@@ -19,7 +19,7 @@ from deepdrivewe.simulation.openmm import OpenMMSimulation
 class SimulationConfig(BaseModel):
     """Arguments for the naive resampler."""
 
-    sim_config: OpenMMConfig = Field(
+    openmm_config: OpenMMConfig = Field(
         description='The configuration for the Amber simulation.',
     )
     analyzer: ContactMapRMSDAnalyzer = Field(
@@ -59,7 +59,7 @@ def run_simulation(
 
     # Initialize the simulation
     simulation = OpenMMSimulation(
-        config=config.sim_config,
+        config=config.openmm_config,
         top_file=config.top_file,
         output_dir=sim_output_dir,
         checkpoint_file=metadata.parent_restart_file,

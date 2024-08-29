@@ -86,11 +86,11 @@ class OpenMMConfig(BaseModel):
     """Configuration for an OpenMM simulation."""
 
     simulation_length_ns: float = Field(
-        default=10.0,
+        default=0.01,  # 0.01 ns = 10 ps
         description='The length of the simulation (in nanoseconds).',
     )
     report_interval_ps: float = Field(
-        default=50.0,
+        default=2.0,
         description='The report interval for the simulation (in picoseconds).',
     )
     dt_ps: float = Field(
@@ -446,7 +446,7 @@ class OpenMMSimulation(BaseModel):
     @property
     def restart_file(self) -> Path:
         """The restart file for the simulation."""
-        return self.output_dir / f'seg{self.checkpoint_file.suffix}'
+        return self.output_dir / 'seg.chk'
 
     @property
     def parent_file(self) -> Path:
@@ -505,14 +505,15 @@ class OpenMMSimulation(BaseModel):
         if reporters is not None:
             sim.reporters.extend(reporters)
 
+        # Load the checkpoint file (if it is a OpenMM checkpoint)
+        if self.parent_file.suffix == '.chk':
+            sim.loadCheckpoint(self.parent_file.as_posix())
+
         # Run simulation
         sim.step(self.config.num_steps)
 
-        # Get the final state of the simulation for checkpointing
-        positions = sim.context.getState(getPositions=True).getPositions()
-
-        # Write the final state to a restart PDB file
-        app.PDBFile.writeFile(sim.topology, positions, self.restart_file)
+        # Save a checkpoint of the final state
+        sim.saveCheckpoint(self.restart_file)
 
 
 class ContactMapRMSDAnalyzer(BaseModel):
