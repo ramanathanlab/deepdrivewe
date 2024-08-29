@@ -35,7 +35,7 @@ simulation_config:
     # The solvent type
     solvent_type: implicit
     # The hardware platform to run the simulation on
-    platform: CPU
+    hardware_platform: CPU
 
   # The analysis configuration
   analyzer:
