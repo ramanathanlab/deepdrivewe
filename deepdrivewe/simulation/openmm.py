@@ -111,10 +111,11 @@ class OpenMMConfig(BaseModel):
     )
     explicit_barostat: str | None = Field(
         default=None,
-        description='The barostat used for an explicit solvent simulation.',
+        description='The barostat used for an explicit solvent simulation.'
+        ' Options are: MonteCarloBarostat, MonteCarloAnisotropicBarostat.',
     )
     run_minimization: bool = Field(
-        default=True,
+        default=False,
         description='Whether to run energy minimization.',
     )
     set_positions: bool = Field(
@@ -124,6 +125,11 @@ class OpenMMConfig(BaseModel):
     randomize_velocities: bool = Field(
         default=False,
         description='Whether to randomize the initial velocities.',
+    )
+    hardware_platform: str = Field(
+        default='CUDA',
+        description='The hardware platform to use for the simulation.'
+        ' Options are: CUDA, OpenCL, CPU.',
     )
 
     @model_validator(mode='after')
@@ -137,6 +143,17 @@ class OpenMMConfig(BaseModel):
             raise ValueError(
                 f'Invalid explicit_barostat option: {self.explicit_barostat}',
                 f'For explicit solvent, valid options are: {valid_barostats}',
+            )
+        return self
+
+    @model_validator(mode='after')
+    def validate_hardware_platform(self) -> Self:
+        """Check for valid hardware_platform options."""
+        valid_platforms = ('CUDA', 'OpenCL', 'CPU')
+        if self.hardware_platform not in valid_platforms:
+            raise ValueError(
+                f'Invalid hardware_platform option: {self.hardware_platform}',
+                f'Valid options are: {valid_platforms}',
             )
         return self
 
@@ -255,22 +272,21 @@ class OpenMMConfig(BaseModel):
         tuple[openmm.Platform, dict[str, str]]
             The OpenMM platform and the platform properties.
         """
-        try:
-            # Try to use the CUDA platform first
+        if self.hardware_platform == 'CUDA':
+            # Use the CUDA platform
             platform = openmm.Platform.getPlatformByName('CUDA')
             platform_properties = {
                 'DeviceIndex': '0',
                 'CudaPrecision': 'mixed',
             }
-        except Exception:
-            try:
-                # If CUDA is not available, try to use the OpenCL platform
-                platform = openmm.Platform.getPlatformByName('OpenCL')
-                platform_properties = {'DeviceIndex': '0'}
-            except Exception:
-                # If neither CUDA nor OpenCL are available, use the CPU
-                platform = openmm.Platform.getPlatformByName('CPU')
-                platform_properties = {}
+        elif self.hardware_platform == 'OpenCL':
+            # Use the OpenCL platform
+            platform = openmm.Platform.getPlatformByName('OpenCL')
+            platform_properties = {'DeviceIndex': '0'}
+        else:
+            # Use the CPU platform
+            platform = openmm.Platform.getPlatformByName('CPU')
+            platform_properties = {}
 
         return platform, platform_properties
 
