@@ -439,6 +439,7 @@ class WestpaH5File:
         # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
         # where the first frame is the parent pcoord and the rest are the
         # pcoords for each frame in the current simulation.
+        print(f'{cur_sims[0].parent_pcoord=} {cur_sims[0].pcoord=}')
         pcoords = np.array(
             [[x.parent_pcoord, *x.pcoord] for x in cur_sims],
             dtype=np.float32,
