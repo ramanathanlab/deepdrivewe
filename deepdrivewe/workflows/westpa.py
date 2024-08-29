@@ -92,7 +92,7 @@ class WESTPAThinker(BaseThinker):
             self.logger.error(
                 f'Simulation failed after {result.retries}'
                 f'/{result.max_retries} attempts, quitting workflow.',
-                f' result={result}\n{result.failure_info.traceback}',
+                f' result={result}',
             )
             self.done.set()
             return
