@@ -95,6 +95,10 @@ class ExperimentSettings(BaseModel):
     compute_config: ComputeConfigTypes = Field(
         description='Config for the compute resources.',
     )
+    max_retries: int = Field(
+        default=2,
+        description='Number of times to retry a task if it fails.',
+    )
 
     @field_validator('output_dir')
     @classmethod
@@ -196,7 +200,7 @@ if __name__ == '__main__':
         ensemble=ensemble,
         checkpointer=checkpointer,
         num_iterations=cfg.num_iterations,
-        max_retries=0,
+        max_retries=cfg.max_retries,
     )
     logging.info('Created the task server and task generator')
 
