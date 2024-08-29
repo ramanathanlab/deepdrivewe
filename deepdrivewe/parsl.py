@@ -20,8 +20,8 @@ from deepdrivewe.api import BaseModel
 class BaseComputeConfig(BaseModel, ABC):
     """Compute config (HPC platform, number of GPUs, etc)."""
 
+    # Name of the platform to uniquely identify it
     name: Literal[''] = ''
-    """Name of the platform to use."""
 
     @abstractmethod
     def get_parsl_config(self, run_dir: str | Path) -> Config:
@@ -44,10 +44,23 @@ class LocalConfig(BaseComputeConfig):
     """Local compute config."""
 
     name: Literal['local'] = 'local'  # type: ignore[assignment]
-    max_workers: int = 1
-    cores_per_worker: float = 1.0
-    worker_port_range: tuple[int, int] = (10000, 20000)
-    label: str = 'cpu_htex'
+
+    max_workers: int = Field(
+        default=1,
+        description='Number of workers to use.',
+    )
+    cores_per_worker: float = Field(
+        default=1.0,
+        description='Number of cores per worker.',
+    )
+    worker_port_range: tuple[int, int] = Field(
+        default=(10000, 20000),
+        description='Port range for the workers.',
+    )
+    label: str = Field(
+        default='cpu_htex',
+        description='Label for the executor.',
+    )
 
     def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for local execution."""
@@ -71,13 +84,23 @@ class WorkstationConfig(BaseComputeConfig):
     """Compute config for a workstation."""
 
     name: Literal['workstation'] = 'workstation'  # type: ignore[assignment]
-    """Name of the platform."""
-    available_accelerators: int | Sequence[str] = 8
-    """Number of GPU accelerators to use."""
-    worker_port_range: tuple[int, int] = (10000, 20000)
-    """Port range."""
-    retries: int = 1
-    label: str = 'gpu_htex'
+
+    available_accelerators: int | Sequence[str] = Field(
+        default=1,
+        description='Number of GPU accelerators to use.',
+    )
+    worker_port_range: tuple[int, int] = Field(
+        default=(10000, 20000),
+        description='Port range for the workers.',
+    )
+    retries: int = Field(
+        default=1,
+        description='Number of retries for the task.',
+    )
+    label: str = Field(
+        default='gpu_htex',
+        description='Label for the executor.',
+    )
 
     def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration for workstation execution."""
