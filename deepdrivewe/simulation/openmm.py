@@ -444,13 +444,17 @@ class OpenMMSimulation(BaseModel):
 
     @property
     def restart_file(self) -> Path:
-        """The restart file for the simulation."""
-        return self.output_dir / 'seg.chk'
+        """The restart file for the simulation.
 
-    @property
-    def parent_file(self) -> Path:
-        """The checkpoint file for the simulation."""
-        return self.output_dir / f'parent{self.checkpoint_file.suffix}'
+        NOTE: In the case of OpenMM, this PDB file is used
+        to initialize the simulation, and used as a proxy
+        for the restart file (which is a checkpoint file).
+        The actual checkpoint file is seg.chk (found in the
+        same directory as the checkpoint file) which is used
+        to save the simulation state and is automatically
+        loaded if it exists.
+        """
+        return self.output_dir / 'seg.pdb'
 
     @property
     def log_file(self) -> Path:
@@ -466,26 +470,17 @@ class OpenMMSimulation(BaseModel):
             Custom reporters to inject into the simulation, by default None.
         """
         # Copy the restart checkpoint to the output directory
-        shutil.copy(self.checkpoint_file, self.parent_file)
-
-        # We need the PDB file and the checkpoint to initialize the simulation.
-        # On the first iteration, we will start with a pdb file.
-        # On subsequent iterations, we will start with a checkpoint file.
-        # So we copy the basis state PDB file to the output directory.
-        if self.checkpoint_file.suffix == '.chk':
-            # The subsequent iteration case where we start with a checkpoint
-            pdb_file = self.checkpoint_file.parent / 'parent.pdb'
-            pdb_file = shutil.copy(pdb_file, self.output_dir)
-        else:
-            # The first iteration case where we start with a PDB file
-            pdb_file = self.parent_file
+        shutil.copy(self.checkpoint_file, self.restart_file)
 
         # Copy the static input files to the output directory
         if self.copy_input_files and self.top_file is not None:
             self.top_file = shutil.copy(self.top_file, self.output_dir)
 
         # Initialize an OpenMM simulation
-        sim = self.config.configure_simulation(pdb_file, self.top_file)
+        sim = self.config.configure_simulation(
+            pdb_file=self.restart_file,
+            top_file=self.top_file,
+        )
 
         # Set up a reporter to write a simulation trajectory file
         sim.reporters.append(
@@ -513,15 +508,18 @@ class OpenMMSimulation(BaseModel):
         if reporters is not None:
             sim.reporters.extend(reporters)
 
+        # Attempt to locate a checkpoint file
+        openmm_checkpoint = self.checkpoint_file.parent / 'seg.chk'
+
         # Load the checkpoint file (if it is a OpenMM checkpoint)
-        if self.parent_file.suffix == '.chk':
-            sim.loadCheckpoint(self.parent_file.as_posix())
+        if openmm_checkpoint.exists():
+            sim.loadCheckpoint(openmm_checkpoint.as_posix())
 
         # Run simulation
         sim.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
-        sim.saveCheckpoint(self.restart_file.as_posix())
+        sim.saveCheckpoint(self.output_dir / 'seg.chk')
 
 
 class ContactMapRMSDAnalyzer(BaseModel):
@@ -560,7 +558,7 @@ class ContactMapRMSDAnalyzer(BaseModel):
         """
         # Load the trajectory
         mda_u = MDAnalysis.Universe(
-            str(sim.parent_file),
+            str(sim.restart_file),
             str(sim.trajectory_file),
         )
 
