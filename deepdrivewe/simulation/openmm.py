@@ -513,13 +513,13 @@ class OpenMMSimulation(BaseModel):
 
         # Load the checkpoint file (if it is a OpenMM checkpoint)
         if openmm_checkpoint.exists():
-            sim.loadCheckpoint(openmm_checkpoint.as_posix())
+            sim.loadCheckpoint(str(openmm_checkpoint))
 
         # Run simulation
         sim.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
-        sim.saveCheckpoint(self.output_dir / 'seg.chk')
+        sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
 
 
 class ContactMapRMSDAnalyzer(BaseModel):
