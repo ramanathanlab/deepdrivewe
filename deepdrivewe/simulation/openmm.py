@@ -512,7 +512,7 @@ class OpenMMSimulation(BaseModel):
         sim.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
-        sim.saveCheckpoint(self.restart_file)
+        sim.saveCheckpoint(self.restart_file.as_posix())
 
 
 class ContactMapRMSDAnalyzer(BaseModel):
