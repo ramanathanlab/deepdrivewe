@@ -230,7 +230,6 @@ class OpenMMConfig(BaseModel):
             nonbondedMethod=app.CutoffNonPeriodic,
             nonbondedCutoff=1.0 * u.nanometer,
             constraints=app.HBonds,
-            implicitSolvent=app.OBC1,
         )
 
         return system, topology
