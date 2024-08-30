@@ -56,31 +56,31 @@ class AmberSimulation(BaseModel):
 
     @property
     def trajectory_file(self) -> Path:
-        """The trajectory file for the Amber simulation."""
+        """The trajectory file for the simulation."""
         return self.output_dir / 'seg.nc'
 
     @property
     def restart_file(self) -> Path:
-        """The restart file for the Amber simulation."""
+        """The restart file for the simulation."""
         return self.output_dir / f'seg{self.checkpoint_file.suffix}'
 
     @property
     def parent_file(self) -> Path:
-        """The checkpoint file for the Amber simulation."""
+        """The checkpoint file for the simulation."""
         return self.output_dir / f'parent{self.checkpoint_file.suffix}'
 
     @property
     def log_file(self) -> Path:
-        """The log file for the Amber simulation."""
+        """The log file for the simulation."""
         return self.output_dir / 'seg.log'
 
     @property
     def info_file(self) -> Path:
-        """The metadata file for the Amber simulation."""
+        """The metadata file for the simulation."""
         return self.output_dir / 'seg.nfo'
 
     def run(self) -> None:
-        """Run an Amber simulation.
+        """Run the simulation.
 
         Implementation of the following bash command:
         $PMEMD -O -i md.in -p hmr.prmtop -c parent.ncrst \
