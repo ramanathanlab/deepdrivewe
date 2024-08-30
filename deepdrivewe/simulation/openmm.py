@@ -521,11 +521,6 @@ class OpenMMSimulation(BaseModel):
         # Save a checkpoint of the final state
         sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
 
-        del sim
-        import gc
-
-        gc.collect()
-
 
 class ContactMapRMSDReporter(OpenMMReporter):
     """Reporter to compute contact maps and RMSD from an OpenMM simulation."""
