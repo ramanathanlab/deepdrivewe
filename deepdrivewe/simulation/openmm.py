@@ -613,8 +613,9 @@ class ContactMapRMSDReporter(OpenMMReporter):
         # positions = np.array(positions)
         positions = state.getPositions(asNumpy=True)
         positions = positions[atom_indices].astype(np.float32)
-        # TODO: Make sure we have the correct units
-        # positions = positions[atom_indices].astype(np.float32)
+
+        # Convert positions from nanometers to angstroms
+        positions *= 10.0
         print('positions:', positions.shape, flush=True)
 
         # Compute the contact map
