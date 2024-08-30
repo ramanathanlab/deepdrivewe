@@ -340,6 +340,8 @@ class OpenMMConfig(BaseModel):
 
         return None
 
+    # NOTE: Add a retry decorator to the method since sometimes the
+    # PDB file is not fully written before it is read.
     @retry_on_exception(wait_time=30)
     def configure_simulation(
         self,
