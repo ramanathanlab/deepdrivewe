@@ -23,6 +23,8 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
+from deepdrivewe.workflows.utils import retry_on_exception
+
 try:
     import openmm
     import openmm.unit as u
@@ -338,6 +340,7 @@ class OpenMMConfig(BaseModel):
 
         return None
 
+    @retry_on_exception(wait_time=30)
     def configure_simulation(
         self,
         pdb_file: str | Path,
