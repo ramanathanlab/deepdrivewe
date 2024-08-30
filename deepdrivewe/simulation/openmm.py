@@ -627,6 +627,11 @@ class ContactMapRMSDReporter(OpenMMReporter):
         self._rows.append(coo_matrix.row.astype('int16'))
         self._cols.append(coo_matrix.col.astype('int16'))
 
+        print('positions:', positions)
+        print('self._ref:', self._ref)
+
+        print('positions.shape:', positions.shape)
+        print('self._ref.shape:', self._ref.shape, flush=True)
         # Compute the RMSD
         rmsd = rms.rmsd(positions, self._ref, superposition=True)
         self._rmsd.append(rmsd)
