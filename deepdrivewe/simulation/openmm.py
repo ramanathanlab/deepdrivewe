@@ -17,8 +17,6 @@ else:  # pragma: <3.11 cover
 
 import MDAnalysis
 import numpy as np
-from MDAnalysis.analysis import distances
-from MDAnalysis.analysis import rms
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
@@ -614,29 +612,30 @@ class ContactMapRMSDReporter(OpenMMReporter):
         positions = state.getPositions(asNumpy=True)
         positions = positions[atom_indices].astype(np.float32)
         # positions = positions[atom_indices].astype(np.float32)
+        print('positions:', positions.shape)
 
         # Compute the contact map
-        contact_map = distances.contact_matrix(
-            positions,
-            self.cutoff_angstrom,
-            returntype='sparse',
-        )
+        # contact_map = distances.contact_matrix(
+        #     positions,
+        #     self.cutoff_angstrom,
+        #     returntype='sparse',
+        # )
 
-        # Convert the contact map to sparse format
-        coo_matrix = contact_map.tocoo()
+        # # Convert the contact map to sparse format
+        # coo_matrix = contact_map.tocoo()
 
-        # Append the row and col indices to lists
-        self._rows.append(coo_matrix.row.astype('int16'))
-        self._cols.append(coo_matrix.col.astype('int16'))
+        # # Append the row and col indices to lists
+        # self._rows.append(coo_matrix.row.astype('int16'))
+        # self._cols.append(coo_matrix.col.astype('int16'))
 
-        print('positions:', positions)
-        print('self._ref:', self._ref)
+        # print('positions:', positions)
+        # print('self._ref:', self._ref)
 
-        print('positions.shape:', positions.shape)
-        print('self._ref.shape:', self._ref.shape, flush=True)
-        # Compute the RMSD
-        rmsd = rms.rmsd(positions, self._ref, superposition=True)
-        self._rmsd.append(rmsd)
+        # print('positions.shape:', positions.shape)
+        # print('self._ref.shape:', self._ref.shape, flush=True)
+        # # Compute the RMSD
+        # rmsd = rms.rmsd(positions, self._ref, superposition=True)
+        # self._rmsd.append(rmsd)
 
 
 # class ContactMapRMSDAnalyzer(BaseModel):
