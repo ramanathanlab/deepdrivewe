@@ -37,7 +37,7 @@ class SimulationConfig(BaseModel):
         description='The MDAnalysis selection string for the atoms to use.',
     )
     openmm_selection: Sequence[str] = Field(
-        default=('CA'),
+        default=('CA',),
         description='The OpenMM selection strings for the atoms to use.',
     )
 
@@ -50,6 +50,8 @@ def run_simulation(
     """Run a simulation and return the pcoord and coordinates."""
     # Add performance logging
     metadata.mark_simulation_start()
+
+    print(config, flush=True)
 
     # Create the simulation output directory
     sim_output_dir = output_dir / metadata.simulation_name

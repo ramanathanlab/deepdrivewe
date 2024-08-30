@@ -529,7 +529,7 @@ class ContactMapRMSDReporter(OpenMMReporter):
         reference_file: Path,
         cutoff_angstrom: float = 8.0,
         mda_selection: str = 'protein and name CA',
-        openmm_selection: Sequence[str] = ('CA'),
+        openmm_selection: Sequence[str] = ('CA',),
     ) -> None:
         """Initialize the reporter.
 
