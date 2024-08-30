@@ -51,8 +51,6 @@ def run_simulation(
     # Add performance logging
     metadata.mark_simulation_start()
 
-    print(config, flush=True)
-
     # Create the simulation output directory
     sim_output_dir = output_dir / metadata.simulation_name
 
@@ -92,9 +90,6 @@ def run_simulation(
     # Run the contact map and RMSD analysis
     contact_maps = reporter.get_contact_maps()
     pcoord = reporter.get_rmsds()
-
-    # contact_maps, pcoord = config.analyzer.get_contact_map_and_rmsd(
-    # simulation)
 
     # Update the simulation metadata
     metadata.restart_file = simulation.restart_file
