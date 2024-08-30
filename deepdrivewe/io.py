@@ -444,7 +444,10 @@ class WestpaH5File:
                     'Parent pcoord and pcoord must have the same dimension. ',
                     f'Parent pcoord: {len(x.parent_pcoord)}\n'
                     f'pcoord: {len(x.pcoord[0])}',
-                    f'Simulation: {x}',
+                    f'Simulation: {x}\n',
+                    'Please check your basis state initializer to make sure ',
+                    'it returns the same dimension as your pcoord function ',
+                    'in the simulation.',
                 )
 
         # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
