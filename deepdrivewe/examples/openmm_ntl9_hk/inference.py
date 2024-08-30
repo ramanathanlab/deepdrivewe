@@ -1,4 +1,4 @@
-"""Inference module for the basic_amber example."""
+"""Inference module for the example."""
 
 from __future__ import annotations
 

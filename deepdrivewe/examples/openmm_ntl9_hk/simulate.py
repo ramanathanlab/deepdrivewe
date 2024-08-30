@@ -1,4 +1,4 @@
-"""Simulate a system using Amber and analyze the results using cpptraj."""
+"""Simulate a system using OpenMM."""
 
 from __future__ import annotations
 
