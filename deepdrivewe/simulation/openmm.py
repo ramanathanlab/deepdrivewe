@@ -612,7 +612,7 @@ class ContactMapRMSDReporter(OpenMMReporter):
         positions = state.getPositions(asNumpy=True)
         positions = positions[atom_indices].astype(np.float32)
         # positions = positions[atom_indices].astype(np.float32)
-        print('positions:', positions.shape)
+        print('positions:', positions.shape, flush=True)
 
         # Compute the contact map
         # contact_map = distances.contact_matrix(
