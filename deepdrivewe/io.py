@@ -436,6 +436,17 @@ class WestpaH5File:
         cur_sims: list[SimMetadata],
     ) -> None:
         """Append the pcoords to the HDF5 file."""
+        # Raise an error if the parent pcoord is not the same dimension as the
+        # pcoord for the current simulation.
+        for x in cur_sims:
+            if len(x.parent_pcoord) != len(x.pcoord[0]):
+                raise ValueError(
+                    'Parent pcoord and pcoord must have the same dimension. ',
+                    f'Parent pcoord: {len(x.parent_pcoord)}\n'
+                    f'pcoord: {len(x.pcoord[0])}',
+                    f'Simulation: {x}',
+                )
+
         # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
         # where the first frame is the parent pcoord and the rest are the
         # pcoords for each frame in the current simulation.
@@ -512,7 +523,25 @@ class WestpaH5File:
         target_states: list[TargetState],
         metadata: IterationMetadata,
     ) -> None:
-        """Append the next iteration to the HDF5 file."""
+        """Append the next iteration to the HDF5 file.
+
+        Parameters
+        ----------
+        cur_sims: list[SimMetadata]
+            The simulations for the current iteration.
+        basis_states: BasisStates
+            The basis states for the weighted ensemble.
+        target_states: list[TargetState]
+            The target states for the weighted ensemble.
+        metadata: IterationMetadata
+            The metadata for the current iteration.
+
+        Raises
+        ------
+        ValueError
+            If the parent pcoord and pcoord for a simulation do not have the
+            same dimension.
+        """
         # Get the current iteration number (1-indexed)
         n_iter = metadata.iteration_id
 
