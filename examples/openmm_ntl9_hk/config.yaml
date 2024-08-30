@@ -37,10 +37,8 @@ simulation_config:
     # The hardware platform to run the simulation on
     hardware_platform: CPU
 
-  # The analysis configuration
-  analyzer:
-    # The path to the reference PDB file
-    reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+  # The path to the reference PDB file
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
 
 # The configuration for the inference
 inference_config:

@@ -8,6 +8,7 @@ import sys
 from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
+from typing import Sequence
 
 if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
     from typing import Self
@@ -16,7 +17,6 @@ else:  # pragma: <3.11 cover
 
 import MDAnalysis
 import numpy as np
-from MDAnalysis.analysis import align
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis import rms
 from pydantic import BaseModel
@@ -527,97 +527,208 @@ class OpenMMSimulation(BaseModel):
         gc.collect()
 
 
-class ContactMapRMSDAnalyzer(BaseModel):
-    """Compute contact maps and RMSD from an OpenMM simulation."""
+class ContactMapRMSDReporter(OpenMMReporter):
+    """Reporter to compute contact maps and RMSD from an OpenMM simulation."""
 
-    reference_file: Path = Field(
-        description='The reference PDB file for the analysis.',
-    )
-    cutoff_angstrom: float = Field(
-        default=8.0,
-        description='The angstrom cutoff distance for defining contacts.',
-    )
-    mda_selection: str = Field(
-        default='protein and name CA',
-        description='The MDAnalysis selection string for the atoms to use.',
-    )
-
-    def get_contact_map_and_rmsd(
+    def __init__(
         self,
-        sim: OpenMMSimulation,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Get the contact map and RMSD from the aligned trajectory.
+        report_interval: int,
+        reference_file: Path,
+        cutoff_angstrom: float = 8.0,
+        mda_selection: str = 'protein and name CA',
+        openmm_selection: Sequence[str] = ('CA'),
+    ) -> None:
+        """Initialize the reporter.
 
         Parameters
         ----------
-        sim : OpenMMSimulation
-            The simulation to analyze.
+        report_interval : int
+            The interval at which to write frames.
+        reference_file : Path
+            The reference PDB file for the analysis.
+        cutoff_angstrom : float
+            The angstrom cutoff distance for defining contacts
+            (default is 8.0).
+        mda_selection : str
+            The MDAnalysis selection string for the atoms to use
+            (default is 'protein and name CA').
+        openmm_selection : Sequence[str]
+            The OpenMM selection strings for the atoms to use
+            (default is ('CA')).
+        """
+        super().__init__(report_interval)
+        self.cutoff_angstrom = cutoff_angstrom
+        self.openmm_selection = openmm_selection
+
+        self._rows: list[np.ndarray] = []
+        self._cols: list[np.ndarray] = []
+        self._rmsd: list[float] = []
+
+        # Load the reference structure and save the positions
+        mda_u = MDAnalysis.Universe(reference_file)
+        self._ref = mda_u.select_atoms(mda_selection).positions.copy()
+
+    def get_contact_maps(self) -> np.ndarray:
+        """Get the contact maps from the simulation.
 
         Returns
         -------
         np.ndarray
-            The contact maps from the aligned trajectory.
-        np.ndarray
-            The RMSD from the aligned trajectory.
-
+            The contact maps from the simulation as a ragged array
+            shaped as (n_frames, *).
         """
-        # Load the trajectory
-        mda_u = MDAnalysis.Universe(
-            str(sim.restart_file),
-            str(sim.trajectory_file),
-        )
-
-        # Load the reference structure
-        ref_u = MDAnalysis.Universe(str(self.reference_file))
-
-        # Align the trajectory to compute accurate RMSD
-        align.AlignTraj(
-            mda_u,
-            ref_u,
-            select=self.mda_selection,
-            in_memory=True,
-        ).run()
-
-        # Get atomic coordinates of reference atoms
-        ref_positions = ref_u.select_atoms(self.mda_selection).positions.copy()
-
-        # Select the atoms to analyze
-        atoms = mda_u.select_atoms(self.mda_selection)
-        box = mda_u.atoms.dimensions
-
-        # Collect contact maps and RMSD from each frame
-        rows, cols, rmsds = [], [], []
-        for _ in mda_u.trajectory:
-            # Get the current frame of atomic coordinates
-            positions = atoms.positions
-
-            # Compute contact map of current frame (scipy lil_matrix form)
-            cm = distances.contact_matrix(
-                positions,
-                self.cutoff_angstrom,
-                box=box,
-                returntype='sparse',
-            )
-            coo_matrix = cm.tocoo()
-            rows.append(coo_matrix.row.astype('int16'))
-            cols.append(coo_matrix.col.astype('int16'))
-
-            # Compute RMSD
-            rmsd = rms.rmsd(
-                positions,
-                ref_positions,
-                center=True,
-                superposition=True,
-            )
-            rmsds.append(rmsd)
-
         # Concatenate the row and col indices into a single array
-        contact_maps = [np.concatenate(x) for x in zip(rows, cols)]
+        contact_maps = [np.concatenate(x) for x in zip(self._rows, self._cols)]
 
         # Collect the contact maps in a ragged numpy array
         contact_maps = np.array(contact_maps, dtype=object)
 
-        # Collect the RMSDs in a numpy array
-        rmsds = np.array(rmsds).reshape(-1, 1)
+        return contact_maps
 
-        return contact_maps, rmsds
+    def get_rmsds(self) -> np.ndarray:
+        """Get the RMSDs from the simulation.
+
+        Returns
+        -------
+        np.ndarray
+            The RMSDs from the simulation shaped as (n_frames, 1).
+        """
+        return np.array(self._rmsd).reshape(-1, 1)
+
+    def report(self, simulation: app.Simulation, state: openmm.State) -> None:
+        """Generate a report.
+
+        Parameters
+        ----------
+        simulation : Simulation
+            The Simulation to generate a report for
+        state : State
+            The current state of the simulation
+        """
+        # TODO: We can probably cache the indices
+        # Get the atom indices for the selection
+        atom_indices = [
+            a.index
+            for a in simulation.topology.atoms()
+            if a.name in self.openmm_selection
+        ]
+
+        # Get the atomic coordinates of the selection
+        positions = state.getPositions().value_in_unit(u.angstrom)
+        positions = np.array(positions)
+        positions = positions[atom_indices].astype(np.float32)
+
+        # Compute the contact map
+        contact_map = distances.contact_matrix(
+            positions,
+            self.cutoff_angstrom,
+            returntype='sparse',
+        )
+
+        # Convert the contact map to sparse format
+        coo_matrix = contact_map.tocoo()
+
+        # Append the row and col indices to lists
+        self._rows.append(coo_matrix.row.astype('int16'))
+        self._cols.append(coo_matrix.col.astype('int16'))
+
+        # Compute the RMSD
+        rmsd = rms.rmsd(positions, self._ref, superposition=True)
+        self._rmsd.append(rmsd)
+
+
+# class ContactMapRMSDAnalyzer(BaseModel):
+#     """Compute contact maps and RMSD from an OpenMM simulation."""
+
+#     reference_file: Path = Field(
+#         description='The reference PDB file for the analysis.',
+#     )
+#     cutoff_angstrom: float = Field(
+#         default=8.0,
+#         description='The angstrom cutoff distance for defining contacts.',
+#     )
+#     mda_selection: str = Field(
+#         default='protein and name CA',
+#         description='The MDAnalysis selection string for the atoms to use.',
+#     )
+
+#     def get_contact_map_and_rmsd(
+#         self,
+#         sim: OpenMMSimulation,
+#     ) -> tuple[np.ndarray, np.ndarray]:
+#         """Get the contact map and RMSD from the aligned trajectory.
+
+#         Parameters
+#         ----------
+#         sim : OpenMMSimulation
+#             The simulation to analyze.
+
+#         Returns
+#         -------
+#         np.ndarray
+#             The contact maps from the aligned trajectory.
+#         np.ndarray
+#             The RMSD from the aligned trajectory.
+
+#         """
+#         # Load the trajectory
+#         mda_u = MDAnalysis.Universe(
+#             str(sim.restart_file),
+#             str(sim.trajectory_file),
+#         )
+
+#         # Load the reference structure
+#         ref_u = MDAnalysis.Universe(str(self.reference_file))
+
+#         # Align the trajectory to compute accurate RMSD
+#         align.AlignTraj(
+#             mda_u,
+#             ref_u,
+#             select=self.mda_selection,
+#             in_memory=True,
+#         ).run()
+
+#         # Get atomic coordinates of reference atoms
+#         ref_positions = ref_u.select_atoms(self.mda_selection)
+#           .positions.copy()
+
+#         # Select the atoms to analyze
+#         atoms = mda_u.select_atoms(self.mda_selection)
+#         box = mda_u.atoms.dimensions
+
+#         # Collect contact maps and RMSD from each frame
+#         rows, cols, rmsds = [], [], []
+#         for _ in mda_u.trajectory:
+#             # Get the current frame of atomic coordinates
+#             positions = atoms.positions
+
+#             # Compute contact map of current frame (scipy lil_matrix form)
+#             cm = distances.contact_matrix(
+#                 positions,
+#                 self.cutoff_angstrom,
+#                 box=box,
+#                 returntype='sparse',
+#             )
+#             coo_matrix = cm.tocoo()
+#             rows.append(coo_matrix.row.astype('int16'))
+#             cols.append(coo_matrix.col.astype('int16'))
+
+#             # Compute RMSD
+#             rmsd = rms.rmsd(
+#                 positions,
+#                 ref_positions,
+#                 center=True,
+#                 superposition=True,
+#             )
+#             rmsds.append(rmsd)
+
+# # Concatenate the row and col indices into a single array
+# contact_maps = [np.concatenate(x) for x in zip(rows, cols)]
+
+# # Collect the contact maps in a ragged numpy array
+# contact_maps = np.array(contact_maps, dtype=object)
+
+# # Collect the RMSDs in a numpy array
+# rmsds = np.array(rmsds).reshape(-1, 1)
+
+# return contact_maps, rmsds
