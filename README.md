@@ -68,6 +68,15 @@ To run the example, run the following command:
 nohup python -m deepdrivewe.examples.synd_ntl9.main --config examples/synd_ntl9/config.yaml &> nohup.log &
 ```
 
+### Running with OpenMM
+To run the example, run the following command:
+```bash
+OPENMM_CPU_THREADS=1 nohup python -m deepdrivewe.examples.openmm_ntl9_hk.main --config examples/openmm_ntl9_hk/config.yaml &> nohup.log &
+```
+
+Note that we set `OPENMM_CPU_THREADS=1` to restrict each OpenMM simulation to a single thread. This is necessary to prevent
+the simulations from using all available CPU resources. You can also run the simulations on a GPU by adjusting the Parsl configuration.
+
 ## Contributing
 
 For development, it is recommended to use a virtual environment. The following
