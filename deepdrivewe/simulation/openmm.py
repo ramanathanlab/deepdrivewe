@@ -113,8 +113,9 @@ class OpenMMConfig(BaseModel):
     )
     explicit_barostat: str | None = Field(
         default=None,
-        description='The barostat used for an explicit solvent simulation.'
-        ' Options are: MonteCarloBarostat, MonteCarloAnisotropicBarostat.',
+        description='The barostat used for an explicit solvent simulation. '
+        'Options are: None (NVT), MonteCarloBarostat, ,'
+        'MonteCarloAnisotropicBarostat.',
     )
     run_minimization: bool = Field(
         default=True,
@@ -138,10 +139,14 @@ class OpenMMConfig(BaseModel):
     def validate_explicit_barostat(self) -> Self:
         """Check for valid explicit_barostat options."""
         valid_barostats = (
+            None,
             'MonteCarloBarostat',
             'MonteCarloAnisotropicBarostat',
         )
-        if self.solvent_type == 'explicit' and self.explicit_barostat is None:
+        if (
+            self.solvent_type == 'explicit'
+            and self.explicit_barostat not in valid_barostats
+        ):
             raise ValueError(
                 f'Invalid explicit_barostat option: {self.explicit_barostat}',
                 f'For explicit solvent, valid options are: {valid_barostats}',
