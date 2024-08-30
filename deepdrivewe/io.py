@@ -557,6 +557,9 @@ class WestpaH5File:
         ValueError
             If the parent pcoord and pcoord for a simulation do not have the
             same dimension.
+        ValueError
+            If the pcoord for a simulation has a different number of frames
+            than the other simulations
         """
         # Get the current iteration number (1-indexed)
         n_iter = metadata.iteration_id
