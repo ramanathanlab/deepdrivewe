@@ -609,9 +609,10 @@ class ContactMapRMSDReporter(OpenMMReporter):
         ]
 
         # Get the atomic coordinates of the selection
-        positions = state.getPositions().value_in_unit(u.angstrom)
-        positions = np.array(positions)
-        positions = positions[atom_indices].astype(np.float32)
+        # positions = state.getPositions().value_in_unit(u.angstrom)
+        # positions = np.array(positions)
+        positions = state.getPositions(asNumpy=True)[atom_indices]
+        # positions = positions[atom_indices].astype(np.float32)
 
         # Compute the contact map
         contact_map = distances.contact_matrix(
