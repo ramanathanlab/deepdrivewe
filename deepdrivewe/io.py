@@ -450,6 +450,19 @@ class WestpaH5File:
                     'in the simulation.',
                 )
 
+        # Raise an error if any of the simulations have a different number
+        # of reported frames in the pcoord.
+        n_frames = len(cur_sims[0].pcoord)
+        for x in cur_sims:
+            if len(x.pcoord) != n_frames:
+                raise ValueError(
+                    'All pcoords must have the same dimension. ',
+                    f'pcoord: {len(x.pcoord[0])}',
+                    f'Simulation: {x}\n',
+                    'Please check your pcoord function to make sure it ',
+                    'returns the same dimension for all simulations.',
+                )
+
         # Extract the pcoords with shape (n_sims, 1 + n_frames, pcoord_ndim)
         # where the first frame is the parent pcoord and the rest are the
         # pcoords for each frame in the current simulation.
