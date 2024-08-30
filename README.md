@@ -20,6 +20,7 @@ git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
+conda install conda-forge::openmm==7.7 -y
 pip install -e .
 ```
 
