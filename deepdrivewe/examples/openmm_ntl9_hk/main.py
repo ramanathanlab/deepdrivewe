@@ -61,7 +61,7 @@ class RMSDBasisStateInitializer(BaseModel):
         ref_pos = reference.select_atoms(self.mda_selection).positions
 
         # Compute the RMSD between the basis and reference structures
-        rmsd: float = rms.rmsd(pos, ref_pos, center=True, superposition=True)
+        rmsd: float = rms.rmsd(pos, ref_pos, superposition=True)
 
         return [rmsd]
 
