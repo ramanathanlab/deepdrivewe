@@ -94,12 +94,12 @@ compute_config:
     name: workstation
     # Identify which GPUs to assign tasks to. It's generally recommended to first check
     # nvidia-smi to see which GPUs are available. The numbers below are analogous to
-    # setting CUDA_VISIBLE_DEVICES=5
-    available_accelerators: ["5"]
+    # setting CUDA_VISIBLE_DEVICES=2
+    available_accelerators: ["2"]
 
   # The GPU configuration for inference
   inference_gpu_config:
     # Specify we want the workstation parsl configuration
     name: workstation
     # Identify which GPUs to assign tasks to
-    available_accelerators: ["6"]
+    available_accelerators: ["3"]
