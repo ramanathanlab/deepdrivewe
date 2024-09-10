@@ -36,21 +36,21 @@ class InferenceConfig(BaseModel):
 
 
 def run_inference(
-    input_data: list[SimResult],
+    sim_output: list[SimResult],
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
     # Extract the pcoord from the last frame of each simulation
-    pcoords = [sim_result.metadata.pcoord[-1] for sim_result in input_data]
+    pcoords = [sim_result.metadata.pcoord[-1] for sim_result in sim_output]
 
     print(f'Progress coordinates: {pcoords}')
     print(f'Best progress coordinate: {min(pcoords)}')
-    print(f'Num input simulations: {len(input_data)}')
+    print(f'Num input simulations: {len(sim_output)}')
 
     # Extract the simulation metadata
-    cur_sims = [sim_result.metadata for sim_result in input_data]
+    cur_sims = [sim_result.metadata for sim_result in sim_output]
 
     # Create the binner
     binner = RectilinearBinner(

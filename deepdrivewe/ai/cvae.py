@@ -59,6 +59,10 @@ class ConvolutionalVAEConfig(BaseModel):
         default=64,
         description='The batch size for training.',
     )
+    inference_batch_size: int = Field(
+        default=128,
+        description='The batch size for inference.',
+    )
     device: str = Field(
         default='cuda',
         description='The device to use for training.',
@@ -185,11 +189,7 @@ class ConvolutionalVAE:
 
         return checkpoint_path
 
-    def predict(
-        self,
-        x: np.ndarray,
-        inference_batch_size: int = 128,
-    ) -> np.ndarray:
+    def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predicts the latent space coordinates for a given set of coordinates.
 
@@ -199,8 +199,6 @@ class ConvolutionalVAE:
             The contact maps to predict the latent space coordinates for
             (n_samples, *) where * is a ragged dimension containing the
             concatenated row and column indices of the ones in the contact map.
-        inference_batch_size: int, optional
-            The batch size to use for inference, by default 128.
 
         Returns
         -------
@@ -208,5 +206,5 @@ class ConvolutionalVAE:
             The predicted latent space coordinates (n_samples, latent_dim).
         """
         # Predict the latent space coordinates
-        z, *_ = self.trainer.predict(x, inference_batch_size)
+        z, *_ = self.trainer.predict(x, self.config.inference_batch_size)
         return z

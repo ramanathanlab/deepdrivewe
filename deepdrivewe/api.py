@@ -22,6 +22,27 @@ from pydantic import Field
 T = TypeVar('T')
 
 
+class BaseModel(_BaseModel):
+    """Provide an easy interface to read/write YAML files."""
+
+    def dump_yaml(self, filename: str | Path) -> None:
+        """Dump settings to a YAML file."""
+        with open(filename, mode='w') as fp:
+            yaml.dump(
+                json.loads(self.model_dump_json()),
+                fp,
+                indent=4,
+                sort_keys=False,
+            )
+
+    @classmethod
+    def from_yaml(cls: type[T], filename: str | Path) -> T:
+        """Load settings from a YAML file."""
+        with open(filename) as fp:
+            raw_data = yaml.safe_load(fp)
+        return cls(**raw_data)
+
+
 @dataclass
 class SimResult:
     """Store the results of a single simulation."""
@@ -45,25 +66,15 @@ class SimResult:
     )
 
 
-class BaseModel(_BaseModel):
-    """Provide an easy interface to read/write YAML files."""
+class TrainResult(BaseModel):
+    """The result of training the AI model."""
 
-    def dump_yaml(self, filename: str | Path) -> None:
-        """Dump settings to a YAML file."""
-        with open(filename, mode='w') as fp:
-            yaml.dump(
-                json.loads(self.model_dump_json()),
-                fp,
-                indent=4,
-                sort_keys=False,
-            )
-
-    @classmethod
-    def from_yaml(cls: type[T], filename: str | Path) -> T:
-        """Load settings from a YAML file."""
-        with open(filename) as fp:
-            raw_data = yaml.safe_load(fp)
-        return cls(**raw_data)
+    config_path: Path = Field(
+        description='The path to the model configuration file.',
+    )
+    checkpoint_path: Path = Field(
+        description='The path to the model checkpoint file.',
+    )
 
 
 class IterationMetadata(BaseModel):

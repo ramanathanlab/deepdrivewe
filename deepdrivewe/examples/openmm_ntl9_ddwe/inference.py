@@ -1,4 +1,4 @@
-"""Inference module for the synD LOF example."""
+"""Inference module for the LOF strategy."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from deepdrivewe import IterationMetadata
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe import TargetState
+from deepdrivewe import TrainResult
 from deepdrivewe.ai import warmstart_model
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
@@ -22,14 +23,6 @@ from deepdrivewe.resamplers import LOFLowResampler
 
 class InferenceConfig(BaseModel):
     """Arguments for the inference module."""
-
-    # AI model settings
-    ai_model_config_path: Path = Field(
-        description='The path to the CVAE model YAML configuration file.',
-    )
-    ai_model_checkpoint_path: Path = Field(
-        description='The path to the CVAE model checkpoint file.',
-    )
 
     # Local outlier factor settings
     lof_n_neighbors: int = Field(
@@ -70,6 +63,7 @@ class InferenceConfig(BaseModel):
 
 def run_inference(
     sim_output: list[SimResult],
+    train_output: TrainResult,
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
@@ -93,8 +87,8 @@ def run_inference(
 
     # Load the model and history
     model, history = warmstart_model(
-        config_path=config.ai_model_config_path,
-        checkpoint_path=config.ai_model_checkpoint_path,
+        train_output.config_path,
+        train_output.checkpoint_path,
     )
 
     # Extract the last frame contact maps and rmsd from each simulation

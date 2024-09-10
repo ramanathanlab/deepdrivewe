@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
@@ -9,12 +10,18 @@ from typing import Literal
 from typing import Sequence
 from typing import Union
 
+if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
+    from typing import Self
+else:  # pragma: <3.11 cover
+    from typing_extensions import Self
+
+
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
 from parsl.providers import LocalProvider
+from pydantic import BaseModel
 from pydantic import Field
-
-from deepdrivewe.api import BaseModel
+from pydantic import model_validator
 
 
 class BaseComputeConfig(BaseModel, ABC):
@@ -158,8 +165,67 @@ class HybridWorkstationConfig(BaseComputeConfig):
         )
 
 
+class InferenceTrainWorkstationConfig(BaseComputeConfig):
+    """Run simulations on CPU and AI models on GPU."""
+
+    name: Literal[
+        'inference_train_workstation'
+    ] = 'inference_train_workstation'  # type: ignore[assignment]
+
+    cpu_config: LocalConfig = Field(
+        description='Config for the CPU executor to run simulations.',
+    )
+    train_gpu_config: WorkstationConfig = Field(
+        description='Config for the GPU executor to run AI models.',
+    )
+    inference_gpu_config: WorkstationConfig = Field(
+        description='Config for the GPU executor to run AI models.',
+    )
+
+    @model_validator(mode='after')
+    def validate_htex_labels(self) -> Self:
+        """Ensure that the labels are unique."""
+        self.train_gpu_config.label = 'train_gpu_htex'
+        self.inference_gpu_config.label = 'inference_gpu_htex'
+        return self
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration for hybrid execution."""
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.train_gpu_config.retries,
+            executors=[
+                HighThroughputExecutor(
+                    address='localhost',
+                    label=self.cpu_config.label,
+                    max_workers=self.cpu_config.max_workers,
+                    cores_per_worker=self.cpu_config.cores_per_worker,
+                    worker_port_range=self.cpu_config.worker_port_range,
+                    provider=LocalProvider(init_blocks=1, max_blocks=1),
+                ),
+                HighThroughputExecutor(
+                    address='localhost',
+                    label=self.train_gpu_config.label,
+                    cpu_affinity='block',
+                    available_accelerators=self.train_gpu_config.available_accelerators,
+                    worker_port_range=self.train_gpu_config.worker_port_range,
+                    provider=LocalProvider(init_blocks=1, max_blocks=1),
+                ),
+                HighThroughputExecutor(
+                    address='localhost',
+                    label=self.inference_gpu_config.label,
+                    cpu_affinity='block',
+                    available_accelerators=self.inference_gpu_config.available_accelerators,
+                    worker_port_range=self.inference_gpu_config.worker_port_range,
+                    provider=LocalProvider(init_blocks=1, max_blocks=1),
+                ),
+            ],
+        )
+
+
 ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
     HybridWorkstationConfig,
+    InferenceTrainWorkstationConfig,
 ]

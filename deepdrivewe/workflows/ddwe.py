@@ -1,4 +1,4 @@
-"""WESTPA workflow."""
+"""DDWE workflow."""
 
 from __future__ import annotations
 
@@ -16,19 +16,21 @@ from deepdrivewe import WeightedEnsemble
 from deepdrivewe.workflows.utils import ResultLogger
 
 
-class WESTPAThinker(BaseThinker):
-    """A thinker for the WESTPA workflow."""
+class DDWEThinker(BaseThinker):
+    """A thinker for the DDWE workflow."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         queue: ColmenaQueues,
         result_dir: Path,
         ensemble: WeightedEnsemble,
         checkpointer: EnsembleCheckpointer,
         num_iterations: int,
+        use_stale_model: bool = False,
+        streaming: bool = False,
         max_retries: int = 2,
     ) -> None:
-        """Initialize the WESTPA workflow thinker.
+        """Initialize the DDWE workflow thinker.
 
         Parameters
         ----------
@@ -42,6 +44,14 @@ class WESTPAThinker(BaseThinker):
             Checkpointer for the weighted ensemble.
         num_iterations: int
             Number of iterations to run the workflow.
+        use_stale_model: bool
+            Whether to use the stale model for inference (default to False).
+            This will be faster but may not be as accurate. It uses the
+            model from the previous iteration for inference in the current
+            iteration, which may not be updated with new states.
+        streaming: bool
+            Whether to stream the simulation results directly to the
+            training task (default to False).
         max_retries: int
             Number of times to retry a task if it fails (default to 2).
         """
@@ -50,11 +60,15 @@ class WESTPAThinker(BaseThinker):
         self.ensemble = ensemble
         self.checkpointer = checkpointer
         self.num_iterations = num_iterations
+        self.use_stale_model = use_stale_model
+        self.streaming = streaming
         self.max_retries = max_retries
         self.result_logger = ResultLogger(result_dir)
 
-        # Store the simulation output (the input of the inference task)
+        # Store the simulation output (the input of both train/inference tasks)
         self.sim_output: list[Any] = []
+        # Store the train output (the input of the inference task)
+        self.train_output: Any = None
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server.
@@ -81,6 +95,12 @@ class WESTPAThinker(BaseThinker):
         for sim in self.ensemble.next_sims:
             self.submit_task('simulation', sim)
 
+        # If we are not streaming, then we need to submit a single train task
+        # at the start of the workflow
+        if self.streaming:
+            self.logger.info('Start streaming train task')
+            self.submit_task('train')
+
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
         """Process a simulation result."""
@@ -100,9 +120,42 @@ class WESTPAThinker(BaseThinker):
         # Collect simulation results
         self.sim_output.append(result.value)
 
+        # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
-            self.submit_task('inference', self.sim_output)
-            self.logger.info('submitted inference task')
+            # If we are streaming, then the simulation results are
+            # directly routed to the training task via ProxyStream.
+            # So, we don't need to submit an extra training task.
+            if not self.streaming:
+                self.submit_task('train', self.sim_output)
+                self.logger.info('Submitting training task')
+
+            # If it's okay to use the stale model, submit the inference task
+            # using the previous iteration's model
+            if self.use_stale_model and self.train_output is not None:
+                self.submit_task(
+                    'inference',
+                    self.sim_output,
+                    self.train_output,
+                )
+
+    @result_processor(topic='train')
+    def process_train_result(self, result: Result) -> None:
+        """Process a training result."""
+        # Log training job results
+        self.result_logger.log(result, topic='train')
+
+        # Check if the task failed
+        if not result.success:
+            self.logger.warning('Training failed, quitting workflow.')
+            self.done.set()
+            return
+
+        # Store the training output
+        self.train_output = result.value
+
+        # Submit an inference task with the simulation/train task outputs
+        self.submit_task('inference', self.sim_output, self.train_output)
+        self.logger.info('submitted inference task')
 
     @result_processor(topic='inference')
     def process_inference_result(self, result: Result) -> None:
