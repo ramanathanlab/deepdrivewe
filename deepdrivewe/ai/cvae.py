@@ -123,8 +123,11 @@ class ConvolutionalVAE:
         )
 
         self.config = config
-        self.checkpoint_path = checkpoint_path
-        self.trainer = SymmetricConv2dVAETrainer(**self.config.dict())
+
+        # We keep the inference_batch_size in the config for convenience
+        # but exclude it from the model arguments.
+        model_args = config.model_dump(exclude={'inference_batch_size'})
+        self.trainer = SymmetricConv2dVAETrainer(**model_args)
 
         # Load the model checkpoint if specified
         if checkpoint_path is not None:
