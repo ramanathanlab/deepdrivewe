@@ -13,7 +13,7 @@ basis_states:
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
-  initial_ensemble_members: 4
+  initial_ensemble_members: 12
 
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
@@ -25,7 +25,7 @@ simulation_config:
   # The OpenMM configuration
   openmm_config:
     # The number of nanoseconds to run each simulation for (10 ps)
-    simulation_length_ns: 0.01
+    simulation_length_ns: 0.1
     # How often to report frames in picoseconds
     report_interval_ps: 2.0
     # The time step to use in picoseconds
@@ -43,7 +43,7 @@ simulation_config:
 # The configuration for the inference
 inference_config:
   # The number of simulations to maintain per bin
-  sims_per_bin: 4
+  sims_per_bin: 12
 
 # The target threshold for the progress coordinate
 # to be considered in the target state.
@@ -52,6 +52,14 @@ target_states:
       pcoord: [1.0]
 
 # The Parsl compute configuration
+#compute_config:
+#  name: local
+#  max_workers: 53
 compute_config:
-  name: local
-  max_workers: 48
+        name: sunspot
+        num_nodes: 1 # 4 GPUs per node, if you change this, make sure to change num_parallel_tasks
+        worker_init: "module load frameworks/2024.1; conda activate /lus/gila/projects/candle_aesp_CNDA/avasan/envs/deepdrivewe; export ZEX_NUMBER_OF_CCS=0:2,1:2,2:2,3:2,4:2,5:2"
+        scheduler_options: "#PBS -l filesystems=home:eagle; #PBS -m abe; #PBS -M avasan@anl.gov"
+        account: candle_aesp_CNDA
+        queue: debug
+        walltime: 00:30:00
