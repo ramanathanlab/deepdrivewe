@@ -288,7 +288,9 @@ class OpenMMConfig(BaseModel):
         elif self.hardware_platform == 'OpenCL':
             # Use the OpenCL platform
             platform = openmm.Platform.getPlatformByName('OpenCL')
-            platform_properties = {'DeviceIndex': '0'}
+            platform_properties = {
+                'OpenCLPlatformIndex': '0',
+                'DeviceIndex': '0'}
         else:
             # Use the CPU platform
             platform = openmm.Platform.getPlatformByName('CPU')

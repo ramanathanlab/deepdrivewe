@@ -9,7 +9,7 @@ num_iterations: 106
 # The basis states to use for the ensemble
 basis_states:
   # The directory containing the basis states sub directories
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/inputs
+  basis_state_dir: /lus/gila/projects/candle_aesp_CNDA/avasan/Simulations/deepdrivewe/examples/openmm_ntl9_hk/inputs
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
@@ -18,7 +18,7 @@ basis_states:
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+  reference_file: /lus/gila/projects/candle_aesp_CNDA/avasan/Simulations/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
 
 # The configuration for the simulation
 simulation_config:
@@ -35,10 +35,10 @@ simulation_config:
     # The solvent type
     solvent_type: implicit
     # The hardware platform to run the simulation on
-    hardware_platform: CPU
+    hardware_platform: OpenCL
 
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+  reference_file: /lus/gila/projects/candle_aesp_CNDA/avasan/Simulations/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
 
 # The configuration for the inference
 inference_config:
@@ -54,4 +54,4 @@ target_states:
 # The Parsl compute configuration
 compute_config:
   name: local
-  max_workers: 53
+  max_workers: 48
