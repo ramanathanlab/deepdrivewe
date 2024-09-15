@@ -64,7 +64,7 @@ def run_train(
     # Fit the model
     checkpoint_path = model.fit(
         x=contact_maps,
-        model_dir=output_dir,
+        model_dir=output_dir / 'model',
         scalars={'pcoord': pcoords},
     )
 
