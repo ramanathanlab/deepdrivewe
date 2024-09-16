@@ -57,6 +57,10 @@ def run_train(
         [sim.data['contact_maps'] for sim in sim_output],
     )
     pcoords = np.concatenate([sim.data['pcoords'] for sim in sim_output])
+    pcoords = pcoords.reshape(-1, 1)
+
+    print(f'{contact_maps.shape=}')
+    print(f'{pcoords.shape=}')
 
     # Convert to int16
     # contact_maps = [x.astype(np.int16) for x in contact_maps]
