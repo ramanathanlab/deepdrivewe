@@ -199,6 +199,7 @@ if __name__ == '__main__':
         basis_states=ensemble.basis_states,
         target_states=ensemble.target_states,
         config=cfg.inference_config,
+        output_dir=cfg.output_dir / 'inference',
     )
     update_wrapper(my_run_simulation, run_simulation)
     update_wrapper(my_run_train, run_train)
