@@ -14,8 +14,8 @@ class HuberKimResampler(Resampler):
 
     The resampling procedure is mostly outlined in Huber, Kim 1996:
         https://doi.org/10.1016/S0006-3495(96)79552-8
-    
-    with the additions of the adjust counts and weight thresholds that make 
+
+    with the additions of the adjust counts and weight thresholds that make
     this more closely replicate the base implementation of fixed bins from
     WESTPA: http://dx.doi.org/10.1021/ct5010615
 

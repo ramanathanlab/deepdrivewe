@@ -11,9 +11,10 @@ from typing import Union
 
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
-from parsl.providers import LocalProvider, PBSProProvider
-from pydantic import Field
 from parsl.launchers import MpiExecLauncher
+from parsl.providers import LocalProvider
+from parsl.providers import PBSProProvider
+from pydantic import Field
 
 from deepdrivewe.api import BaseModel
 
@@ -158,18 +159,20 @@ class HybridWorkstationConfig(BaseComputeConfig):
             ],
         )
 
+
 class SunspotSettings(BaseComputeConfig):
-    """Configuration for running on Sunspot
+    """Configuration for running on Sunspot.
 
-    Each GPU tasks uses a single tile"""
+    Each GPU tasks uses a single tile.
+    """
 
-    name: Literal["sunspot"] = "sunspot"  # type: ignore[assignment]
+    name: Literal['sunspot'] = 'sunspot'  # type: ignore[assignment]
     label: str = 'htex'
-    worker_init: str = ""
+    worker_init: str = ''
 
     num_nodes: int = 1
     """Number of nodes to request"""
-    scheduler_options: str = ""
+    scheduler_options: str = ''
     account: str
     """The account to charge compute to."""
     queue: str
@@ -179,42 +182,42 @@ class SunspotSettings(BaseComputeConfig):
     retries: int = 0
     """Number of retries upon failure."""
     cpus_per_node: int = 208
-    strategy: str = "simple"
+    strategy: str = 'simple'
 
-    def get_parsl_config(self, run_dir: str | Path)  -> Config:
-        #accel_ids = [it for it in range(24)]
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration for execution on sunspot."""
+        # accel_ids = [it for it in range(24)]
         if True:
-            accel_string=""
+            accel_string = ''
             for gid in range(6):
-               for tid in range(2):
-                  accel_string += f"{gid}.{tid} "
+                for tid in range(2):
+                    accel_string += f'{gid}.{tid} '
             accel_ids = accel_string.split()
-            with open("/home/avasan/config_log.log", "w") as f:
-                f.write(f" Setting available accels to {accel_ids}")
+            with open('/home/avasan/config_log.log', 'w') as f:
+                f.write(f' Setting available accels to {accel_ids}')
 
         return Config(
             executors=[
                 HighThroughputExecutor(
                     label=self.label,
-                    available_accelerators=accel_ids,  # Ensures one worker per accelerator
-                    cpu_affinity="block",  # Assigns cpus in sequential order
+                    available_accelerators=accel_ids,  # 1worker/accelerator
+                    cpu_affinity='block',  # Assigns cpus in sequential order
                     prefetch_capacity=0,
-                    #max_workers=12,
+                    # max_workers=12,
                     cores_per_worker=16,
                     heartbeat_period=30,
                     heartbeat_threshold=300,
                     worker_debug=False,
                     provider=PBSProProvider(
                         launcher=MpiExecLauncher(
-                            bind_cmd="--cpu-bind",
-                            overrides="--depth=208 --ppn 1"
-                        ),  # Ensures 1 manger per node and allows it to divide work among all 208 threads
+                            bind_cmd='--cpu-bind',
+                            overrides='--depth=208 --ppn 1',
+                        ),  # 1 manager per node + divides among 208 threads
                         worker_init=self.worker_init,
                         nodes_per_block=self.num_nodes,
                         account=self.account,
                         queue=self.queue,
                         walltime=self.walltime,
-
                     ),
                 ),
             ],

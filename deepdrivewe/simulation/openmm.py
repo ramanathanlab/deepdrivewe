@@ -290,7 +290,8 @@ class OpenMMConfig(BaseModel):
             platform = openmm.Platform.getPlatformByName('OpenCL')
             platform_properties = {
                 'OpenCLPlatformIndex': '0',
-                'DeviceIndex': '0'}
+                'DeviceIndex': '0',
+            }
         else:
             # Use the CPU platform
             platform = openmm.Platform.getPlatformByName('CPU')
