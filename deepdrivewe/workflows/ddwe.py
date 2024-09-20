@@ -76,7 +76,6 @@ class DDWEThinker(BaseThinker):
         self.train_output: Any = None
 
         # Setup manual proxies to control the evict policy
-
         self.proxy_manager = ProxyManager(ps_name)
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
