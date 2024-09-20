@@ -41,6 +41,7 @@ for r, n in zip(runs, nodes):
             del df
     agg_simspeed.append(np.mean(speed_ns_day) * ppn * n)
 
+plt.scatter(nodes, agg_simspeed)
 plt.plot(nodes, agg_simspeed)
 plt.xlabel('Number of PVC nodes (12 instances/node)')
 plt.ylabel('Aggregate simulation speed (ns/day)')
