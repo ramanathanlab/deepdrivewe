@@ -42,7 +42,7 @@ for r, n in zip(runs, nodes):
     agg_simspeed.append(np.mean(speed_ns_day) * ppn * n)
 
 plt.scatter(nodes, agg_simspeed)
-plt.plot(nodes, agg_simspeed)
+# plt.plot(nodes, agg_simspeed)
 plt.xlabel('Number of PVC nodes (12 instances/node)')
 plt.ylabel('Aggregate simulation speed (ns/day)')
 plt.savefig('average_speed_scaling.png', bbox_inches='tight', dpi=300)
