@@ -129,7 +129,8 @@ class DDWEThinker(BaseThinker):
         # Note: We need to resolve the proxy objects before storing them
         # to avoid auto-eviction after single use. The return results
         # are re-proxied before submitting the train/inference tasks.
-        self.sim_output.append(resolve_async(result.value))
+        resolve_async(result.value)
+        self.sim_output.append(result.value)
 
         # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
