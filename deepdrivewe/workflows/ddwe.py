@@ -10,7 +10,7 @@ from colmena.queue import ColmenaQueues
 from colmena.thinker import agent
 from colmena.thinker import BaseThinker
 from colmena.thinker import result_processor
-from proxystore.store.utils import resolve_async
+from proxystore.proxy import resolve
 
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import WeightedEnsemble
@@ -129,7 +129,7 @@ class DDWEThinker(BaseThinker):
         # Note: We need to resolve the proxy objects before storing them
         # to avoid auto-eviction after single use. The return results
         # are re-proxied before submitting the train/inference tasks.
-        resolve_async(result.value)
+        resolve(result.value)
         self.sim_output.append(result.value)
 
         # If we have all the simulation results, submit a train task
