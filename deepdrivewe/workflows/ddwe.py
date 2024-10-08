@@ -137,19 +137,23 @@ class DDWEThinker(BaseThinker):
             # Manually proxy the output objects to avoid auto-eviction
             # until the inference task is done (since both train/inference
             # tasks use the simulation output)
-            sim_proxy = self.proxy_manager.proxy(self.sim_output)
+            # sim_proxy = self.proxy_manager.proxy(self.sim_output)
 
             # If we are streaming, then the simulation results are
             # directly routed to the training task via ProxyStream.
             # So, we don't need to submit an extra training task.
             if not self.streaming:
-                self.submit_task('train', sim_proxy)
+                self.submit_task('train', self.sim_output)
                 self.logger.info('Submitting training task')
 
             # If it's okay to use the stale model, submit the inference task
             # using the previous iteration's model
             if self.use_stale_model and self.train_output is not None:
-                self.submit_task('inference', sim_proxy, self.train_output)
+                self.submit_task(
+                    'inference',
+                    self.sim_output,
+                    self.train_output,
+                )
 
     @result_processor(topic='train')
     def process_train_result(self, result: Result) -> None:
@@ -167,8 +171,9 @@ class DDWEThinker(BaseThinker):
         self.train_output = result.value
 
         # Submit an inference task with the simulation/train task outputs
-        self.submit_task('inference', self.sim_output, self.train_output)
-        self.logger.info('submitted inference task')
+        if not self.streaming:
+            self.submit_task('inference', self.sim_output, self.train_output)
+            self.logger.info('submitted inference task')
 
     @result_processor(topic='inference')
     def process_inference_result(self, result: Result) -> None:
