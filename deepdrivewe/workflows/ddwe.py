@@ -134,6 +134,8 @@ class DDWEThinker(BaseThinker):
         output = result.value if self.streaming else extract(result.value)
         self.sim_output.append(output)
 
+        # test commit
+
         # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
             # Manually proxy the output objects to avoid auto-eviction
