@@ -126,10 +126,13 @@ class DDWEThinker(BaseThinker):
             return
 
         # Collect simulation results for the current iteration
-        # Note: We need to resolve the proxy objects before storing them
+        # Note: We need to extract the proxied objects before storing them
         # to avoid auto-eviction after single use. The return results
         # are re-proxied before submitting the train/inference tasks.
-        self.sim_output.append(extract(result.value))
+        # If we are streaming, then the simulation results only need
+        # to be used to submit and inference task.
+        output = result.value if self.streaming else extract(result.value)
+        self.sim_output.append(output)
 
         # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
