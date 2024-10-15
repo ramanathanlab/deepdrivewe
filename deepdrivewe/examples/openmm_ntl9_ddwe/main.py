@@ -65,7 +65,9 @@ class RMSDBasisStateInitializer(BaseModel):
         # Compute the RMSD between the basis and reference structures
         rmsd: float = rms.rmsd(pos, ref_pos, superposition=True)
 
-        return [rmsd]
+        # Return the RMSD and the zeroed progress coordinate place holder
+        # for the LOF dimension
+        return [rmsd, 0.0]
 
 
 class ExperimentSettings(BaseModel):
