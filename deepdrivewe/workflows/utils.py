@@ -11,10 +11,6 @@ from typing import Callable
 from typing import TypeVar
 
 from colmena.models import Result
-from proxystore.proxy import Proxy
-from proxystore.store import get_store
-from proxystore.store.utils import ConnectorKeyT
-from proxystore.store.utils import get_key
 
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
@@ -23,60 +19,6 @@ else:
 
 T = TypeVar('T')
 P = ParamSpec('P')
-
-
-class ProxyManager:
-    """Manage the life cycle of a manually proxied object."""
-
-    def __init__(self, store_name: str | None) -> None:
-        """Initialize the proxy manager.
-
-        Parameters
-        ----------
-        store_name: str | None
-            The name of the store to use for proxying,
-            or None if no store is available.
-        """
-        # Get the store
-        if store_name is not None:
-            self.store = get_store(store_name)
-
-            # Raise an error if the store is not found
-            if self.store is None:
-                raise ValueError(f'Could not find store {store_name}')
-        else:
-            self.store = None
-
-        # Store the key of the proxied object
-        self.key: ConnectorKeyT | None = None
-
-    def proxy(self, obj: T) -> T | Proxy[T]:
-        """Proxy an object.
-
-        Parameters
-        ----------
-        obj: T
-            The object to proxy.
-
-        Returns
-        -------
-        T Proxy[T]
-            The proxied object or the original object if there is no store.
-        """
-        # If the store is not found, return the object
-        if self.store is None:
-            return obj
-
-        # Proxy the object
-        proxy_obj = self.store.proxy(obj)
-        self.key = get_key(proxy_obj)
-        return proxy_obj
-
-    def evict(self) -> None:
-        """Evict the proxied object."""
-        if self.store is not None and self.key is not None:
-            self.store.evict(self.key)
-        self.key = None
 
 
 class ResultLogger:

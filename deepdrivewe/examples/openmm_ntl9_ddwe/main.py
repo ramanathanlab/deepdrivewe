@@ -227,7 +227,6 @@ if __name__ == '__main__':
         num_iterations=cfg.num_iterations,
         use_stale_model=cfg.use_stale_model,
         max_retries=cfg.max_retries,
-        ps_name='file-store',
     )
     logging.info('Created the task server and task generator')
 

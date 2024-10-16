@@ -14,7 +14,6 @@ from proxystore.proxy import extract
 
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.workflows.utils import ProxyManager
 from deepdrivewe.workflows.utils import ResultLogger
 
 
@@ -31,7 +30,6 @@ class DDWEThinker(BaseThinker):
         use_stale_model: bool = False,
         streaming: bool = False,
         max_retries: int = 2,
-        ps_name: str | None = None,
     ) -> None:
         """Initialize the DDWE workflow thinker.
 
@@ -57,8 +55,6 @@ class DDWEThinker(BaseThinker):
             training task (default to False).
         max_retries: int
             Number of times to retry a task if it fails (default to 2).
-        ps_name: str, optional
-            The name of the proxy store to use, by default a No-op store.
         """
         super().__init__(queue)
 
@@ -74,9 +70,6 @@ class DDWEThinker(BaseThinker):
         self.sim_output: list[Any] = []
         # Store the train output (the input of the inference task)
         self.train_output: Any = None
-
-        # Setup manual proxies to control the evict policy
-        self.proxy_manager = ProxyManager(ps_name)
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server.
@@ -130,17 +123,15 @@ class DDWEThinker(BaseThinker):
         # to avoid auto-eviction after single use. The return results
         # are re-proxied before submitting the train/inference tasks.
         # If we are streaming, then the simulation results only need
-        # to be used to submit and inference task.
+        # to be used to submit and inference task, so we don't need to
+        # extract the proxied objects. The non-streaming case will
+        # need to extract and re-proxy the objects twice (once for
+        # the train task and once for the inference task).
         output = result.value if self.streaming else extract(result.value)
         self.sim_output.append(output)
 
         # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
-            # Manually proxy the output objects to avoid auto-eviction
-            # until the inference task is done (since both train/inference
-            # tasks use the simulation output)
-            # sim_proxy = self.proxy_manager.proxy(self.sim_output)
-
             # If we are streaming, then the simulation results are
             # directly routed to the training task via ProxyStream.
             # So, we don't need to submit an extra training task.
@@ -206,9 +197,7 @@ class DDWEThinker(BaseThinker):
         self.logger.info(f'Current iteration: {self.ensemble.iteration}')
 
         # Reset the simulation output for the next iteration
-        # and clean up the proxy objects
         self.sim_output = []
-        self.proxy_manager.evict()
 
         # Check if the workflow is finished (if so return before submitting)
         if self.ensemble.iteration >= self.num_iterations:
