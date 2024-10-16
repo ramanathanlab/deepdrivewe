@@ -163,6 +163,8 @@ class DDWEThinker(BaseThinker):
         # Store the training output
         self.train_output = result.value
 
+        # TODO: What should we do in the streaming case?
+        #       Does the process_train_result method even run?
         # Submit an inference task with the simulation/train task outputs
         if not self.streaming:
             self.submit_task('inference', self.sim_output, self.train_output)
