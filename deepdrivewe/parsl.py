@@ -18,6 +18,7 @@ else:  # pragma: <3.11 cover
 
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
+from parsl.launchers import SrunLauncher
 from parsl.providers import LocalProvider
 from pydantic import BaseModel
 from pydantic import Field
@@ -223,9 +224,62 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
         )
 
 
+class VistaConfig(BaseComputeConfig):
+    """VISTA compute config.
+
+    https://tacc.utexas.edu/systems/vista/
+    """
+
+    name: Literal['vista'] = 'vista'  # type: ignore[assignment]
+
+    num_nodes: int = Field(
+        ge=3,
+        description='Number of nodes to use (must use at least 3 nodes).',
+    )
+
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
+    def _get_htex(self, label: str, num_nodes: int) -> HighThroughputExecutor:
+        return HighThroughputExecutor(
+            label=label,
+            available_accelerators=1,  # 1 GH per node
+            cores_per_worker=72,
+            cpu_affinity='alternating',
+            prefetch_capacity=0,
+            provider=LocalProvider(
+                launcher=SrunLauncher(),
+                cmd_timeout=120,
+                nodes_per_block=num_nodes,
+                init_blocks=1,
+                max_blocks=1,
+            ),
+        )
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration."""
+        return Config(
+            run_dir=str(run_dir),
+            max_idletime=self.max_idletime,
+            executors=[
+                # Assign 1 node each for training and inference
+                self._get_htex('train', 1),
+                self._get_htex('inference', 1),
+                # Assign the remaining nodes to the simulation
+                self._get_htex('simulation', self.num_nodes - 2),
+            ],
+        )
+
+
 ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
     HybridWorkstationConfig,
     InferenceTrainWorkstationConfig,
+    VistaConfig,
 ]
