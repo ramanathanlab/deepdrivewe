@@ -59,12 +59,6 @@ def run_train(
     pcoords = np.concatenate([sim.data['pcoords'] for sim in sim_output])
     pcoords = pcoords.flatten()
 
-    print(f'{contact_maps.shape=}')
-    print(f'{pcoords.shape=}')
-
-    # Convert to int16
-    # contact_maps = [x.astype(np.int16) for x in contact_maps]
-
     # Fit the model
     checkpoint_path = model.fit(
         x=contact_maps,
