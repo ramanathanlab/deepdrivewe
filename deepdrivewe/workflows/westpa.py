@@ -53,8 +53,8 @@ class WESTPAThinker(BaseThinker):
         self.max_retries = max_retries
         self.result_logger = ResultLogger(result_dir)
 
-        # Store the inference input (the output of the simulations)
-        self.inference_input: list[Any] = []
+        # Store the simulation output (the input of the inference task)
+        self.sim_output: list[Any] = []
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server.
@@ -75,7 +75,7 @@ class WESTPAThinker(BaseThinker):
         )
 
     @agent(startup=True)
-    def start_simulations(self) -> None:
+    def start_workflow(self) -> None:
         """Launch the first iteration of simulations to start the workflow."""
         # Submit the next iteration of simulations
         for sim in self.ensemble.next_sims:
@@ -98,11 +98,10 @@ class WESTPAThinker(BaseThinker):
             return
 
         # Collect simulation results
-        self.inference_input.append(result.value)
+        self.sim_output.append(result.value)
 
-        if len(self.inference_input) == len(self.ensemble.next_sims):
-            self.submit_task('inference', self.inference_input)
-            self.inference_input = []  # Clear batched data
+        if len(self.sim_output) == len(self.ensemble.next_sims):
+            self.submit_task('inference', self.sim_output)
             self.logger.info('submitted inference task')
 
     @result_processor(topic='inference')
@@ -132,6 +131,9 @@ class WESTPAThinker(BaseThinker):
 
         # Log the current iteration
         self.logger.info(f'Current iteration: {self.ensemble.iteration}')
+
+        # Reset the simulation output for the next iteration
+        self.sim_output = []
 
         # Check if the workflow is finished (if so return before submitting)
         if self.ensemble.iteration >= self.num_iterations:
