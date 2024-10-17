@@ -38,7 +38,7 @@ simulation_config:
     # The solvent type
     solvent_type: implicit
     # The hardware platform to run the simulation on
-    hardware_platform: CPU
+    hardware_platform: CUDA
 
   # The path to the reference PDB file
   reference_file: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/common_files/reference.pdb
