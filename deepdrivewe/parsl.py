@@ -186,8 +186,9 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
     @model_validator(mode='after')
     def validate_htex_labels(self) -> Self:
         """Ensure that the labels are unique."""
-        self.train_gpu_config.label = 'train_gpu_htex'
-        self.inference_gpu_config.label = 'inference_gpu_htex'
+        self.cpu_config.label = 'simulation_htex'
+        self.train_gpu_config.label = 'train_htex'
+        self.inference_gpu_config.label = 'inference_htex'
         return self
 
     def get_parsl_config(self, run_dir: str | Path) -> Config:
@@ -268,10 +269,10 @@ class VistaConfig(BaseComputeConfig):
             max_idletime=self.max_idletime,
             executors=[
                 # Assign 1 node each for training and inference
-                self._get_htex('train', 1),
-                self._get_htex('inference', 1),
+                self._get_htex('train_htex', 1),
+                self._get_htex('inference_htex', 1),
                 # Assign the remaining nodes to the simulation
-                self._get_htex('simulation', self.num_nodes - 2),
+                self._get_htex('simulation_htex', self.num_nodes - 2),
             ],
         )
 
