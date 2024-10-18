@@ -54,4 +54,4 @@ target_states:
 # The Parsl compute configuration
 compute_config:
   name: local
-  max_workers: 53
+  max_workers_per_node: 53
