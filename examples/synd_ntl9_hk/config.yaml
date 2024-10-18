@@ -37,4 +37,4 @@ inference_config:
 compute_config:
   name: local
   # The maximum number of worker processes to use for parallelization
-  max_workers: 53
+  max_workers_per_node: 53
