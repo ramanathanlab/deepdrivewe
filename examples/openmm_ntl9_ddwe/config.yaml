@@ -86,7 +86,7 @@ compute_config:
     # Specify we want the local parsl configuration
     name: local
     # The maximum number of worker processes to use for parallelization
-    max_workers: 53
+    max_workers_per_node: 53
 
   # The GPU configuration for training
   train_gpu_config:

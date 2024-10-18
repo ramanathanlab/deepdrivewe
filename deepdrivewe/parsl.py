@@ -52,7 +52,7 @@ class LocalConfig(BaseComputeConfig):
 
     name: Literal['local'] = 'local'  # type: ignore[assignment]
 
-    max_workers: int = Field(
+    max_workers_per_node: int = Field(
         default=1,
         description='Number of workers to use.',
     )
@@ -78,7 +78,7 @@ class LocalConfig(BaseComputeConfig):
                 HighThroughputExecutor(
                     address='localhost',
                     label=self.label,
-                    max_workers=self.max_workers,
+                    max_workers_per_node=self.max_workers_per_node,
                     cores_per_worker=self.cores_per_worker,
                     worker_port_range=self.worker_port_range,
                     provider=LocalProvider(init_blocks=1, max_blocks=1),
@@ -148,7 +148,7 @@ class HybridWorkstationConfig(BaseComputeConfig):
                 HighThroughputExecutor(
                     address='localhost',
                     label=self.cpu_config.label,
-                    max_workers=self.cpu_config.max_workers,
+                    max_workers_per_node=self.cpu_config.max_workers_per_node,
                     cores_per_worker=self.cpu_config.cores_per_worker,
                     worker_port_range=self.cpu_config.worker_port_range,
                     provider=LocalProvider(init_blocks=1, max_blocks=1),
@@ -198,7 +198,7 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
                 HighThroughputExecutor(
                     address='localhost',
                     label=self.cpu_config.label,
-                    max_workers=self.cpu_config.max_workers,
+                    max_workers_per_node=self.cpu_config.max_workers_per_node,
                     cores_per_worker=self.cpu_config.cores_per_worker,
                     worker_port_range=self.cpu_config.worker_port_range,
                     provider=LocalProvider(init_blocks=1, max_blocks=1),
