@@ -7,6 +7,8 @@
 #SBATCH -t 00:60:00
 #SBATCH -A ASC24062
 #------------------------------------------------------
+# Source the bashrc to add conda
++source ~/.bashrc
 
 # Source the bashrc to add conda
 source ~/.bashrc
