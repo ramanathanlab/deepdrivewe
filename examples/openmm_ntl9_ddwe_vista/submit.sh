@@ -10,6 +10,9 @@
 # Source the bashrc to add conda
 +source ~/.bashrc
 
+# Source the bashrc to add conda
+source ~/.bashrc
+
 # Load the required modules
 ml gcc/14.2.0 cuda/12.5 hdf5
 conda activate deepdrivewe
