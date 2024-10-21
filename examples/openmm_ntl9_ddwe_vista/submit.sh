@@ -8,9 +8,6 @@
 #SBATCH -A ASC24062
 #------------------------------------------------------
 # Source the bashrc to add conda
-+source ~/.bashrc
-
-# Source the bashrc to add conda
 source ~/.bashrc
 
 # Load the required modules
