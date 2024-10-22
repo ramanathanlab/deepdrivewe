@@ -210,9 +210,9 @@ if __name__ == '__main__':
     # Create the task server
     doer = ParslTaskServer(
         [
-            (my_run_simulation, {'executors': ['cpu_htex']}),
-            (my_run_train, {'executors': ['train_gpu_htex']}),
-            (my_run_inference, {'executors': ['inference_gpu_htex']}),
+            (my_run_simulation, {'executors': ['simulation_htex']}),
+            (my_run_train, {'executors': ['train_htex']}),
+            (my_run_inference, {'executors': ['inference_htex']}),
         ],
         queues,
         parsl_config,
