@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J idev1
 #SBATCH -o idev1.o%j
-#SBATCH -N 3
+#SBATCH -N 4
 #SBATCH --ntasks-per-node=1
-#SBATCH -p gh
+#SBATCH -p gh-dev
 #SBATCH -t 00:60:00
 #SBATCH -A ASC24062
 #------------------------------------------------------

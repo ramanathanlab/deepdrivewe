@@ -18,7 +18,7 @@ else:  # pragma: <3.11 cover
 
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
-from parsl.launchers import SrunLauncher
+from parsl.launchers import WrappedLauncher
 from parsl.providers import LocalProvider
 from pydantic import BaseModel
 from pydantic import Field
@@ -254,7 +254,9 @@ class VistaConfig(BaseComputeConfig):
             cpu_affinity='alternating',
             prefetch_capacity=0,
             provider=LocalProvider(
-                launcher=SrunLauncher(),
+                launcher=WrappedLauncher(
+                    prepend=f'srun -l --ntasks-per-node=1 --nodes={num_nodes}'
+                ),
                 cmd_timeout=120,
                 nodes_per_block=num_nodes,
                 init_blocks=1,

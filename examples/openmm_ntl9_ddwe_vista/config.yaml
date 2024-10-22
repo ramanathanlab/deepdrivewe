@@ -84,4 +84,4 @@ compute_config:
   # The number of nodes to use (must use at least 3 nodes)
   # since we use dedicate node for both the training and inference
   # the remaining nodes are used for the simulations.
-  num_nodes: 3
+  num_nodes: 4
