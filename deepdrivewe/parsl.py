@@ -255,7 +255,7 @@ class VistaConfig(BaseComputeConfig):
             prefetch_capacity=0,
             provider=LocalProvider(
                 launcher=WrappedLauncher(
-                    prepend=f'srun -l --ntasks-per-node=1 --nodes={num_nodes}'
+                    prepend=f'srun -l --ntasks-per-node=1 --nodes={num_nodes}',
                 ),
                 cmd_timeout=120,
                 nodes_per_block=num_nodes,
