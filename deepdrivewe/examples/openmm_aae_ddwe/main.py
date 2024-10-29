@@ -27,12 +27,12 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.openmm_ntl9_ddwe.inference import InferenceConfig
-from deepdrivewe.examples.openmm_ntl9_ddwe.inference import run_inference
-from deepdrivewe.examples.openmm_ntl9_ddwe.simulate import run_simulation
-from deepdrivewe.examples.openmm_ntl9_ddwe.simulate import SimulationConfig
-from deepdrivewe.examples.openmm_ntl9_ddwe.train import run_train
-from deepdrivewe.examples.openmm_ntl9_ddwe.train import TrainConfig
+from deepdrivewe.examples.openmm_aae_ddwe.inference import InferenceConfig
+from deepdrivewe.examples.openmm_aae_ddwe.inference import run_inference
+from deepdrivewe.examples.openmm_aae_ddwe.simulate import run_simulation
+from deepdrivewe.examples.openmm_aae_ddwe.simulate import SimulationConfig
+from deepdrivewe.examples.openmm_aae_ddwe.train import run_train
+from deepdrivewe.examples.openmm_aae_ddwe.train import TrainConfig
 from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.workflows.ddwe import DDWEThinker
 
