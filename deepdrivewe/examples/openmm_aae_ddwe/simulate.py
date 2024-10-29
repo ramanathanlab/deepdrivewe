@@ -11,7 +11,7 @@ from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe.simulation.openmm import CollectionReporter
-from deepdrivewe.simulation.openmm import ContactMapCollector
+from deepdrivewe.simulation.openmm import CoordinatesCollector
 from deepdrivewe.simulation.openmm import OpenMMConfig
 from deepdrivewe.simulation.openmm import OpenMMSimulation
 from deepdrivewe.simulation.openmm import RMSDCollector
@@ -82,8 +82,9 @@ def run_simulation(
         report_interval=config.openmm_config.report_steps,
         openmm_selection=config.openmm_selection,
         collectors=[
-            ContactMapCollector(
-                cutoff_angstrom=config.cutoff_angstrom,
+            CoordinatesCollector(
+                reference_file=config.reference_file,
+                mda_selection=config.mda_selection,
             ),
             RMSDCollector(
                 reference_file=config.reference_file,

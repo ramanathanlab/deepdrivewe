@@ -15,7 +15,7 @@ from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe import TargetState
 from deepdrivewe import TrainResult
-from deepdrivewe.ai import warmstart_cvae
+from deepdrivewe.ai import warmstart_aae
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
 from deepdrivewe.resamplers import LOFLowResampler
@@ -86,20 +86,17 @@ def run_inference(
     cur_sims = [sim.metadata for sim in sim_output]
 
     # Load the model and history
-    model, history = warmstart_cvae(
+    model, history = warmstart_aae(
         train_output.config_path,
         train_output.checkpoint_path,
     )
 
-    # Extract the last frame contact maps and rmsd from each simulation
-    contact_maps = [sim.data['contact_maps'][-1] for sim in sim_output]
+    # Extract the last frame coordinates and rmsd from each simulation
+    coordinates = [sim.data['coordinates'][-1] for sim in sim_output]
     pcoords = [sim.data['pcoords'][-1] for sim in sim_output]
 
-    # Convert to int16
-    contact_maps = [x.astype(np.int16) for x in contact_maps]
-
     # Compute the latent space representation
-    z = model.predict(x=contact_maps)
+    z = model.predict(x=coordinates)
 
     # Concatenate the latent history
     if history:
