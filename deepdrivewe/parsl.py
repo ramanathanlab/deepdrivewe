@@ -134,7 +134,6 @@ class WorkstationV2Config(BaseComputeConfig):
     name: Literal['workstation_v2'] = 'workstation_v2'  # type: ignore[assignment]
 
     available_accelerators: int | Sequence[str] = Field(
-        ge=3,
         description='Number of GPU accelerators to use.',
     )
     worker_port_range: tuple[int, int] = Field(
@@ -152,6 +151,17 @@ class WorkstationV2Config(BaseComputeConfig):
         description='The maximum idle time allowed for an executor before '
         'strategy could shut down unused blocks. Default is 10 minutes.',
     )
+
+    @model_validator(mode='after')
+    def validate_available_accelerators(self) -> Self:
+        """Check there are at least 3 GPUs."""
+        min_gpus = 3
+        gpus = self.available_accelerators
+        num_gpus = gpus if isinstance(gpus, int) else len(gpus)
+        if num_gpus < min_gpus:
+            raise ValueError('Must use at least 3 GPUs.')
+
+        return self
 
     def _get_htex(
         self,
