@@ -128,6 +128,66 @@ class WorkstationConfig(BaseComputeConfig):
         )
 
 
+class WorkstationV2Config(BaseComputeConfig):
+    """Compute config for a workstation."""
+
+    name: Literal['workstation_v2'] = 'workstation_v2'  # type: ignore[assignment]
+
+    available_accelerators: int | Sequence[str] = Field(
+        ge=3,
+        description='Number of GPU accelerators to use.',
+    )
+    worker_port_range: tuple[int, int] = Field(
+        default=(10000, 20000),
+        description='Port range for the workers.',
+    )
+    retries: int = Field(
+        default=1,
+        description='Number of retries for the task.',
+    )
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
+    def _get_htex(
+        self,
+        label: str,
+        available_accelerators: Sequence[str],
+    ) -> HighThroughputExecutor:
+        return HighThroughputExecutor(
+            address='localhost',
+            label=label,
+            cpu_affinity='block',
+            available_accelerators=available_accelerators,
+            worker_port_range=self.worker_port_range,
+            provider=LocalProvider(init_blocks=1, max_blocks=1),
+        )
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration."""
+        # Handle the case where available_accelerators is an int
+        accelerators = self.available_accelerators
+        if isinstance(accelerators, int):
+            accelerators = [str(i) for i in range(accelerators)]
+
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.retries,
+            max_idletime=self.max_idletime,
+            executors=[
+                # Assign 1 GPU each for training and inference
+                self._get_htex('train_htex', accelerators[:1]),
+                self._get_htex('inference_htex', accelerators[1:2]),
+                # Assign the remaining GPUs to simulation
+                self._get_htex('simulation_htex', accelerators[2:]),
+            ],
+        )
+
+
 class HybridWorkstationConfig(BaseComputeConfig):
     """Run simulations on CPU and AI models on GPU."""
 
@@ -273,7 +333,7 @@ class VistaConfig(BaseComputeConfig):
                 # Assign 1 node each for training and inference
                 self._get_htex('train_htex', 1),
                 self._get_htex('inference_htex', 1),
-                # Assign the remaining nodes to the simulation
+                # Assign the remaining nodes to simulation
                 self._get_htex('simulation_htex', self.num_nodes - 2),
             ],
         )
@@ -282,6 +342,7 @@ class VistaConfig(BaseComputeConfig):
 ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
+    WorkstationV2Config,
     HybridWorkstationConfig,
     InferenceTrainWorkstationConfig,
     VistaConfig,
