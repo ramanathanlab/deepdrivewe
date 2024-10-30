@@ -69,7 +69,7 @@ class LatentSpaceHistory:
         color = self.pcoords if color is None else color
 
         print(
-            f'Plotting latent space to with {len(self.z)} '
+            f'Plotting latent space with {len(self.z)} points '
             f'and color with shape {len(color)} frames to {output_path}',
         )
 
