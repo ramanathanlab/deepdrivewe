@@ -145,7 +145,7 @@ select = [
     "RUF",
 ]
 line-length = 79
-extend-ignore = ["Q001"]
+extend-ignore = ["Q001", "SIM102", "PLR0913"]
 target-version = "py38"
 
 [tool.ruff.flake8-pytest-style]
