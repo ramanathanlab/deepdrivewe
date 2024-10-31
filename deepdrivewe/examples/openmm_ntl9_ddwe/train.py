@@ -56,7 +56,6 @@ def run_train(
     # If we are using a stream, run the stream training function
     if stream_config is not None:
         return run_stream_train(
-            sim_output=sim_output,
             config=config,
             output_dir=output_dir,
             stream_config=stream_config,
@@ -100,15 +99,12 @@ def run_train(
 
 
 def run_stream_train(
-    sim_output: list[SimResult],
     config: TrainConfig,
     output_dir: Path,
     stream_config: ProxyStreamConfig,
 ) -> TrainResult:
     """Train the model on the simulation output."""
     # Make the output directory
-    itetation = sim_output[0].metadata.iteration_id
-    output_dir = output_dir / f'{itetation:06d}'
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Stream consumer for getting new simulation data
@@ -156,10 +152,13 @@ def run_stream_train(
         contact_map_history.extend(contact_maps)
         pcoord_history.extend(pcoords)
 
+        # Make a new model directory for this iteration
+        model_dir = output_dir / f'model_{idx:06d}'
+
         # Fit the model
         checkpoint_path = model.fit(
             x=contact_map_history,
-            model_dir=output_dir / 'model',
+            model_dir=model_dir,
             scalars={'pcoord': pcoord_history},
         )
 

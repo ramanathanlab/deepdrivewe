@@ -287,9 +287,10 @@ class DDWEStreamThinker(BaseThinker):
             self.submit_task('simulation', sim)
 
         # We need to submit a single train task at the start of the workflow
-        # to kick off the simulation stream consumer
+        # to kick off the simulation stream consumer. We send an empty list
+        # of simulation outputs to be compatible with the train task signature.
         self.logger.info('Start streaming train task')
-        self.submit_task('train')
+        self.submit_task('train', [])
 
     @result_processor(topic='simulation')
     def process_simulation_result(self, result: Result) -> None:
