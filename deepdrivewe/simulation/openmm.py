@@ -724,6 +724,7 @@ class OpenMMConfig(BaseModel):
         seed = np.random.default_rng().integers(2**32, dtype=int)
         random.seed(seed)
         np.random.seed(seed)
+        print(f'Running simulation with seed: {seed}')
 
         # Select implicit or explicit solvent configuration and load the system
         if self.solvent_type == 'explicit':
