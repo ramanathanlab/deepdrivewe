@@ -253,6 +253,14 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
         description='Config for the GPU executor to run AI models.',
     )
 
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
     @model_validator(mode='after')
     def validate_htex_labels(self) -> Self:
         """Ensure that the labels are unique."""
@@ -266,6 +274,7 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
         return Config(
             run_dir=str(run_dir),
             retries=self.train_gpu_config.retries,
+            max_idletime=self.max_idletime,
             executors=[
                 HighThroughputExecutor(
                     address='localhost',
