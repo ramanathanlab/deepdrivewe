@@ -8,6 +8,7 @@ import sys
 from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
+from typing import Any
 from typing import Sequence
 
 if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
@@ -24,6 +25,8 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
+from deepdrivewe.workflows.stream import ProxyStreamConfig
+from deepdrivewe.workflows.stream import SIMULATION_TOPIC
 from deepdrivewe.workflows.utils import retry_on_exception
 
 try:
@@ -152,7 +155,7 @@ class Collector(ABC):
         ...
 
     @abstractmethod
-    def collect(self, positions: np.ndarray) -> None:
+    def collect(self, positions: np.ndarray) -> Any:
         """Collect data from the simulation.
 
         Parameters
@@ -228,7 +231,7 @@ class CoordinatesCollector(Collector):
 
         return aligned_positions
 
-    def collect(self, positions: np.ndarray) -> None:
+    def collect(self, positions: np.ndarray) -> np.ndarray:
         """Generate a report.
 
         Parameters
@@ -241,6 +244,8 @@ class CoordinatesCollector(Collector):
 
         # Collect the position coordinates
         self._coordinates.append(pos)
+
+        return pos
 
 
 class RMSDCollector(Collector):
@@ -281,7 +286,7 @@ class RMSDCollector(Collector):
         """
         return np.array(self._rmsd).reshape(-1, 1)
 
-    def collect(self, positions: np.ndarray) -> None:
+    def collect(self, positions: np.ndarray) -> float:
         """Generate a report.
 
         Parameters
@@ -292,6 +297,7 @@ class RMSDCollector(Collector):
         # Compute the RMSD
         rmsd = rms.rmsd(positions, self._ref, superposition=True)
         self._rmsd.append(rmsd)
+        return rmsd
 
 
 class ContactMapCollector(Collector):
@@ -305,8 +311,7 @@ class ContactMapCollector(Collector):
         """Initialize the contact map collector."""
         super().__init__(topic)
         self.cutoff_angstrom = cutoff_angstrom
-        self._rows: list[np.ndarray] = []
-        self._cols: list[np.ndarray] = []
+        self._contact_maps: list[np.ndarray] = []
 
     def get(self) -> np.ndarray:
         """Get the contact maps from the simulation.
@@ -317,15 +322,12 @@ class ContactMapCollector(Collector):
             The contact maps from the simulation as a ragged array
             shaped as (n_frames, *).
         """
-        # Concatenate the row and col indices into a single array
-        contact_maps = [np.concatenate(x) for x in zip(self._rows, self._cols)]
-
         # Collect the contact maps in a ragged numpy array
-        contact_maps = np.array(contact_maps, dtype=object)
+        contact_maps = np.array(self._contact_maps, dtype=object)
 
         return contact_maps
 
-    def collect(self, positions: np.ndarray) -> None:
+    def collect(self, positions: np.ndarray) -> np.ndarray:
         """Generate a report.
 
         Parameters
@@ -343,9 +345,15 @@ class ContactMapCollector(Collector):
         # Convert the contact map to sparse format
         coo_matrix = contact_map.tocoo()
 
+        # Get the row and col indices and concatenate them
+        row = coo_matrix.row.astype('int16')
+        col = coo_matrix.col.astype('int16')
+        sparse_contact_map = np.concatenate([row, col])
+
         # Append the row and col indices to lists
-        self._rows.append(coo_matrix.row.astype('int16'))
-        self._cols.append(coo_matrix.col.astype('int16'))
+        self._contact_maps.append(sparse_contact_map)
+
+        return sparse_contact_map
 
 
 class CollectionReporter(OpenMMReporter):
@@ -356,6 +364,7 @@ class CollectionReporter(OpenMMReporter):
         report_interval: int,
         collectors: list[Collector],
         openmm_selection: Sequence[str] = ('CA',),
+        stream_config: ProxyStreamConfig | None = None,
     ) -> None:
         """Initialize the reporter.
 
@@ -382,6 +391,13 @@ class CollectionReporter(OpenMMReporter):
 
         self.collectors = collectors
 
+        # Initialize the streaming producer
+        self.producer = None
+        if stream_config is not None:
+            self.producer = stream_config.get_producer(
+                topic=SIMULATION_TOPIC,
+            )
+
     def get_collected_data(self) -> dict[str, np.ndarray]:
         """Get the collected data from the simulation.
 
@@ -406,8 +422,11 @@ class CollectionReporter(OpenMMReporter):
         positions = self.get_positions(simulation, state)
 
         # Collect data from the simulation
-        for collector in self.collectors:
-            collector.collect(positions)
+        data = {x.topic: x.collect(positions) for x in self.collectors}
+
+        # Stream the data if a stream config is provided
+        if self.producer is not None:
+            self.producer.send(topic=SIMULATION_TOPIC, obj=data, evict=True)
 
 
 class OpenMMConfig(BaseModel):

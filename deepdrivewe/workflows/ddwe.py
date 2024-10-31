@@ -12,10 +12,13 @@ from colmena.thinker import agent
 from colmena.thinker import BaseThinker
 from colmena.thinker import result_processor
 from proxystore.proxy import extract
+from proxystore.store.utils import get_key
 
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.workflows.stream import ProxyStreamConfig
+from deepdrivewe.workflows.stream import SIMULATION_TOPIC
+from deepdrivewe.workflows.stream import TRAIN_TOPIC
 from deepdrivewe.workflows.utils import ResultLogger
 
 
@@ -253,7 +256,10 @@ class DDWEStreamThinker(BaseThinker):
         # Keep a counter for the current training iteration
         self.train_iteration = ensemble.iteration - 1
 
-        self.stream_consumer = stream_config.get_consumer(topic='train-output')
+        # Create a consumer for streaming the training return objects
+        # to the thinker.
+        self.stream_config = stream_config
+        self.stream_consumer = stream_config.get_consumer(topic=TRAIN_TOPIC)
 
     def submit_task(self, topic: str, *inputs: Any) -> None:
         """Submit a task to the task server.
@@ -333,6 +339,13 @@ class DDWEStreamThinker(BaseThinker):
             # Log a message for each train result
             self.logger.info('Received streaming train result')
 
+            # Clean up the previous training output from the store
+            if self.train_output is not None:
+                # Get the proxy key for the current training output
+                key = get_key(self.train_output)
+                # Evict the key from the store to clean up memory
+                self.stream_config.get_store().evict(key)
+
             # Store the training output
             self.train_output = result
 
@@ -345,8 +358,12 @@ class DDWEStreamThinker(BaseThinker):
         self.done.set()
 
         # Close the stream consumer (we use the producer to close the topic)
-        producer = self.stream_config.get_producer(topic='train-output')
-        producer.close_topics('train-output')
+        # NOTE: Closing the train topic, will close the stream_consumer in the
+        # thinker which will stop the train_stream_processor agent, and closing
+        # the simulation topic will close the training function consumer
+        # waiting for new simulation results.
+        for topic in [TRAIN_TOPIC, SIMULATION_TOPIC]:
+            self.stream_config.get_producer(topic=topic).close_topics(topic)
 
         # Log a message that the workflow is stopping
         self.logger.info('Stopping the workflow')

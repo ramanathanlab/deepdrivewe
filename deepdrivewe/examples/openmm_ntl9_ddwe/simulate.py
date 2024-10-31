@@ -15,6 +15,7 @@ from deepdrivewe.simulation.openmm import ContactMapCollector
 from deepdrivewe.simulation.openmm import OpenMMConfig
 from deepdrivewe.simulation.openmm import OpenMMSimulation
 from deepdrivewe.simulation.openmm import RMSDCollector
+from deepdrivewe.workflows.stream import ProxyStreamConfig
 
 
 class SimulationConfig(BaseModel):
@@ -48,6 +49,7 @@ def run_simulation(
     metadata: SimMetadata,
     config: SimulationConfig,
     output_dir: Path,
+    stream_config: ProxyStreamConfig | None = None,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
     # Add performance logging
@@ -91,6 +93,7 @@ def run_simulation(
                 topic='pcoords',
             ),
         ],
+        stream_config=stream_config,
     )
 
     # Run the simulation
@@ -103,6 +106,11 @@ def run_simulation(
     metadata.restart_file = simulation.restart_file
     metadata.pcoord = data['pcoords'].tolist()
     metadata.mark_simulation_end()
+
+    # If we are streaming the data, only keep the last frame
+    # for use in the inference module.
+    if stream_config is not None:
+        data = {key: value[:-1] for key, value in data.items()}
 
     result = SimResult(data=data, metadata=metadata)
 

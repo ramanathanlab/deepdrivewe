@@ -15,6 +15,9 @@ from proxystore.stream.shims.redis import RedisQueueSubscriber
 
 from deepdrivewe import BaseModel
 
+SIMULATION_TOPIC = 'simulation-output'
+TRAIN_TOPIC = 'train-output'
+
 
 class ProxyStreamConfig(BaseModel):
     """Configuration for the proxy stream."""

@@ -105,7 +105,7 @@ class ExperimentSettings(BaseModel):
         description='Config for the compute resources.',
     )
     stream_config: ProxyStreamConfig | None = Field(
-        None,
+        default=None,
         description='Stream configuration for simulation data.',
     )
     use_stale_model: bool = Field(
@@ -196,11 +196,13 @@ if __name__ == '__main__':
         run_simulation,
         config=cfg.simulation_config,
         output_dir=cfg.output_dir / 'simulation',
+        stream_config=cfg.stream_config,
     )
     my_run_train = partial(
         run_train,
         config=cfg.train_config,
         output_dir=cfg.output_dir / 'train',
+        stream_config=cfg.stream_config,
     )
     my_run_inference = partial(
         run_inference,
