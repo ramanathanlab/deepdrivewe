@@ -455,10 +455,6 @@ class OpenMMConfig(BaseModel):
         default=True,
         description='Whether to randomize the basis state initial velocities.',
     )
-    seed: int = Field(
-        default=np.random.default_rng().integers(2**32, dtype=int),
-        description='The random seed for the simulation.',
-    )
     hardware_platform: str = Field(
         default='CUDA',
         description='The hardware platform to use for the simulation.'
@@ -704,9 +700,11 @@ class OpenMMConfig(BaseModel):
         ValueError
             If explicit solvent is selected and no topology file is provided.
         """
-        # Set the random seed
-        random.seed(self.seed)
-        np.random.seed(self.seed)
+        # Set the random seed (we use a different seed for each simulation
+        # to ensure simulations sample trajectories).
+        seed = np.random.default_rng().integers(2**32, dtype=int)
+        random.seed(seed)
+        np.random.seed(seed)
 
         # Select implicit or explicit solvent configuration and load the system
         if self.solvent_type == 'explicit':
