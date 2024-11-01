@@ -882,14 +882,36 @@ class OpenMMSimulation(BaseModel):
         new_integrator = self.config.configure_integrator()
         new_integrator.setRandomNumberSeed(seed)
 
-        # Replace the old integrator in the simulation with the new one
-        sim.context.setIntegrator(new_integrator)
+        # Step 3: Create a new Simulation with the existing System and Context,
+        # but with the new integrator
+        # This effectively applies the new RNG seed
+        new_simulation = app.Simulation(
+            sim.topology,
+            sim.system,
+            new_integrator,
+            sim.context.getPlatform(),
+        )
 
-        # Run simulation
-        sim.step(self.config.num_steps)
+        # Step 4: Set the state from the existing context to continue the
+        # simulation
+        state = sim.context.getState(
+            getPositions=True,
+            getVelocities=True,
+            getEnergy=True,
+            getForces=True,
+        )
+        new_simulation.context.setState(state)
+
+        new_simulation.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
-        sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
+        new_simulation.saveCheckpoint(str(self.output_dir / 'seg.chk'))
+
+        # Run simulation
+        # sim.step(self.config.num_steps)
+
+        # Save a checkpoint of the final state
+        # sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
 
 
 # TODO: First test the above implementation, then remove this class.
