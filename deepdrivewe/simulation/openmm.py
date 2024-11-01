@@ -876,7 +876,7 @@ class OpenMMSimulation(BaseModel):
         random.seed(seed)
         np.random.seed(seed)
         sim.integrator.setRandomNumberSeed(seed)
-        sim.context.setParameter('RandomSeed', seed)
+        sim.context.reinitialize(preserveState=True)
         print(f'Running simulation with seed: {seed}', flush=True)
 
         # Run simulation
