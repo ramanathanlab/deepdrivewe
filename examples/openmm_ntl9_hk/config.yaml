@@ -31,7 +31,7 @@ simulation_config:
     # The time step to use in picoseconds
     dt_ps: 0.002
     # The temperature to run the simulation at
-    temperature: 300.0
+    temperature_kelvin: 300.0
     # The solvent type
     solvent_type: implicit
     # The hardware platform to run the simulation on

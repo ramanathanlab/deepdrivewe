@@ -719,13 +719,6 @@ class OpenMMConfig(BaseModel):
         ValueError
             If explicit solvent is selected and no topology file is provided.
         """
-        # Set the random seed (we use a different seed for each simulation
-        # to ensure simulations sample trajectories).
-        seed = np.random.default_rng().integers(2**32, dtype=int)
-        random.seed(seed)
-        np.random.seed(seed)
-        print(f'Running simulation with seed: {seed}', flush=True)
-
         # Select implicit or explicit solvent configuration and load the system
         if self.solvent_type == 'explicit':
             if top_file is None:
@@ -876,6 +869,14 @@ class OpenMMSimulation(BaseModel):
         # Load the checkpoint file (if it is a OpenMM checkpoint)
         if openmm_checkpoint.exists():
             sim.loadCheckpoint(str(openmm_checkpoint))
+
+        # Set the random seed (we use a different seed for each simulation
+        # to ensure simulations sample different trajectories).
+        seed = np.random.default_rng().integers(2**31 - 1, dtype=int)
+        random.seed(seed)
+        np.random.seed(seed)
+        sim.integrator.setRandomNumberSeed(seed)
+        print(f'Running simulation with seed: {seed}', flush=True)
 
         # Run simulation
         sim.step(self.config.num_steps)
