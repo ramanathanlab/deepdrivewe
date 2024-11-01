@@ -878,6 +878,7 @@ class OpenMMSimulation(BaseModel):
         sim.integrator.setRandomNumberSeed(seed)
         sim.context.reinitialize(preserveState=True)
         print(f'Running simulation with seed: {seed}', flush=True)
+        print(sim.context.getParameters())
 
         # Run simulation
         sim.step(self.config.num_steps)
