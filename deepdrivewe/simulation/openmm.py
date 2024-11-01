@@ -875,11 +875,15 @@ class OpenMMSimulation(BaseModel):
         seed = np.random.default_rng().integers(2**31 - 1, dtype=int)
         random.seed(seed)
         np.random.seed(seed)
-        sim.integrator.setRandomNumberSeed(seed)
-        sim.context.reinitialize(preserveState=True)
+        # sim.integrator.setRandomNumberSeed(seed)
+        # sim.context.reinitialize(preserveState=True)
         print(f'Running simulation with seed: {seed}', flush=True)
-        for param_name, param_value in sim.context.getParameters().items():
-            print(f'{param_name}: {param_value}')
+
+        new_integrator = self.config.configure_integrator()
+        new_integrator.setRandomNumberSeed(seed)
+
+        # Replace the old integrator in the simulation with the new one
+        sim.context.setIntegrator(new_integrator)
 
         # Run simulation
         sim.step(self.config.num_steps)
