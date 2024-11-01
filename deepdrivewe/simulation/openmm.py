@@ -902,6 +902,8 @@ class OpenMMSimulation(BaseModel):
         )
         new_simulation.context.setState(state)
 
+        new_simulation.reporters = sim.reporters
+
         new_simulation.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
