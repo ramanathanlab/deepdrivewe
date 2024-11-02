@@ -129,10 +129,8 @@ class AdversarialAE:
         self.config = config
         self.checkpoint_path = checkpoint_path
 
-        # We keep the inference_batch_size in the config for convenience
-        # but exclude it from the model arguments.
-        model_args = config.model_dump(exclude={'inference_batch_size'})
-        self.trainer = AAE3dTrainer(**model_args)
+        # Initialize the model
+        self.trainer = AAE3dTrainer(**config.model_dump())
 
         # Load the model checkpoint if specified
         if checkpoint_path is not None:
@@ -218,7 +216,7 @@ class AdversarialAE:
             The predicted latent space coordinates (n_samples, latent_dim).
         """
         # Predict the latent space coordinates
-        z, _ = self.trainer.predict(x, self.config.inference_batch_size)
+        z, _ = self.trainer.predict(x)
         return z
 
 
