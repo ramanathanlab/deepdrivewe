@@ -697,6 +697,7 @@ class OpenMMConfig(BaseModel):
         self,
         pdb_file: str | Path,
         top_file: str | Path | None,
+        checkpoint_file: str | Path | None = None,
     ) -> app.Simulation:
         """Configure an OpenMM simulation.
 
@@ -708,6 +709,8 @@ class OpenMMConfig(BaseModel):
         top_file : str | Path | None
             The optional topology file to initialize the systems topology
             (required for explicit solvent).
+        checkpoint_file : str | Path | None
+            The checkpoint file to initialize the simulation.
 
         Returns
         -------
@@ -750,6 +753,30 @@ class OpenMMConfig(BaseModel):
             platform,
             platform_properties,
         )
+
+        # Load the checkpoint file if provided (skips setting positions
+        # from PDB, minimization, and randomizing velocities)
+        if checkpoint_file is not None:
+            # Create a new Simulation with the existing system context,
+            # but with the new integrator (which applies the new RNG seed)
+            new_simulation = app.Simulation(
+                sim.topology,
+                sim.system,
+                self.configure_integrator(),
+                sim.context.getPlatform(),
+                *self.configure_hardware(),
+            )
+
+            # Set the state from the existing context to continue the sim
+            state = sim.context.getState(
+                getPositions=True,
+                getVelocities=True,
+                getEnergy=True,
+                getForces=True,
+            )
+            new_simulation.context.setState(state)
+
+            return new_simulation
 
         # Set the positions
         if self.set_positions:
@@ -831,10 +858,15 @@ class OpenMMSimulation(BaseModel):
         if self.copy_input_files and self.top_file is not None:
             self.top_file = shutil.copy(self.top_file, self.output_dir)
 
+        # Attempt to locate a checkpoint file
+        chk_file = self.checkpoint_file.parent / 'seg.chk'
+        checkpoint_file = chk_file if chk_file.exists() else None
+
         # Initialize an OpenMM simulation
         sim = self.config.configure_simulation(
             pdb_file=self.restart_file,
             top_file=self.top_file,
+            checkpoint_file=checkpoint_file,
         )
 
         # Set up a reporter to write a simulation trajectory file
@@ -863,57 +895,11 @@ class OpenMMSimulation(BaseModel):
         if reporters is not None:
             sim.reporters.extend(reporters)
 
-        # Attempt to locate a checkpoint file
-        openmm_checkpoint = self.checkpoint_file.parent / 'seg.chk'
-
-        # Load the checkpoint file (if it is a OpenMM checkpoint)
-        if openmm_checkpoint.exists():
-            sim.loadCheckpoint(str(openmm_checkpoint))
-
-        # Set the random seed (we use a different seed for each simulation
-        # to ensure simulations sample different trajectories).
-        seed = np.random.default_rng().integers(2**31 - 1, dtype=int)
-        random.seed(seed)
-        np.random.seed(seed)
-        # sim.integrator.setRandomNumberSeed(seed)
-        # sim.context.reinitialize(preserveState=True)
-        print(f'Running simulation with seed: {seed}', flush=True)
-
-        new_integrator = self.config.configure_integrator()
-        new_integrator.setRandomNumberSeed(seed)
-
-        # Step 3: Create a new Simulation with the existing System and Context,
-        # but with the new integrator
-        # This effectively applies the new RNG seed
-        new_simulation = app.Simulation(
-            sim.topology,
-            sim.system,
-            new_integrator,
-            sim.context.getPlatform(),
-        )
-
-        # Step 4: Set the state from the existing context to continue the
-        # simulation
-        state = sim.context.getState(
-            getPositions=True,
-            getVelocities=True,
-            getEnergy=True,
-            getForces=True,
-        )
-        new_simulation.context.setState(state)
-
-        new_simulation.reporters = sim.reporters
-
-        new_simulation.step(self.config.num_steps)
-
-        # Save a checkpoint of the final state
-        new_simulation.saveCheckpoint(str(self.output_dir / 'seg.chk'))
-
         # Run simulation
-        # sim.step(self.config.num_steps)
+        sim.step(self.config.num_steps)
 
         # Save a checkpoint of the final state
-        # sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
+        sim.saveCheckpoint(str(self.output_dir / 'seg.chk'))
 
 
 # TODO: First test the above implementation, then remove this class.
