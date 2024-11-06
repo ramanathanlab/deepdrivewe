@@ -757,6 +757,9 @@ class OpenMMConfig(BaseModel):
         # Load the checkpoint file if provided (skips setting positions
         # from PDB, minimization, and randomizing velocities)
         if checkpoint_file is not None:
+            # Load the checkpoint file
+            sim.loadCheckpoint(str(checkpoint_file))
+
             # Create a new Simulation with the existing system context,
             # but with the new integrator (which applies the new RNG seed)
             new_simulation = app.Simulation(
