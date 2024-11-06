@@ -766,8 +766,10 @@ class OpenMMConfig(BaseModel):
                 sim.topology,
                 sim.system,
                 self.configure_integrator(),
-                sim.context.getPlatform(),
-                *self.configure_hardware(),
+                platform,
+                platform_properties,
+                # sim.context.getPlatform(),
+                # *self.configure_hardware(),
             )
 
             # Set the state from the existing context to continue the sim
