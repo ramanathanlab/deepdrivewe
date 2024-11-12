@@ -21,7 +21,7 @@ pip install -e .
 ```
 
 To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/)
-for your system and drivers. To use `mdlearn`, you may need an earlier version of PyTorch:
+for your system and drivers:
 ```bash
 pip install torch==1.12
 ```
