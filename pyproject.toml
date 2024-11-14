@@ -28,6 +28,7 @@ dependencies = [
     "h5py==3.11.0",
     "mdtraj==1.10.0",
     "MDAnalysis>=2.7.0",
+    "ParmEd>=4.3.0",
     "scikit-learn==1.5.1",
     "mdlearn==1.0.5",
     "scipy==1.14.0",
