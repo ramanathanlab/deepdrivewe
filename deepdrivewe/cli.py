@@ -30,6 +30,7 @@ def print_errors(
     ),
 ) -> None:
     """Parse the task result files and print any errors."""
+    # Create a console for rich output
     console = Console()
 
     # Find all the task result files
@@ -45,9 +46,8 @@ def print_errors(
             data = json.loads(line)
             if 'failure_info' in data and 'traceback' in data['failure_info']:
                 console.print(
-                    f"[bold green]Method:[/bold green] {data['method']}",
+                    f"[bold blue]Method:[/bold blue] {data['method']}",
                 )
-                console.print('[bold blue]Traceback:[/bold blue]\n')
                 console.print(data['failure_info']['traceback'], style='red')
 
 
