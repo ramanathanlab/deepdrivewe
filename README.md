@@ -20,11 +20,7 @@ conda install conda-forge::openmm==7.7 -y
 pip install -e .
 ```
 
-To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/)
-for your system and drivers:
-```bash
-pip install torch==1.12
-```
+To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/).
 
 ### Installation on VISTA
 
