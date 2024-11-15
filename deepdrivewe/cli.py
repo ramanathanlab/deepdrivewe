@@ -33,7 +33,7 @@ def print_errors(
     console = Console()
 
     # Find all the task result files
-    results_dir = run_dir / 'results'
+    results_dir = run_dir / 'result'
 
     # Read the simulation, train, and inference results
     for file_path in results_dir.glob('*.json'):
