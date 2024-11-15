@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from abc import ABC
 from abc import abstractmethod
@@ -358,6 +359,89 @@ class VistaConfig(BaseComputeConfig):
         )
 
 
+class PolarisConfig(BaseComputeConfig):
+    """Compute config for a workstation."""
+
+    name: Literal['polaris'] = 'polaris'  # type: ignore[assignment]
+
+    num_nodes: int = Field(
+        ge=3,
+        description='Number of nodes to use (must use at least 3 nodes).',
+    )
+    retries: int = Field(
+        default=1,
+        description='Number of retries for the task.',
+    )
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
+    def _write_nodefiles(self, run_dir: Path) -> None:
+        """Write nodefiles for the train, inference, and simulation tasks."""
+        # Get the nodefile
+        node_file = os.environ['PBS_NODEFILE']
+        with open(node_file) as fp:
+            hosts = [x.strip() for x in fp]
+
+        # Determine the node files for each task type
+        labels = ['train', 'inference', 'simulation']
+        hostnames = [hosts[0], hosts[1], hosts[2:]]
+
+        # Write the nodefiles for each task type
+        for label, hnames in zip(labels, hostnames):
+            nodefile = run_dir / f'{label}.hosts'
+            nodefile.write_text('\n'.join(hnames))
+
+    def _get_htex(
+        self,
+        label: str,
+        num_nodes: int,
+        run_dir: Path,
+    ) -> HighThroughputExecutor:
+        hostfile = run_dir / f'{label}.hosts'
+        return HighThroughputExecutor(
+            label=label,
+            cpu_affinity='block-reverse',
+            available_accelerators=4,
+            provider=LocalProvider(
+                launcher=WrappedLauncher(
+                    f'mpiexec -n {num_nodes} --ppn 1 --hostfile '
+                    f'{hostfile} --depth=64 --cpu-bind depth',
+                ),
+                cmd_timeout=120,
+                nodes_per_block=num_nodes,
+                init_blocks=1,
+                max_blocks=1,
+            ),
+        )
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration."""
+        # Convert run_dir to a Path object
+        run_dir = Path(run_dir)
+
+        # Write the nodefiles for each task type
+        self._write_nodefiles(run_dir)
+
+        # Return the Parsl configuration
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.retries,
+            max_idletime=self.max_idletime,
+            executors=[
+                # Assign 1 GPU each for training and inference
+                self._get_htex('train_htex', 1, run_dir),
+                self._get_htex('inference_htex', 1, run_dir),
+                # Assign the remaining GPUs to simulation
+                self._get_htex('simulation_htex', self.num_nodes - 2, run_dir),
+            ],
+        )
+
+
 ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
@@ -365,4 +449,5 @@ ComputeConfigTypes = Union[
     HybridWorkstationConfig,
     InferenceTrainWorkstationConfig,
     VistaConfig,
+    PolarisConfig,
 ]
