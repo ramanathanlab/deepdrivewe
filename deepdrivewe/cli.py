@@ -20,9 +20,6 @@ def version() -> None:
     print(f'deepdrivewe, version {__version__}')
 
 
-app = typer.Typer()
-
-
 @app.command()
 def print_errors(
     run_dir: Path = typer.Option(  # noqa: B008
