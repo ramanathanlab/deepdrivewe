@@ -404,7 +404,7 @@ class PolarisConfig(BaseComputeConfig):
             hosts = [x.strip() for x in fp]
 
         # Determine the node files for each task type
-        labels = ['train', 'inference', 'simulation']
+        labels = ['train_htex', 'inference_htex', 'simulation_htex']
         hostnames = [hosts[0], hosts[1], hosts[2:]]
 
         # Write the nodefiles for each task type
