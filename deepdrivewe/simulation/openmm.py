@@ -18,6 +18,7 @@ else:  # pragma: <3.11 cover
 
 import MDAnalysis
 import numpy as np
+import parmed as pmd
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis import rms
@@ -526,6 +527,7 @@ class OpenMMConfig(BaseModel):
     def load_explicit_system_from_top(
         self,
         top_file: str | Path,
+        pdb_file: str | Path,
     ) -> tuple[openmm.System, app.Topology]:
         """Load an explicit solvent system from a topology file.
 
@@ -533,6 +535,8 @@ class OpenMMConfig(BaseModel):
         ----------
         top_file : str | Path
             The topology file to load the system from.
+        pdb_file : str | Path
+            The PDB file to load the system topology.
 
         Returns
         -------
@@ -540,7 +544,7 @@ class OpenMMConfig(BaseModel):
             The OpenMM system and topology.
         """
         # Load the topology file
-        top = app.AmberPrmtopFile(str(top_file))
+        top = pmd.load_file(str(top_file), str(pdb_file))
 
         # Configure system
         system = top.createSystem(
@@ -728,7 +732,10 @@ class OpenMMConfig(BaseModel):
                 raise ValueError(
                     'Topology file must be provided for explicit solvent.',
                 )
-            system, topology = self.load_explicit_system_from_top(top_file)
+            system, topology = self.load_explicit_system_from_top(
+                pdb_file,
+                top_file,
+            )
         elif top_file is not None:
             system, topology = self.load_implicit_system_from_top(top_file)
         else:

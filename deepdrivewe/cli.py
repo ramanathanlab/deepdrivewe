@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import typer
+from rich import print
+from rich.console import Console
 
 app = typer.Typer()
 
@@ -15,6 +18,37 @@ def version() -> None:
     from deepdrivewe import __version__
 
     print(f'deepdrivewe, version {__version__}')
+
+
+@app.command()
+def print_errors(
+    run_dir: Path = typer.Option(  # noqa: B008
+        ...,
+        '--run_dir',
+        '-r',
+        help='Path to the run directory.',
+    ),
+) -> None:
+    """Parse the task result files and print any errors."""
+    # Create a console for rich output
+    console = Console()
+
+    # Find all the task result files
+    results_dir = run_dir / 'result'
+
+    # Read the simulation, train, and inference results
+    for file_path in results_dir.glob('*.json'):
+        # Read the entire file as text
+        file_text = file_path.read_text()
+
+        # Parse each line as JSON
+        for line in file_text.splitlines():
+            data = json.loads(line)
+            if 'failure_info' in data and 'traceback' in data['failure_info']:
+                console.print(
+                    f"[bold blue]Method:[/bold blue] {data['method']}",
+                )
+                console.print(data['failure_info']['traceback'], style='red')
 
 
 @app.command()
