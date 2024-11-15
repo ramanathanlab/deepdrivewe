@@ -36,7 +36,7 @@ def print_errors(
     results_dir = run_dir / 'results'
 
     # Read the simulation, train, and inference results
-    for file_path in results_dir.glob('*.jsonl'):
+    for file_path in results_dir.glob('*.json'):
         # Read the entire file as text
         file_text = file_path.read_text()
 
