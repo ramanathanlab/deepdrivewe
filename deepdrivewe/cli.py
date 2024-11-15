@@ -7,6 +7,7 @@ from pathlib import Path
 
 import typer
 from rich import print
+from rich.console import Console
 
 app = typer.Typer()
 
@@ -29,7 +30,7 @@ def print_errors(
     ),
 ) -> None:
     """Parse the task result files and print any errors."""
-    # console = Console()
+    console = Console()
 
     # Find all the task result files
     results_dir = run_dir / 'result'
@@ -43,21 +44,11 @@ def print_errors(
         for line in file_text.splitlines():
             data = json.loads(line)
             if 'failure_info' in data and 'traceback' in data['failure_info']:
-                # error_message = data['failure_info']['traceback']
-                # console.print(
-                #    f"[bold red]Task ID:[/bold red] {data['task_id']}",
-                # )
-                # console.print(
-                #    f"[bold yellow]Method:[/bold yellow] {data['method']}",
-                # )
-                # console.print('[bold blue]Traceback:[/bold blue]\n')
-                # console.print(error_message, style='red')
-                typer.echo(f"[bold red]Task ID:[/bold red] {data['task_id']}")
-                typer.echo(
-                    f"[bold yellow]Method:[/bold yellow] {data['method']}",
+                console.print(
+                    f"[bold green]Method:[/bold green] {data['method']}",
                 )
-                typer.echo('[bold blue]Traceback:[/bold blue]\n')
-                typer.echo(data['failure_info']['traceback'])
+                console.print('[bold blue]Traceback:[/bold blue]\n')
+                console.print(data['failure_info']['traceback'], style='red')
 
 
 @app.command()
