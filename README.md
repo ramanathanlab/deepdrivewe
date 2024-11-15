@@ -85,6 +85,16 @@ To watch the progress of the simulation:
 tail -f runs/*/simulation/*/*/*.log
 ```
 
+To pretty print potential errors:
+```bash
+deepdrivewe print-errors --run_dir runs/ntl9-v1
+```
+
+Run the following, for more information:
+```bash
+deepdrivewe --help
+```
+
 ### Running with SynD
 To use the SynD simulation engine, install the following dependencies:
 ```bash
