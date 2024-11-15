@@ -544,7 +544,7 @@ class OpenMMConfig(BaseModel):
             The OpenMM system and topology.
         """
         # Load the topology file
-        top = pmd.load_file(str(top_file), xyz=str(pdb_file))
+        top = pmd.load_file(str(top_file), str(pdb_file))
 
         # Configure system
         system = top.createSystem(
