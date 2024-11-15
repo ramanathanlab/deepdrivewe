@@ -16,7 +16,7 @@ if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
 else:  # pragma: <3.11 cover
     from typing_extensions import Self
 
-
+from parsl.addresses import address_by_hostname
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import WrappedLauncher
@@ -152,6 +152,22 @@ class WorkstationV2Config(BaseComputeConfig):
         description='The maximum idle time allowed for an executor before '
         'strategy could shut down unused blocks. Default is 10 minutes.',
     )
+    address: str = Field(
+        default='localhost',
+        description='Address to bind the executor to [localhost, hostname].',
+    )
+
+    @model_validator(mode='after')
+    def validate_address(self) -> Self:
+        """Check that the address is valid."""
+        if self.address not in ('localhost', 'hostname'):
+            raise ValueError('Address must be either localhost or hostname.')
+
+        # Get the hostname if the address is 'hostname'
+        if self.address == 'hostname':
+            self.address = address_by_hostname()
+
+        return self
 
     @model_validator(mode='after')
     def validate_available_accelerators(self) -> Self:
@@ -170,7 +186,7 @@ class WorkstationV2Config(BaseComputeConfig):
         available_accelerators: Sequence[str],
     ) -> HighThroughputExecutor:
         return HighThroughputExecutor(
-            address='localhost',
+            address=self.address,
             label=label,
             cpu_affinity='block',
             available_accelerators=available_accelerators,

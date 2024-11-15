@@ -7,6 +7,7 @@ To install the package, run the following command:
 ```bash
 git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
+pip install -U pip setuptools wheel
 pip install -e .
 ```
 
@@ -17,6 +18,7 @@ cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
 conda install conda-forge::openmm==7.7 -y
+pip install -U pip setuptools wheel
 pip install -e .
 ```
 
@@ -42,6 +44,18 @@ To run an example on VISTA, update the absolute paths in the submit script
 and the YAML config file, and then run the following command:
 ```bash
 sbatch examples/openmm_ntl9_ddwe_vista/submit.sh
+```
+
+### Installation on Polaris
+
+To install the package on Polaris@ALCF, run the following commands:
+```bash
+module use /soft/modulefiles; module load conda
+```
+
+Follow the full installation instructions above, and install torch via:
+```bash
+pip install torch
 ```
 
 ## Usage
