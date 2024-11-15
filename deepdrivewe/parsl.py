@@ -437,8 +437,9 @@ class PolarisConfig(BaseComputeConfig):
 
     def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration."""
-        # Convert run_dir to a Path object
+        # Convert run_dir to a Path object and create the directory
         run_dir = Path(run_dir)
+        run_dir.mkdir(parents=True, exist_ok=True)
 
         # Write the nodefiles for each task type
         self._write_nodefiles(run_dir)
