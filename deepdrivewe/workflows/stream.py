@@ -8,8 +8,8 @@ from proxystore.store import get_store
 from proxystore.store import register_store
 from proxystore.store import Store
 from proxystore.store.config import StoreConfig
-from proxystore.stream.interface import StreamConsumer
-from proxystore.stream.interface import StreamProducer
+from proxystore.stream import StreamConsumer
+from proxystore.stream import StreamProducer
 from proxystore.stream.shims.redis import RedisQueuePublisher
 from proxystore.stream.shims.redis import RedisQueueSubscriber
 
