@@ -9,7 +9,7 @@ num_iterations: 106
 # The basis states to use for the ensemble
 basis_states:
   # The directory containing the basis states sub directories
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/inputs
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/inputs
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
@@ -21,7 +21,7 @@ basis_states:
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for the simulation
 simulation_config:
@@ -41,7 +41,7 @@ simulation_config:
     hardware_platform: CPU
 
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_hk/common_files/reference.pdb
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for training
 train_config:
