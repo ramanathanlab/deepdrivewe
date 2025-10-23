@@ -9,7 +9,7 @@ num_iterations: 106
 # The basis states to use for the ensemble
 basis_states:
   # The directory containing the basis states sub directories
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/inputs
+  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/inputs
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
@@ -21,7 +21,7 @@ basis_states:
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/common_files/reference.pdb
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for the simulation
 simulation_config:
@@ -41,7 +41,7 @@ simulation_config:
     hardware_platform: CPU
 
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/examples/openmm_ntl9_ddwe/common_files/reference.pdb
+  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for training
 train_config:
@@ -72,29 +72,37 @@ target_states:
       pcoord: [1.0]
 
 # The settings for the compute environment
+# compute_config:
+#   # The name of the compute environment to use (CPU + GPU)
+#   name: inference_train_workstation
+
+#   # The CPU configuration for simulation
+#   cpu_config:
+#     # Specify we want the local parsl configuration
+#     name: local
+#     # The maximum number of worker processes to use for parallelization
+#     max_workers_per_node: 53
+
+#   # The GPU configuration for training
+#   train_gpu_config:
+#     # Specify we want the workstation parsl configuration
+#     name: workstation
+#     # Identify which GPUs to assign tasks to. It's generally recommended to first check
+#     # nvidia-smi to see which GPUs are available. The numbers below are analogous to
+#     # setting CUDA_VISIBLE_DEVICES=2
+#     available_accelerators: ["2"]
+
+#   # The GPU configuration for inference
+#   inference_gpu_config:
+#     # Specify we want the workstation parsl configuration
+#     name: workstation
+#     # Identify which GPUs to assign tasks to
+#     available_accelerators: ["3"]
+
 compute_config:
-  # The name of the compute environment to use (CPU + GPU)
-  name: inference_train_workstation
-
-  # The CPU configuration for simulation
-  cpu_config:
-    # Specify we want the local parsl configuration
-    name: local
-    # The maximum number of worker processes to use for parallelization
-    max_workers_per_node: 53
-
-  # The GPU configuration for training
-  train_gpu_config:
-    # Specify we want the workstation parsl configuration
-    name: workstation
-    # Identify which GPUs to assign tasks to. It's generally recommended to first check
-    # nvidia-smi to see which GPUs are available. The numbers below are analogous to
-    # setting CUDA_VISIBLE_DEVICES=2
-    available_accelerators: ["2"]
-
-  # The GPU configuration for inference
-  inference_gpu_config:
-    # Specify we want the workstation parsl configuration
-    name: workstation
-    # Identify which GPUs to assign tasks to
-    available_accelerators: ["3"]
+  # The name of the compute environment to use
+  name: workstation_v2
+  # Set the address
+  address: hostname
+  # Identify which GPUs to assign tasks to
+  available_accelerators: ["1", "2", "3"]
