@@ -75,9 +75,10 @@ def run_train(
         checkpoint_path=config.checkpoint_path,
     )
 
-    # Extract the last frame contact maps and rmsd from each simulation
-    contact_maps = np.concatenate(
-        [sim.data['contact_maps'] for sim in sim_output],
+    # Flatten all contact maps and pcoords from all sims into a single array
+    contact_maps = np.array(
+        [cm for sim in sim_output for cm in sim.data['contact_maps']],
+        dtype=object,
     )
     pcoords = np.concatenate([sim.data['pcoords'] for sim in sim_output])
     pcoords = pcoords.flatten()
