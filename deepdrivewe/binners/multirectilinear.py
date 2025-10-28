@@ -46,8 +46,11 @@ class MultiRectilinearBinner(Binner):
     @property
     def nbins(self) -> int:
         """The number of bins."""
+        # Calculate the number of bins per dimension
         nbins_per_dim = np.array([len(dim) - 1 for dim in self.bins])
-        return np.prod(nbins_per_dim)
+
+        # Calculate the total number of bins
+        return int(np.prod(nbins_per_dim))
 
     def get_bin_target_counts(self) -> list[int]:
         """Get the target counts for each bin.
@@ -101,7 +104,7 @@ class MultiRectilinearBinner(Binner):
             expand_binnumbers=True,
         )
 
-        # Convert the bin edges to bin indices
+        # Calculate the bin indices in row-major order
         bin_ids = np.array(
             [(ibid[0] - 1) * (len(x_edge) - 1) + ibid[1] for ibid in bid],
         )
