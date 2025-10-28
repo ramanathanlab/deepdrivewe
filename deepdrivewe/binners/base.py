@@ -17,16 +17,26 @@ from deepdrivewe.api import SimMetadata
 class Binner(ABC):
     """Binner for the progress coordinate."""
 
-    @abstractmethod
-    def get_bin_target_counts(self) -> list[int]:
-        """Get the target counts for each bin.
+    def __init__(
+        self,
+        bin_target_counts: int | list[int],
+        target_state_inds: int | list[int] | None = None,
+    ) -> None:
+        """Initialize the binner.
 
-        Returns
-        -------
-        list[int]
-            The target counts for each bin.
+        Parameters
+        ----------
+        bin_target_counts : int | list[int]
+            The target counts for each bin. If an integer is provided,
+            the target counts are assumed to be the same for each bin.
+        target_state_inds : int | list[int] | None
+            The index of the target state. If an integer is provided, then
+            there is only one target state. If a list of integers is provided,
+            then there are multiple target states. If None is provided, then
+            there are no target states. Default is None.
         """
-        ...
+        self.bin_target_counts = bin_target_counts
+        self.target_state_inds = target_state_inds
 
     @property
     @abstractmethod
@@ -38,6 +48,37 @@ class Binner(ABC):
     def assign_bins(self, pcoords: np.ndarray) -> np.ndarray:
         """Assign the simulation pcoords to bins."""
         ...
+
+    def get_bin_target_counts(self) -> list[int]:
+        """Get the target counts for each bin.
+
+        Returns
+        -------
+        list[int]
+            The target counts for each bin.
+        """
+        # Check if the bin target counts is an integer
+        # If so, then set the target counts for each bin to the same value
+        # and set the target state bins to 0. Cache the result.
+        if isinstance(self.bin_target_counts, int):
+            # Create a list of the bin target counts
+            bin_target_counts = [self.bin_target_counts] * self.nbins
+
+            # If there are target states, set the target state bins to 0
+            if self.target_state_inds is not None:
+                # Make sure the target state indices are a list
+                if isinstance(self.target_state_inds, int):
+                    self.target_state_inds = [self.target_state_inds]
+
+                # Set the target state bins to 0 since they are recycled
+                for i in self.target_state_inds:
+                    bin_target_counts[i] = 0
+
+            # Cache the result
+            self.bin_target_counts = bin_target_counts
+
+        # Otherwise, return the list of bin target counts
+        return self.bin_target_counts
 
     @property
     def labels(self) -> list[str]:
