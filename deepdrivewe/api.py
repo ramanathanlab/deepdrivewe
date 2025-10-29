@@ -23,6 +23,36 @@ from pydantic import field_validator
 T = TypeVar('T')
 
 
+def validate_and_resolve_file(value: Path | None) -> Path | None:
+    """Validate and resolve a file path.
+
+    Parameters
+    ----------
+    value : Path | None
+        The file path to validate and resolve.
+
+    Returns
+    -------
+    Path | None
+        The validated and resolved file path.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file path is not a file.
+    """
+    # Return None if the file path is None
+    if value is None:
+        return None
+
+    # Raise an error if the file path is not a file
+    if not value.is_file():
+        raise FileNotFoundError(f'The file {value} is not a file.')
+
+    # Resolve the file path
+    return value.resolve()
+
+
 class BaseModel(_BaseModel):
     """Provide an easy interface to read/write YAML files."""
 

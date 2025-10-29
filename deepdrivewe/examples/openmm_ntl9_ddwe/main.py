@@ -50,6 +50,16 @@ class RMSDBasisStateInitializer(BaseModel):
         description='The MDAnalysis selection string for the atoms to use.',
     )
 
+    @field_validator('reference_file')
+    @classmethod
+    def validate_reference_file(cls, value: Path) -> Path:
+        """Validate and resolve the reference file."""
+        if not value.is_file():
+            raise FileNotFoundError(
+                f'The reference file {value} is not a file.',
+            )
+        return value.resolve()
+
     def __call__(self, basis_file: str) -> list[float]:
         """Initialize the basis state parent coordinates."""
         # Load the basis file
