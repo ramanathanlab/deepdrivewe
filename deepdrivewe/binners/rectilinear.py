@@ -101,4 +101,3 @@ class RectilinearBinner(Binner):
 
         # This ensures our bin index is >=0 and < len(self.bins)
         return np.clip(bin_id, 0, len(self.bins)-1)
-

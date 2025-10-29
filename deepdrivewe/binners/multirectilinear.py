@@ -105,9 +105,9 @@ class MultiRectilinearBinner(Binner):
             expand_binnumbers=True,
         )
 
-        # Clip the bin indices so any index outside of defined bins are moved to nearest defined bin 
+        # Clip the bin indices so any index outside of defined bins are moved to nearest defined bin
         nbins_per_dim = [len(edges)-1 for edges in bin_edges]
-       
+
         for idx, ibid in enumerate(bid):
             if not np.all(ibid> 0) or not np.all(ibid < len(self.bins[idx])):
                 warnings.warn(f"Simulations with progress coordinates outside the bin boundaries definition of dimension {idx} are automatically placed into the nearest terminal bins. Consider modifying your bin boundaries by adding 'np.inf' or '-np.inf' on either end of your bin definitions.")

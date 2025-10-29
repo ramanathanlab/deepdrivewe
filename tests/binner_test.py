@@ -11,7 +11,7 @@ class TestRectilinearBinner:
         coords = np.array([-1, 0, 0.5, 1.5, 1.6, 2.0, 2.0, 2.9])[:, None]
 
         assigner = RectilinearBinner(bins=bounds, bin_target_counts = 3, target_state_inds=[None], pcoord_idx=0)
-        
+
         with pytest.warns(UserWarning):
             assert (assigner.assign_bins(coords) == [0, 0, 0, 1, 1, 2, 2, 2]).all()
 
@@ -41,5 +41,3 @@ class TestRectilinearBinner:
 
         with pytest.warns(UserWarning):
             assert (assigner.assign_bins(coords) == [0, 0, 5, 10, 10, 15, 7, 8]).all()
-
-
