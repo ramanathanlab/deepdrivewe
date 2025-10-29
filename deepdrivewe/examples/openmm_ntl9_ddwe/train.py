@@ -8,9 +8,11 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import field_validator
 
 from deepdrivewe import SimResult
 from deepdrivewe import TrainResult
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe.ai import ConvolutionalVAE
 from deepdrivewe.ai import ConvolutionalVAEConfig
 from deepdrivewe.workflows.stream import ProxyStreamConfig
@@ -39,6 +41,12 @@ class TrainConfig(BaseModel):
         description='The number of stream training iterations between '
         're-initializing and re-training the model.',
     )
+
+    @field_validator('config_path', 'checkpoint_path')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
 
 # TODO: We probably need to store a history of old training data

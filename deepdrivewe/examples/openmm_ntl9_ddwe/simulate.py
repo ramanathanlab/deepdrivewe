@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Sequence
 
 from pydantic import Field
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe.simulation.openmm import CollectionReporter
 from deepdrivewe.simulation.openmm import ContactMapCollector
 from deepdrivewe.simulation.openmm import OpenMMConfig
@@ -43,6 +45,12 @@ class SimulationConfig(BaseModel):
         default=('CA',),
         description='The OpenMM selection strings for the atoms to use.',
     )
+
+    @field_validator('top_file', 'reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
 
 def run_simulation(

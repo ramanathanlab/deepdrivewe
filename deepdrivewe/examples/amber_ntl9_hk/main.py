@@ -24,6 +24,7 @@ from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.amber_ntl9_hk.inference import InferenceConfig
 from deepdrivewe.examples.amber_ntl9_hk.inference import run_inference
@@ -43,6 +44,12 @@ class CustomBasisStateInitializer(BaseModel):
     reference_file: Path = Field(
         description='Reference file for the cpptraj command.',
     )
+
+    @field_validator('top_file', 'reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
     def __call__(self, basis_file: str) -> list[float]:
         """Initialize the basis state parent coordinates."""
