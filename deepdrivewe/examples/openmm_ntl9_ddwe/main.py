@@ -26,6 +26,7 @@ from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.openmm_ntl9_ddwe.inference import InferenceConfig
 from deepdrivewe.examples.openmm_ntl9_ddwe.inference import run_inference
@@ -52,13 +53,9 @@ class RMSDBasisStateInitializer(BaseModel):
 
     @field_validator('reference_file')
     @classmethod
-    def validate_reference_file(cls, value: Path) -> Path:
-        """Validate and resolve the reference file."""
-        if not value.is_file():
-            raise FileNotFoundError(
-                f'The reference file {value} is not a file.',
-            )
-        return value.resolve()
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
     def __call__(self, basis_file: str) -> list[float]:
         """Initialize the basis state parent coordinates."""
