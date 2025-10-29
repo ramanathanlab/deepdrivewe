@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.stats import binned_statistic_2d
+import warnings
 
 from deepdrivewe.binners.base import Binner
 
@@ -96,7 +97,7 @@ class MultiRectilinearBinner(Binner):
         """
         # Bin the progress coordinates (make sure the target state
         # boundary is included in the target state bin).
-        _, x_edge, _, bid = binned_statistic_2d(
+        _, x_edge, y_edge, bid = binned_statistic_2d(
             *pcoords.T,
             values=None,
             statistic='count',
@@ -104,9 +105,17 @@ class MultiRectilinearBinner(Binner):
             expand_binnumbers=True,
         )
 
+        # Clip the bin indices so any index outside of defined bins are moved to nearest defined bin 
+        for idx, ibid in enumerate(bid):
+            if not np.all(ibid>= 0) or not np.all(ibid < len(self.bins[idx])):
+                warnings.warn("Simulations with progress coordinates outside the bin boundaries definitions are automatically placed into the nearest terminal bins. Consider modifying your bin boundaries by adding 'np.inf' or '-np.inf' on either end of your bin definitions.")
+
+                bid[0] = np.clip(bid[0], 1, len(x_edge)-1)
+                bid[1] = np.clip(bid[1], 1, len(y_edge)-1)
+
         # Calculate the bin indices in row-major order
         bin_ids = np.array(
-            [(ibid[0] - 1) * (len(x_edge) - 1) + ibid[1] for ibid in bid],
+            [(ibid[0] - 1) * (len(x_edge) - 1) + (ibid[1] - 1) for ibid in bid.T],
         )
 
         # Check that the number of bin indices is the same as the
