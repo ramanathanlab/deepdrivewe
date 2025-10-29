@@ -399,7 +399,7 @@ class CollectionReporter(OpenMMReporter):
                 topic=SIMULATION_TOPIC,
             )
 
-        print(f'Simulation reporter producer: {self.producer}')
+        print(f'Simulation reporter producer: {self.producer}', flush=True)
 
     def get_collected_data(self) -> dict[str, np.ndarray]:
         """Get the collected data from the simulation.
@@ -431,7 +431,7 @@ class CollectionReporter(OpenMMReporter):
         if self.producer is not None:
             print('Sending data to stream producer')
             self.producer.send(topic=SIMULATION_TOPIC, obj=data, evict=True)
-            print('Data sent to stream producer')
+            print('Data sent to stream producer', flush=True)
 
 
 class OpenMMConfig(BaseModel):
