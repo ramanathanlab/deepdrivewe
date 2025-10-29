@@ -72,6 +72,9 @@ target_states:
     - label: folded
       pcoord: [1.0]
 
+# The number of times to retry a task if it fails
+max_retries: 0
+
 # The streaming settings
 stream_config:
   # A redis server is used as the stream message broker
