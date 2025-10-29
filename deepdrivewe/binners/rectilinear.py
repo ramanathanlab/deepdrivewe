@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import warnings
 
 from deepdrivewe.binners.base import Binner
 
@@ -95,7 +96,7 @@ class RectilinearBinner(Binner):
         # boundary is included in the target state bin).
         bin_id = np.digitize(pcoords[:, self.pcoord_idx], self.bins) -1
 
-        if not np.all(bin_id >= 0) or not np.all(bin_id < len(self.bins)):
+        if not np.all(bin_id > 0) or not np.all(bin_id < len(self.bins)):
             warnings.warn("Simulations with progress coordinates outside the bin boundaries definitions are placed into the nearest terminal bins. Consider modifying your bin boundaries by adding 'np.inf' or '-np.inf' on either end of your bin definitions.")
 
         # This ensures our bin index is >=0 and < len(self.bins)
