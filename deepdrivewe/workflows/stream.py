@@ -80,4 +80,4 @@ class ProxyStreamConfig(BaseModel):
         """
         store = self.get_store()
         publisher = RedisQueuePublisher(self.redis_host, self.redis_port)
-        return StreamProducer(publisher, {topic: store})
+        return StreamProducer(publisher, stores={topic: store})
