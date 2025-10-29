@@ -136,6 +136,7 @@ def run_inference(
     binner = RectilinearBinner(
         bins=[0.0, 1.0, float('inf')],
         bin_target_counts=config.sims_per_bin,
+        target_state_inds=0,  # The first bin is the target (folded) state
     )
 
     # Define the recycling policy
