@@ -18,6 +18,7 @@ import numpy as np
 import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel as _BaseModel
 from pydantic import Field
+from pydantic import field_validator
 
 T = TypeVar('T')
 
@@ -284,6 +285,16 @@ class BasisStates(BaseModel):
         description='The basis states for the weighted ensemble.',
     )
 
+    @field_validator('basis_state_dir')
+    @classmethod
+    def validate_basis_state_dir(cls, value: Path) -> Path:
+        """Validate and resolve the basis state directory."""
+        if not value.is_dir():
+            raise NotADirectoryError(
+                f'The basis state directory {value} is not a directory.',
+            )
+        return value.resolve()
+
     @property
     def unique_basis_states(self) -> list[SimMetadata]:
         """Return the unique basis states."""
@@ -306,9 +317,34 @@ class BasisStates(BaseModel):
         self,
         basis_state_initializer: BasisStateInitializer,
     ) -> None:
-        """Load the basis states for the weighted ensemble."""
+        """Load the basis states for the weighted ensemble.
+
+        Parameters
+        ----------
+        basis_state_initializer : BasisStateInitializer
+            The initializer for the basis states (e.g., a function that
+            reads the progress coordinate from a file and computes and
+            returns a progress coordinate).
+
+        Raises
+        ------
+        NotADirectoryError
+            If the basis state directory is not a directory.
+        FileNotFoundError
+            If no basis state files are found in the input directory.
+        ValueError
+            If no basis states are found in the basis_state_dir.
+        """
         # Collect the basis state files
         basis_files = self._glob_basis_states()
+
+        # Raise an error if there are no basis states
+        if not basis_files:
+            raise ValueError(
+                'No basis states found in the basis state directory. '
+                'Please check that the basis_state_dir exists and contains '
+                'the correct files with the correct extension.',
+            )
 
         # Compute the pcoord for each basis state
         basis_pcoords = [
