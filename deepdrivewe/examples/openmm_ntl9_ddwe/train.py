@@ -127,11 +127,11 @@ def run_stream_train(
 
     # Loop indefinitely until we get a stop iteration from the stream consumer
     for idx in itertools.count():
-        print(f'Train iteration: {idx}')
+        print(f'Train iteration: {idx}', flush=True)
         # If we have reached the retrain interval, re-initialize the trainer
         # NOTE: This always happens on the first iteration
         if idx % config.stream_retrain_interval == 0:
-            print(f'Retraining model at iteration: {idx}')
+            print(f'Retraining model at iteration: {idx}', flush=True)
             # Load the model configuration
             model_config = ConvolutionalVAEConfig.from_yaml(config.config_path)
 
@@ -141,7 +141,10 @@ def run_stream_train(
                 checkpoint_path=config.checkpoint_path,
             )
 
-        print(f'Getting next batch of simulation data at iteration: {idx}')
+        print(
+            f'Getting next batch of simulation data at iteration: {idx}',
+            flush=True,
+        )
         # Get the next batch of simulation data from the stream.
         # Each item is a dictionary with topic keys defined in the simulation
         # module, (e.g. 'contact_maps', 'pcoords', etc.), and values are
@@ -155,6 +158,7 @@ def run_stream_train(
             print(
                 f'Got {len(items)} items from stream '
                 f'consumer at iteration: {idx}',
+                flush=True,
             )
             break
 
@@ -162,6 +166,7 @@ def run_stream_train(
         print(
             f'Extracting contact maps and pcoords from items at '
             f'iteration: {idx}',
+            flush=True,
         )
         contact_maps = np.concatenate([x['contact_maps'] for x in items])
         pcoords = np.concatenate([x['pcoords'] for x in items])
@@ -176,7 +181,7 @@ def run_stream_train(
         model_dir = output_dir / f'model_{idx:06d}'
 
         # Fit the model
-        print(f'Fitting model at iteration: {idx}')
+        print(f'Fitting model at iteration: {idx}', flush=True)
         checkpoint_path = model.fit(
             x=contact_map_history,
             model_dir=model_dir,
@@ -190,7 +195,10 @@ def run_stream_train(
         )
 
         # Send the new model weights to the thinker
-        print(f'Sending new model weights to thinker at iteration: {idx}')
+        print(
+            f'Sending new model weights to thinker at iteration: {idx}',
+            flush=True,
+        )
         stream_producer.send(topic=TRAIN_TOPIC, obj=result)
 
     # NOTE: This final return is not necessary, but it is included

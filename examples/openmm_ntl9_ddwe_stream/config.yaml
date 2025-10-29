@@ -50,6 +50,10 @@ train_config:
   config_path: examples/openmm_ntl9_ddwe_stream/cvae-config.yaml
   # The path to the CVAE model weights file
   checkpoint_path: examples/openmm_ntl9_ddwe_stream/checkpoint-epoch-100.pt
+  # The number of items (simulation frames) to train on in each stream iteration
+  stream_items_per_train: 128
+  # The number of stream training iterations between re-initializing and re-training the model
+  stream_retrain_interval: 1
 
 # The configuration for the inference
 inference_config:
