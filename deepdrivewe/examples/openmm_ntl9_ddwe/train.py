@@ -167,9 +167,17 @@ def run_stream_train(
             flush=True,
         )
         print(f'Items: {items}', flush=True)
+        print(f'Items[0]: {items[0]}', flush=True)
+        print(
+            f'Items[0]["contact_maps"]: {items[0]["contact_maps"]}',
+            flush=True,
+        )
         contact_maps = np.concatenate([x['contact_maps'] for x in items])
         pcoords = np.concatenate([x['pcoords'] for x in items])
         pcoords = pcoords.flatten()
+
+        print(f'Contact maps: {contact_maps.shape}', flush=True)
+        print(f'Pcoords: {pcoords.shape}', flush=True)
 
         # TODO: It might be necessary to put these into a numpy array
         # Concatenate the new data with the history
