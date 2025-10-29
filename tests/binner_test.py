@@ -6,16 +6,16 @@ import numpy as np
 from deepdrivewe.binners import RectilinearBinner, MultiRectilinearBinner
 
 class TestRectilinearBinner:
-    def test1dAssign(self):
+    def test1dAssign(self) -> None:
         bounds = [0.0, 1.0, 2.0, 3.0]
         coords = np.array([-1, 0, 0.5, 1.5, 1.6, 2.0, 2.0, 2.9])[:, None]
 
-        assigner = RectilinearBinner(bins=bounds, bin_target_counts = 3, target_state_inds=[None], pcoord_idx=0)
+        assigner = RectilinearBinner(bins=bounds, bin_target_counts=3, target_state_inds=[None], pcoord_idx=0)
 
         with pytest.warns(UserWarning):
             assert (assigner.assign_bins(coords) == [0, 0, 0, 1, 1, 2, 2, 2]).all()
 
-    def test2dAssign(self):
+    def test2dAssign(self) -> None:
         boundaries = [(-1, -0.5, 0, 0.5, 1), (-1, -0.5, 0, 0.5, 1)]
         coords = np.array([(-2, -2), (-0.75, -0.75), (-0.25, -0.25), (0, 0), (0.25, 0.25), (0.75, 0.75), (-0.25, 0.75), (0.25, -0.75)])
 
