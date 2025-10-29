@@ -1,4 +1,5 @@
 # Configuration file for the NTL9 folding example using OpenMM
+# The inputs and common files are relative to the root of the deepdrivewe repository.
 
 # The output directory for the runs
 output_dir: runs/ntl9-v1
@@ -9,7 +10,7 @@ num_iterations: 106
 # The basis states to use for the ensemble
 basis_states:
   # The directory containing the basis states sub directories
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/inputs
+  basis_state_dir: examples/openmm_ntl9_ddwe/inputs
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
@@ -21,7 +22,7 @@ basis_states:
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/common_files/reference.pdb
+  reference_file: examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for the simulation
 simulation_config:
@@ -41,14 +42,14 @@ simulation_config:
     hardware_platform: CUDA
 
   # The path to the reference PDB file
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/common_files/reference.pdb
+  reference_file: examples/openmm_ntl9_ddwe/common_files/reference.pdb
 
 # The configuration for training
 train_config:
   # The path to the CVAE model configuration file
-  config_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/cvae-config.yaml
+  config_path: examples/openmm_ntl9_ddwe/cvae-config.yaml
   # The path to the CVAE model weights file
-  checkpoint_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe/checkpoint-epoch-100.pt
+  checkpoint_path: examples/openmm_ntl9_ddwe/checkpoint-epoch-100.pt
 
 # The configuration for the inference
 inference_config:

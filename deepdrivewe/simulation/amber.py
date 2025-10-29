@@ -13,6 +13,9 @@ import mdtraj
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import field_validator
+
+from deepdrivewe import validate_and_resolve_file
 
 
 class AmberConfig(BaseModel):
@@ -28,6 +31,12 @@ class AmberConfig(BaseModel):
     top_file: Path = Field(
         description='The prmtop file for the Amber simulation.',
     )
+
+    @field_validator('input_file', 'top_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
 
 class AmberSimulation(BaseModel):

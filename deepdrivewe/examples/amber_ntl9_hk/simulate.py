@@ -8,10 +8,12 @@ from pathlib import Path
 
 import numpy as np
 from pydantic import Field
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe.simulation.amber import AmberConfig
 from deepdrivewe.simulation.amber import AmberSimulation
 from deepdrivewe.simulation.amber import AmberTrajAnalyzer
@@ -27,6 +29,12 @@ class SimulationConfig(BaseModel):
     reference_file: Path = Field(
         description='The reference PDB file for the cpptraj analysis.',
     )
+
+    @field_validator('reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
 
 class BackboneRMSDAnalyzer(AmberTrajAnalyzer):

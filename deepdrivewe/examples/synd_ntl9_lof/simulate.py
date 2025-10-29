@@ -10,11 +10,13 @@ import mdtraj
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import field_validator
 from scipy.sparse import coo_matrix
 from scipy.spatial import distance_matrix
 
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe.simulation.synd import SynDConfig
 from deepdrivewe.simulation.synd import SynDSimulation
 from deepdrivewe.simulation.synd import SynDTrajAnalyzer
@@ -35,6 +37,12 @@ class SimulationConfig(SynDConfig):
         description='The mdtraj selection string for the atoms to use.',
     )
 
+    @field_validator('reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
+
 
 class ContactMapAnalyzer(BaseModel, SynDTrajAnalyzer):
     """Analyze SynD simulations using contact maps."""
@@ -54,6 +62,12 @@ class ContactMapAnalyzer(BaseModel, SynDTrajAnalyzer):
         default=True,
         description='Whether to convert the coordinates to angstroms.',
     )
+
+    @field_validator('reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
     def get_contact_maps(self, sim: SynDSimulation) -> np.ndarray:
         """Compute contact maps from the trajectory.
