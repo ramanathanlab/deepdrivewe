@@ -60,6 +60,7 @@ def run_inference(
         + [6.60 + 0.6 * i for i in range(6)]
         + [float('inf')],
         bin_target_counts=config.sims_per_bin,
+        target_state_inds=0,  # The first bin is the target (folded) state
     )
 
     # Define the recycling policy

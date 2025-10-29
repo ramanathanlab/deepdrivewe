@@ -15,7 +15,7 @@ class MultiRectilinearBinner(Binner):
         self,
         bins: list[np.ndarray | list[float]],
         bin_target_counts: int | list[int],
-        target_state_inds: int | list[int] = 0,
+        target_state_inds: int | list[int] | None = None,
     ) -> None:
         """Initialize the binner.
 
@@ -26,15 +26,15 @@ class MultiRectilinearBinner(Binner):
         bin_target_counts : int | list[int]
             The target counts for each bin. If an integer is provided,
             the target counts are assumed to be the same for each bin.
-        target_state_inds : int | list[int]
+        target_state_inds : int | list[int] | None
             The index of the target state. If an integer is provided, then
             there is only one target state. If a list of integers is provided,
-            then there are multiple target states. Default is 0 which
-            corresponds to the first bin.
+            then there are multiple target states. If None is provided, then
+            there are no target states. Default is None.
         """
+        super().__init__(bin_target_counts, target_state_inds)
+
         self.bins = bins
-        self.bin_target_counts = bin_target_counts
-        self.target_state_inds = target_state_inds
 
         # Check that the bins are sorted
         for binbounds in self.bins:
@@ -51,35 +51,6 @@ class MultiRectilinearBinner(Binner):
 
         # Calculate the total number of bins
         return int(np.prod(nbins_per_dim))
-
-    def get_bin_target_counts(self) -> list[int]:
-        """Get the target counts for each bin.
-
-        Returns
-        -------
-        list[int]
-            The target counts for each bin.
-        """
-        # Check if the bin target counts is an integer
-        # If so, then set the target counts for each bin to the same value
-        # and set the target state bins to 0. Cache the result.
-        if isinstance(self.bin_target_counts, int):
-            # Create a list of the bin target counts
-            bin_target_counts = [self.bin_target_counts] * self.nbins
-
-            # Get the target state indices (convert to a list if an integer)
-            if isinstance(self.target_state_inds, int):
-                self.target_state_inds = [self.target_state_inds]
-
-            # Set each of the target state bins to 0 since they are recycled
-            for i in self.target_state_inds:
-                bin_target_counts[i] = 0
-
-            # Cache the result
-            self.bin_target_counts = bin_target_counts
-
-        # Otherwise, return the list of bin target counts
-        return self.bin_target_counts
 
     def assign_bins(self, pcoords: np.ndarray) -> np.ndarray:
         """Bin the progress coordinate.
