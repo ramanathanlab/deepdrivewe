@@ -156,18 +156,17 @@ def run_stream_train(
             ]
         except StopIteration:
             print(
-                f'Got {len(items)} items from stream '
-                f'consumer at iteration: {idx}',
+                f'Reached end of training stream consumer at iteration: {idx}',
                 flush=True,
             )
             break
 
         # Extract the contact maps and rmsd from each simulation
         print(
-            f'Extracting contact maps and pcoords from items at '
-            f'iteration: {idx}',
+            f'Got {len(items)} items from stream consumer at iteration: {idx}',
             flush=True,
         )
+        print(f'Items: {items}', flush=True)
         contact_maps = np.concatenate([x['contact_maps'] for x in items])
         pcoords = np.concatenate([x['pcoords'] for x in items])
         pcoords = pcoords.flatten()
