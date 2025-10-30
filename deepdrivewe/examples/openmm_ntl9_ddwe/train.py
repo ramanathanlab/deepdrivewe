@@ -169,7 +169,7 @@ def run_stream_train(
         print(f'Contact maps: {cmaps.shape}', flush=True)
         print(f'Contact maps[0]: {cmaps[0]}', flush=True)
 
-        pcoords = np.array([x['pcoords'] for x in items]).reshape(-1, 1)
+        pcoords = np.array([x['pcoords'] for x in items]).flatten()
 
         print(f'Pcoords: {pcoords.shape}', flush=True)
         print(f'Pcoords[0]: {pcoords[0]}', flush=True)
