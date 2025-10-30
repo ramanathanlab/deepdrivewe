@@ -29,3 +29,5 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: []
+
+exclude: '\.(pdb|top|prmtop|pt|cpptraj|in|ncrst)$'

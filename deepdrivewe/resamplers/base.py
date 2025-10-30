@@ -48,7 +48,7 @@ class Resampler(ABC):
         next_sims = self._get_next_sims(cur_sims)
 
         # Recycle the current iteration
-        if recycler:
+        if recycler is not None:
             cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
 
         # Assign the simulations to bins
