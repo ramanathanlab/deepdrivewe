@@ -26,7 +26,7 @@ class Resampler(ABC):
         self,
         cur_sims: list[SimMetadata],
         binner: Binner,
-        recycler: Recycler,
+        recycler: Recycler | None,
     ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
         """Assign simulations to bins and resample the weighted ensemble.
 
@@ -36,7 +36,7 @@ class Resampler(ABC):
             The list of current simulations.
         binner : Binner
             The binner to use for binning the simulations.
-        recycler : Recycler
+        recycler : Recycler or None
             The recycler to use for recycling the simulations.
 
         Returns
@@ -48,7 +48,8 @@ class Resampler(ABC):
         next_sims = self._get_next_sims(cur_sims)
 
         # Recycle the current iteration
-        cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
+        if recycler:
+            cur_sims, next_sims = recycler.recycle_simulations(cur_sims, next_sims)
 
         # Assign the simulations to bins
         bin_assignments = binner.bin_simulations(next_sims)

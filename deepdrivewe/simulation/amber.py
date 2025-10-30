@@ -220,6 +220,9 @@ class AmberTrajAnalyzer(BaseModel, ABC):
     reference_file: Path = Field(
         description='The reference PDB file for the cpptraj analysis.',
     )
+    analysis_file: Path = Field(
+        description='Analysis file.',
+    )
 
     @abstractmethod
     def get_pcoords(self, sim: AmberSimulation) -> np.ndarray:
