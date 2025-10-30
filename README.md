@@ -18,6 +18,7 @@ cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
 conda install conda-forge::openmm==7.7 -y
+conda install anaconda::redis -y
 pip install -U pip setuptools wheel
 pip install -e .
 ```
@@ -33,6 +34,7 @@ ml gcc/14.2.0 cuda/12.5 hdf5
 conda create -n deepdrivewe python=3.12 -y
 conda activate deepdrivewe
 conda install conda-forge::openmm -y
+conda install anaconda::redis -y
 pip install torch --index-url https://download.pytorch.org/whl/cu124
 
 git clone git@github.com:braceal/deepdrivewe.git
@@ -121,6 +123,41 @@ Note that we set `OPENMM_CPU_THREADS=1` to restrict each OpenMM simulation to a 
 the simulations from using all available CPU resources. You can also run the simulations on a GPU by adjusting the Parsl configuration.
 
 ### Running with streaming
+
+For a full example, see `examples/openmm_ntl9_ddwe_stream`.
+
+To run with streaming, add the following to the config:
+```yaml
+stream_config:
+  # A redis server is used as the stream message broker
+  redis_host: localhost
+  redis_port: 6379
+  # The Store used for stream items is configurable
+  store_config:
+    name: stream-store
+    # Use the same redis server for object storage
+    connector:
+      kind: redis
+      options:
+        hostname: localhost
+        port: 6379
+    # FileConnector example
+    # connector:
+    #   kind: file
+    #   options:
+    #     store_dir: /tmp/proxystore-cache
+```
+
+Then start a redis server in the background:
+```bash
+redis-server --port 6379 --save "" --appendonly no --protected-mode no &> redis.log &
+```
+
+The redis server can later be killed using the job number:
+```bash
+jobs
+kill %<num>
+```
 
 To check resource utilization of the redis server, run the following command:
 ```bash
