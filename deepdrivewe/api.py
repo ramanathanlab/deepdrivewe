@@ -527,7 +527,7 @@ class WeightedEnsemble(BaseModel):
 
     @property
     def iteration(self) -> int:
-        """Return the current iteration of the weighted ensemble."""
+        """The current iteration of the weighted ensemble (1-indexed)."""
         return self.metadata.iteration_id
 
     def advance_iteration(

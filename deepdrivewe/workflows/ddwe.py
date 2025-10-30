@@ -314,15 +314,20 @@ class DDWEStreamThinker(BaseThinker):
         # If we have all the simulation results, submit the inference task
         # using the previous iteration's model
         if len(self.sim_output) == len(self.ensemble.next_sims):
-            # We need to wait for the streaming train task to finish
-            if not self.use_stale_model:
+            # We need to wait for the first streaming train task to finish
+            if self.use_stale_model and self.train_output is None:
                 # Wait for the streaming train task to finish
-                self.logger.info('Waiting for streaming train task to finish')
+                self.logger.info(
+                    'Waiting for first streaming train task to finish',
+                )
                 while self.train_output is None:
                     time.sleep(10)
 
-            elif self.use_stale_model:
-                self.logger.info('Waiting for streaming train task to finish')
+            # We need to wait for the next streaming train task to finish
+            elif not self.use_stale_model:
+                self.logger.info(
+                    'Waiting for next streaming train task to finish',
+                )
                 while self.train_iteration < self.ensemble.iteration:
                     time.sleep(10)
                 # This should hold (see train_stream_processor)
@@ -342,6 +347,7 @@ class DDWEStreamThinker(BaseThinker):
 
             # Clean up the previous training output from the store
             if self.train_output is not None:
+                self.logger.info('Cleaning up previous training output')
                 # Get the proxy key for the current training output
                 key = get_key(self.train_output)
                 # Evict the key from the store to clean up memory
