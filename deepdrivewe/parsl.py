@@ -342,6 +342,12 @@ class VistaConfig(BaseComputeConfig):
         'strategy could shut down unused blocks. Default is 10 minutes.',
     )
 
+    allocate_train_htex: bool = Field(
+        default=True,
+        description='Whether to allocate the train executor on a '
+        'dedicated GPU/node.',
+    )
+
     def _get_htex(self, label: str, num_nodes: int) -> HighThroughputExecutor:
         return HighThroughputExecutor(
             label=label,
@@ -362,16 +368,26 @@ class VistaConfig(BaseComputeConfig):
 
     def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Generate a Parsl configuration."""
+        # Create the list of executors
+        # All inference tasks are run on the same node
+        executors = [self._get_htex('inference_htex', 1)]
+
+        # If the train executor is allocated, add it to the list
+        if self.allocate_train_htex:
+            # Dedicate a node to the train executor
+            executors.append(self._get_htex('train_htex', 1))
+            simulation_nodes = self.num_nodes - 2
+        else:
+            # Leave one node for inference
+            simulation_nodes = self.num_nodes - 1
+
+        # Add the simulation executor with the remaining nodes
+        executors.append(self._get_htex('simulation_htex', simulation_nodes))
+
         return Config(
             run_dir=str(run_dir),
             max_idletime=self.max_idletime,
-            executors=[
-                # Assign 1 node each for training and inference
-                self._get_htex('train_htex', 1),
-                self._get_htex('inference_htex', 1),
-                # Assign the remaining nodes to simulation
-                self._get_htex('simulation_htex', self.num_nodes - 2),
-            ],
+            executors=executors,
         )
 
 
