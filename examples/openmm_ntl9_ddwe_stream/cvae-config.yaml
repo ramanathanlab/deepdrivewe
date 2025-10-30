@@ -22,3 +22,4 @@ checkpoint_log_every: 25 # How often to log a model weight checkpoint file (we o
 plot_log_every: 25 # How often to log a plot of the autoenoder latent space (helpful for debugging the model -- clustering should be visually apparent)
 plot_n_samples: 5000 # The number of samples to plot
 plot_method: raw # Plot the "raw" latent coordinates in 3D, "PCA" of the embeddings, "TSNE" of the embeddings, etc. See https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.visualize.html
+verbose: true

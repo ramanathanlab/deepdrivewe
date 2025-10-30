@@ -2,7 +2,7 @@
 # The inputs and common files are relative to the root of the deepdrivewe repository.
 
 # The output directory for the runs
-output_dir: runs/ntl9-v1
+output_dir: runs/ntl9-10-29-25-stream-v1
 
 # The number of iterations to run the ensemble for
 num_iterations: 106
