@@ -120,6 +120,14 @@ OPENMM_CPU_THREADS=1 nohup python -m deepdrivewe.examples.openmm_ntl9_hk.main --
 Note that we set `OPENMM_CPU_THREADS=1` to restrict each OpenMM simulation to a single thread. This is necessary to prevent
 the simulations from using all available CPU resources. You can also run the simulations on a GPU by adjusting the Parsl configuration.
 
+### Running with streaming
+
+To check resource utilization of the redis server, run the following command:
+```bash
+watch "ps -p \$(pgrep -x redis-server | head -n1) -o pid,comm,%mem,rss,vsz"
+```
+**Note:** If there are multiple redis servers running, this command will choose the first one.
+
 ## Contributing
 
 For development, it is recommended to use a virtual environment. The following

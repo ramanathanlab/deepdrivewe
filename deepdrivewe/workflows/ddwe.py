@@ -364,6 +364,9 @@ class DDWEStreamThinker(BaseThinker):
             # Increment the training iteration
             self.train_iteration += 1
 
+            # Log the training iteration
+            self.logger.info(f'Training iteration: {self.train_iteration}')
+
     def stop_workflow(self) -> None:
         """Stop the workflow."""
         # Set the done flag to signal the agents to stop

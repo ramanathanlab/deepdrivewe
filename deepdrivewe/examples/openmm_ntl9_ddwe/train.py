@@ -139,10 +139,6 @@ def run_stream_train(
                 checkpoint_path=config.checkpoint_path,
             )
 
-        print(
-            f'Getting next batch of simulation data at iteration: {idx}',
-            flush=True,
-        )
         # Get the next batch of simulation data from the stream.
         # Each item is a dictionary with topic keys defined in the simulation
         # module, (e.g. 'contact_maps', 'pcoords', etc.), and values are
@@ -159,20 +155,14 @@ def run_stream_train(
             )
             break
 
-        # Extract the contact maps and rmsd from each simulation
         print(
             f'Got {len(items)} items from stream consumer at iteration: {idx}',
             flush=True,
         )
+
+        # Extract the contact maps and rmsd from each simulation
         cmaps = np.array([x['contact_maps'] for x in items], dtype=object)
-
-        print(f'Contact maps: {cmaps.shape}', flush=True)
-        print(f'Contact maps[0]: {cmaps[0]}', flush=True)
-
         pcoords = np.array([x['pcoords'] for x in items]).flatten()
-
-        print(f'Pcoords: {pcoords.shape}', flush=True)
-        print(f'Pcoords[0]: {pcoords[0]}', flush=True)
 
         # Make a new model directory for this iteration
         model_dir = output_dir / f'model_{idx:06d}'
@@ -184,8 +174,8 @@ def run_stream_train(
             model_dir=model_dir,
             scalars={'pcoord': pcoords},
         )
-        print(f'Finished fitting model at iteration: {idx}', flush=True)
-        print(f'Checkpoint path: {checkpoint_path}', flush=True)
+        print(f'Finished fitting model at iteration: {idx}')
+        print(f'Checkpoint path: {checkpoint_path}')
 
         # Construct the train result
         result = TrainResult(
