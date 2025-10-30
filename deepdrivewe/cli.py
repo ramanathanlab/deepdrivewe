@@ -46,9 +46,9 @@ def print_errors(
             # Parse the line as JSON
             data = json.loads(line)
             # Get the failure info
-            failure_info = data.get('failure_info', {})
+            failure_info = data.get('failure_info', None)
             # Print the method and traceback if it exists
-            if 'traceback' in failure_info:
+            if failure_info is not None and 'traceback' in failure_info:
                 console.print(
                     f'[bold blue]Method:[/bold blue] {data["method"]}',
                 )
