@@ -26,10 +26,10 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.amber_delta_solv_vista.inference import InferenceConfig
-from deepdrivewe.examples.amber_delta_solv_vista.inference import run_inference
-from deepdrivewe.examples.amber_delta_solv_vista.simulate import run_simulation
-from deepdrivewe.examples.amber_delta_solv_vista.simulate import SimulationConfig
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import InferenceConfig
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import run_inference
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import run_simulation
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import SimulationConfig
 from deepdrivewe.parsl import ComputeConfigTypes
 from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
