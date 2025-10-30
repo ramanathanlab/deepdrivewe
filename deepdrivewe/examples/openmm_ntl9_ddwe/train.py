@@ -167,20 +167,18 @@ def run_stream_train(
             flush=True,
         )
         cmaps = np.array([x['contact_maps'] for x in items], dtype=object)
-        contact_maps = np.array(cmaps, dtype=object)
 
-        print(f'Contact maps: {contact_maps.shape}', flush=True)
-        print(f'Contact maps[0]: {contact_maps[0]}', flush=True)
+        print(f'Contact maps: {cmaps.shape}', flush=True)
+        print(f'Contact maps[0]: {cmaps[0]}', flush=True)
 
-        pcoords = np.concatenate([x['pcoords'] for x in items])
-        pcoords = pcoords.flatten()
+        pcoords = np.array([x['pcoords'] for x in items]).reshape(-1, 1)
 
         print(f'Pcoords: {pcoords.shape}', flush=True)
         print(f'Pcoords[0]: {pcoords[0]}', flush=True)
 
         # TODO: It might be necessary to put these into a numpy array
         # Concatenate the new data with the history
-        contact_map_history.extend(contact_maps)
+        contact_map_history.extend(cmaps)
         pcoord_history.extend(pcoords)
 
         # Make a new model directory for this iteration
