@@ -122,8 +122,6 @@ def run_stream_train(
     stream_producer = stream_config.get_producer(topic=TRAIN_TOPIC)
 
     # TODO: Decide how much data we want to keep in the re-train history.
-    contact_map_history = []
-    pcoord_history = []
 
     # Loop indefinitely until we get a stop iteration from the stream consumer
     for idx in itertools.count():
@@ -176,21 +174,18 @@ def run_stream_train(
         print(f'Pcoords: {pcoords.shape}', flush=True)
         print(f'Pcoords[0]: {pcoords[0]}', flush=True)
 
-        # TODO: It might be necessary to put these into a numpy array
-        # Concatenate the new data with the history
-        contact_map_history.extend(cmaps)
-        pcoord_history.extend(pcoords)
-
         # Make a new model directory for this iteration
         model_dir = output_dir / f'model_{idx:06d}'
 
         # Fit the model
         print(f'Fitting model at iteration: {idx}', flush=True)
         checkpoint_path = model.fit(
-            x=contact_map_history,
+            x=cmaps,
             model_dir=model_dir,
-            scalars={'pcoord': pcoord_history},
+            scalars={'pcoord': pcoords},
         )
+        print(f'Finished fitting model at iteration: {idx}', flush=True)
+        print(f'Checkpoint path: {checkpoint_path}', flush=True)
 
         # Construct the train result
         result = TrainResult(
