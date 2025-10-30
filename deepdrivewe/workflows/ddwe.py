@@ -377,7 +377,7 @@ class DDWEStreamThinker(BaseThinker):
 
         # Check if the task failed
         if not result.success:
-            self.logger.warning('Inference failed, quitting workflow.')
+            self.logger.error('Inference failed, quitting workflow.')
             self.stop_workflow()
             return
 
