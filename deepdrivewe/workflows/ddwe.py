@@ -349,7 +349,6 @@ class DDWEStreamThinker(BaseThinker):
             # Clean up the previous training output from the store
             if self.train_output is not None:
                 self.logger.info('Evicting previous training output')
-                # TODO: Does this raise an error since evict=True in run_train?
                 # Get the proxy key for the current training output
                 key = get_key(self.train_output)
                 # Evict the key from the store to clean up memory
