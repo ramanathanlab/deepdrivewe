@@ -198,7 +198,7 @@ def run_stream_train(
             f'Sending new model weights to thinker at iteration: {idx}',
             flush=True,
         )
-        stream_producer.send(topic=TRAIN_TOPIC, obj=result)
+        stream_producer.send(topic=TRAIN_TOPIC, obj=result, evict=False)
 
     # NOTE: This final return is not necessary, but it is included
     #       to keep the function signature consistent with the non-streaming.

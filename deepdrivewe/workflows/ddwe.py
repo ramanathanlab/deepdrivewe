@@ -324,6 +324,7 @@ class DDWEStreamThinker(BaseThinker):
                     time.sleep(10)
 
             # We need to wait for the next streaming train task to finish
+            # to get a fresh model
             elif not self.use_stale_model:
                 self.logger.info(
                     'Waiting for next streaming train task to finish',
@@ -333,7 +334,7 @@ class DDWEStreamThinker(BaseThinker):
                 # This should hold (see train_stream_processor)
                 assert self.train_output is not None
 
-            # If it's okay to use the stale model, submit the inference task
+            # Submit the inference task using either a stale or fresh model
             self.submit_task('inference', self.sim_output, self.train_output)
 
     @agent()
@@ -347,11 +348,15 @@ class DDWEStreamThinker(BaseThinker):
 
             # Clean up the previous training output from the store
             if self.train_output is not None:
-                self.logger.info('Cleaning up previous training output')
+                self.logger.info('Evicting previous training output')
+                # TODO: Does this raise an error since evict=True in run_train?
                 # Get the proxy key for the current training output
                 key = get_key(self.train_output)
                 # Evict the key from the store to clean up memory
                 self.stream_config.get_store().evict(key)
+                self.logger.info(
+                    f'Evicted previous training output with key: {key}',
+                )
 
             # Store the training output
             self.train_output = result
