@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
 import warnings
+
+import numpy as np
 
 from deepdrivewe.binners.base import Binner
 
@@ -65,10 +66,17 @@ class RectilinearBinner(Binner):
         """
         # Bin the progress coordinates (make sure the target state
         # boundary is included in the target state bin).
-        bin_id = np.digitize(pcoords[:, self.pcoord_idx], self.bins) -1
+        bin_ids = np.digitize(pcoords[:, self.pcoord_idx], self.bins) - 1
 
-        if not np.all(bin_id > 0) or not np.all(bin_id < len(self.bins)):
-            warnings.warn("Simulations with progress coordinates outside the bin boundaries definitions are placed into the nearest terminal bins. Consider modifying your bin boundaries by adding 'np.inf' or '-np.inf' on either end of your bin definitions.")
+        # Check that the bin indices are within the valid range
+        if not np.all(bin_ids > 0) or not np.all(bin_ids < len(self.bins)):
+            warnings.warn(
+                'Simulations with progress coordinates outside the bin '
+                'boundaries definitions are placed into the nearest terminal '
+                'bins. Consider modifying your bin boundaries by adding '
+                "'np.inf' or '-np.inf' on either end of your bin definitions.",
+                stacklevel=2,
+            )
 
         # This ensures our bin index is >=0 and < len(self.bins)
-        return np.clip(bin_id, 0, len(self.bins)-1)
+        return np.clip(bin_ids, 0, len(self.bins) - 1)
