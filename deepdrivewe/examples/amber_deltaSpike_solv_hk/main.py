@@ -11,9 +11,9 @@ import sys
 from argparse import ArgumentParser
 from functools import partial
 from functools import update_wrapper
-import numpy as np
 from pathlib import Path
 
+import numpy as np
 from colmena.queue.python import PipeQueues
 from colmena.task_server import ParslTaskServer
 from proxystore.connectors.file import FileConnector
@@ -26,12 +26,19 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import InferenceConfig
-from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import run_inference
-from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import run_simulation
-from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import SimulationConfig
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import (
+    InferenceConfig,
+)
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.inference import (
+    run_inference,
+)
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import (
+    run_simulation,
+)
+from deepdrivewe.examples.amber_deltaSpike_solv_hk.simulate import (
+    SimulationConfig,
+)
 from deepdrivewe.parsl import ComputeConfigTypes
-from deepdrivewe.simulation.amber import run_cpptraj
 from deepdrivewe.workflows.westpa import WESTPAThinker
 
 
@@ -48,15 +55,15 @@ class CustomBasisStateInitializer(BaseModel):
     def __call__(self, basis_file: str) -> list[float]:
         """Initialize the basis state parent coordinates."""
         # Create the cpptraj command file
-        #command = (
+        # command = (
         #    f'parm {self.top_file}\n'
         #    f'trajin {basis_file}\n'
         #    f'reference {self.reference_file} [reference]\n'
         #    'rms @CA reference out {output_file}\n'
         #    'go'
-        #)
+        # )
 
-        return np.loadtxt(self.reference_file, usecols=(1,2), skiprows=1)
+        return np.loadtxt(self.reference_file, usecols=(1, 2), skiprows=1)
 
 
 class ExperimentSettings(BaseModel):
@@ -181,7 +188,10 @@ if __name__ == '__main__':
 
     # Create the task server
     doer = ParslTaskServer(
-        [my_run_simulation, my_run_inference],
+        [
+            (my_run_simulation, {'executors': ['simulation_htex']}),
+            (my_run_inference, {'executors': ['inference_htex']}),
+        ],
         queues,
         parsl_config,
     )
