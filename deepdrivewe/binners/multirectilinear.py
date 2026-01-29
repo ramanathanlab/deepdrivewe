@@ -81,6 +81,9 @@ class MultiRectilinearBinner(Binner):
         # to nearest defined bin
         nbins_per_dim = [len(edges) - 1 for edges in bin_edges]
 
+        # If binning a 1D coordinate, a 1D array will be returned.
+        bid = np.atleast_2d(bid)
+
         for idx, ibid in enumerate(bid):
             if not np.all(ibid > 0) or not np.all(ibid < len(self.bins[idx])):
                 warnings.warn(
