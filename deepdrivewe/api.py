@@ -428,7 +428,7 @@ class WeightedEnsemble(BaseModel):
         description='The target states for the weighted ensemble.',
     )
     metadata: IterationMetadata = Field(
-        default=IterationMetadata,
+        default_factory=IterationMetadata,
         description='The metadata for the current iteration.',
     )
     cur_sims: list[SimMetadata] = Field(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from typing import Sequence
 
 from pydantic import Field
 
@@ -26,6 +27,14 @@ class SimulationPoolConfig(BaseModel):
         Directory to store simulation outputs.
     simulation_config : OpenMMConfig
         Configuration for OpenMM simulations.
+    reference_file : Path
+        Reference PDB file for RMSD calculation.
+    cutoff_angstrom : float
+        Cutoff distance for contact map calculation.
+    mda_selection : str
+        MDAnalysis selection string for atoms.
+    openmm_selection : Sequence[str]
+        OpenMM selection strings for atoms.
     """
 
     num_workers: int = Field(
@@ -48,6 +57,21 @@ class SimulationPoolConfig(BaseModel):
     )
     simulation_config: OpenMMConfig = Field(
         description='Configuration for OpenMM simulations.',
+    )
+    reference_file: Path = Field(
+        description='Reference PDB file for RMSD calculation.',
+    )
+    cutoff_angstrom: float = Field(
+        default=8.0,
+        description='Cutoff distance for contact map calculation.',
+    )
+    mda_selection: str = Field(
+        default='protein and name CA',
+        description='MDAnalysis selection string for atoms.',
+    )
+    openmm_selection: Sequence[str] = Field(
+        default=('CA',),
+        description='OpenMM selection strings for atoms.',
     )
 
 

@@ -1,0 +1,64 @@
+# Minimal configuration for testing Academy agents with NTL9 folding example
+# This is a minimal test configuration with reduced computational requirements
+
+# The output directory for the runs
+output_dir: runs/ntl9-academy-test
+
+# The number of iterations to run the ensemble for (minimal for testing)
+num_iterations: 3
+
+# Maximum number of retries for failed simulations
+max_retries: 2
+
+# The basis states to use for the ensemble
+basis_states:
+  # The directory containing the basis states sub directories
+  basis_state_dir: examples/openmm_ntl9_hk/inputs
+  # The file extension for the basis state files
+  basis_state_ext: .pdb
+  # The number of basis states to use (minimal for testing)
+  initial_ensemble_members: 2
+
+# Strategy for initializing the basis state progress coordinates
+basis_state_initializer:
+  # The path to the reference PDB file
+  reference_file: examples/openmm_ntl9_hk/common_files/reference.pdb
+
+# The configuration for the simulation
+simulation_config:
+  # The OpenMM configuration
+  openmm_config:
+    # Very short simulation for testing (1 ps)
+    simulation_length_ns: 0.001
+    # How often to report frames in picoseconds
+    report_interval_ps: 0.5
+    # The time step to use in picoseconds
+    dt_ps: 0.002
+    # The temperature to run the simulation at
+    temperature: 300.0
+    # The solvent type
+    solvent_type: implicit
+    # The hardware platform to run the simulation on (CPU for testing)
+    hardware_platform: CPU
+
+  # The path to the reference PDB file
+  reference_file: examples/openmm_ntl9_hk/common_files/reference.pdb
+
+# The configuration for the inference
+inference_config:
+  # The number of simulations to maintain per bin (minimal for testing)
+  sims_per_bin: 2
+
+# The target threshold for the progress coordinate
+# to be considered in the target state.
+target_states:
+    - label: folded
+      pcoord: [1.0]
+
+# Academy agents configuration
+academy_config:
+  # Number of simulation workers
+  num_workers: 2
+  # Exchange factory type (local for testing)
+  exchange_type: local
+

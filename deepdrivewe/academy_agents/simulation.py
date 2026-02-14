@@ -100,21 +100,34 @@ class SimulationAgent(AcademyAgent):
                 checkpoint_file=sim_metadata.parent_restart_file,
             )
 
+            # Create RMSD reporter for progress coordinate calculation
+            from deepdrivewe.simulation.openmm import ContactMapRMSDReporter
+
+            reporter = ContactMapRMSDReporter(
+                report_interval=self.config.simulation_config.report_steps,
+                reference_file=self.config.reference_file,
+                cutoff_angstrom=self.config.cutoff_angstrom,
+                mda_selection=self.config.mda_selection,
+                openmm_selection=self.config.openmm_selection,
+            )
+
             # Run the simulation (blocking operation)
             # We run this in a thread pool to avoid blocking the event loop
-            await asyncio.to_thread(simulation.run)
+            await asyncio.to_thread(simulation.run, reporters=[reporter])
+
+            # Extract progress coordinate (RMSD values)
+            pcoord = reporter.get_rmsds()
 
             # Get trajectory data
-            # For now, we'll just return the restart file path
-            # In a full implementation, this would extract coordinates, etc.
             trajectory_data = {
                 'restart_file': str(simulation.restart_file),
                 'trajectory_file': str(simulation.trajectory_file),
                 'log_file': str(simulation.log_file),
             }
 
-            # Update metadata
+            # Update metadata with progress coordinate
             sim_metadata.restart_file = simulation.restart_file
+            sim_metadata.pcoord = pcoord.tolist()
             sim_metadata.mark_simulation_end()
 
             self.logger.info(

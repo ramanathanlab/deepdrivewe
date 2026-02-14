@@ -19,10 +19,10 @@ import MDAnalysis
 import numpy as np
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis import rms
-from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
+from deepdrivewe import BaseModel
 from deepdrivewe.workflows.utils import retry_on_exception
 
 try:
