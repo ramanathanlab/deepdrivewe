@@ -29,6 +29,10 @@ Example
 
 from __future__ import annotations
 
+from deepdrivewe.academy_agents.analysis import AnalysisPoolAgent
+from deepdrivewe.academy_agents.analysis import AnalyzerPlugin
+from deepdrivewe.academy_agents.analysis import CVAEAnalyzer
+from deepdrivewe.academy_agents.analysis import LOFAnalyzer
 from deepdrivewe.academy_agents.base import AcademyAgent
 from deepdrivewe.academy_agents.config import AcademyWorkflowConfig
 from deepdrivewe.academy_agents.config import AnalysisPoolConfig
@@ -41,8 +45,12 @@ from deepdrivewe.academy_agents.simulation import SimulationPoolAgent
 __all__ = [
     'AcademyAgent',
     'AcademyWorkflowConfig',
+    'AnalysisPoolAgent',
     'AnalysisPoolConfig',
+    'AnalyzerPlugin',
+    'CVAEAnalyzer',
     'EnsembleManagerAgent',
+    'LOFAnalyzer',
     'OrchestratorAgent',
     'SimulationAgent',
     'SimulationPoolAgent',

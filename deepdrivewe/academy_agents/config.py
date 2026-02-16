@@ -58,8 +58,9 @@ class SimulationPoolConfig(BaseModel):
     simulation_config: OpenMMConfig = Field(
         description='Configuration for OpenMM simulations.',
     )
-    reference_file: Path = Field(
-        description='Reference PDB file for RMSD calculation.',
+    reference_file: Path | None = Field(
+        default=None,
+        description='Reference PDB file for RMSD calculation (optional).',
     )
     cutoff_angstrom: float = Field(
         default=8.0,

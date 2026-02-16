@@ -100,23 +100,30 @@ class SimulationAgent(AcademyAgent):
                 checkpoint_file=sim_metadata.parent_restart_file,
             )
 
-            # Create RMSD reporter for progress coordinate calculation
-            from deepdrivewe.simulation.openmm import ContactMapRMSDReporter
+            # Create RMSD reporter for progress coordinate calculation if reference file is provided
+            reporters = []
+            if self.config.reference_file is not None:
+                from deepdrivewe.simulation.openmm import ContactMapRMSDReporter
 
-            reporter = ContactMapRMSDReporter(
-                report_interval=self.config.simulation_config.report_steps,
-                reference_file=self.config.reference_file,
-                cutoff_angstrom=self.config.cutoff_angstrom,
-                mda_selection=self.config.mda_selection,
-                openmm_selection=self.config.openmm_selection,
-            )
+                reporter = ContactMapRMSDReporter(
+                    report_interval=self.config.simulation_config.report_steps,
+                    reference_file=self.config.reference_file,
+                    cutoff_angstrom=self.config.cutoff_angstrom,
+                    mda_selection=self.config.mda_selection,
+                    openmm_selection=self.config.openmm_selection,
+                )
+                reporters.append(reporter)
 
             # Run the simulation (blocking operation)
             # We run this in a thread pool to avoid blocking the event loop
-            await asyncio.to_thread(simulation.run, reporters=[reporter])
+            await asyncio.to_thread(simulation.run, reporters=reporters)
 
-            # Extract progress coordinate (RMSD values)
-            pcoord = reporter.get_rmsds()
+            # Extract progress coordinate (RMSD values) if reporter was used
+            if reporters:
+                pcoord = reporters[0].get_rmsds()
+            else:
+                # No progress coordinate computed
+                pcoord = []
 
             # Get trajectory data
             trajectory_data = {

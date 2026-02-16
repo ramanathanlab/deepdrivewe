@@ -62,3 +62,20 @@ academy_config:
   # Exchange factory type (local for testing)
   exchange_type: local
 
+# Analysis pool configuration (Phase 3)
+analysis_config:
+  # Enable analysis plugins
+  enabled_analyzers:
+    - cvae
+    - lof
+  # Configuration for each analyzer
+  analyzer_configs:
+    cvae:
+      cvae_config:
+        latent_dim: 3
+        epochs: 5  # Minimal for testing
+        device: cpu
+    lof:
+      n_neighbors: 5  # Small for minimal ensemble
+      metric: euclidean
+

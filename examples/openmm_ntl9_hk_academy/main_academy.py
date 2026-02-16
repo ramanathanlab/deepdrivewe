@@ -22,7 +22,9 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
+from deepdrivewe.academy_agents.analysis import AnalysisPoolAgent
 from deepdrivewe.academy_agents.config import AcademyWorkflowConfig
+from deepdrivewe.academy_agents.config import AnalysisPoolConfig
 from deepdrivewe.academy_agents.config import SimulationPoolConfig
 from deepdrivewe.academy_agents.ensemble import EnsembleManagerAgent
 from deepdrivewe.academy_agents.orchestrator import OrchestratorAgent
@@ -49,6 +51,10 @@ class ExperimentSettings(BaseModel):
     target_states: list[TargetState]
     academy_config: dict = Field(
         default_factory=lambda: {'num_workers': 2, 'exchange_type': 'local'},
+    )
+    analysis_config: dict | None = Field(
+        default=None,
+        description='Optional analysis configuration for Phase 3',
     )
 
 
@@ -155,10 +161,28 @@ async def run_academy_workflow(cfg: ExperimentSettings) -> None:
         )
         logging.info('Launched EnsembleManagerAgent')
 
+        # Launch analysis pool agent if analysis is enabled
+        analysis_agent = None
+        if cfg.analysis_config is not None:
+            analysis_pool_config = AnalysisPoolConfig(
+                output_dir=cfg.output_dir / 'analysis',
+                enabled_analyzers=cfg.analysis_config.get('enabled_analyzers', []),
+                analyzer_configs=cfg.analysis_config.get('analyzer_configs', {}),
+            )
+            analysis_agent = await manager.launch(
+                AnalysisPoolAgent,
+                args=(
+                    analysis_pool_config.output_dir,
+                    analysis_pool_config.enabled_analyzers,
+                    analysis_pool_config.analyzer_configs,
+                ),
+            )
+            logging.info(f'Launched AnalysisPoolAgent with analyzers: {analysis_pool_config.enabled_analyzers}')
+
         # Launch orchestrator agent (pass handles, not agents)
         orchestrator = await manager.launch(
             OrchestratorAgent,
-            args=(workflow_config, pool_agent, ensemble_agent, checkpointer),
+            args=(workflow_config, pool_agent, ensemble_agent, checkpointer, analysis_agent),
         )
         logging.info('Launched OrchestratorAgent')
 
@@ -195,6 +219,8 @@ async def run_academy_workflow(cfg: ExperimentSettings) -> None:
         logging.info('Shutting down agents...')
         await manager.shutdown(orchestrator, blocking=True)
         await manager.shutdown(ensemble_agent, blocking=True)
+        if analysis_agent is not None:
+            await manager.shutdown(analysis_agent, blocking=True)
         await manager.shutdown(pool_agent, blocking=True)
         for worker in workers:
             await manager.shutdown(worker, blocking=True)

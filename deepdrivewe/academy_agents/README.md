@@ -99,11 +99,11 @@ async with await Manager.from_exchange_factory(
 - [x] Integration with OpenMMSimulation
 - [x] Dynamic worker scaling interface (placeholder)
 
-### Phase 3: Analysis Agents (Planned)
-- [ ] AnalysisPoolAgent interface
-- [ ] CVAE analyzer plugin
-- [ ] ANCA analyzer plugin
-- [ ] LOF analyzer plugin
+### Phase 3: Analysis Agents ✅
+- [x] AnalysisPoolAgent interface
+- [x] CVAE analyzer plugin
+- [x] LOF analyzer plugin
+- [-] ANCA analyzer plugin (not found in codebase, skipped)
 
 ### Phase 4: Goal-Oriented Rewards (Planned)
 - [ ] Reward model framework

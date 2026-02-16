@@ -9,6 +9,7 @@ from academy.agent import action
 from academy.agent import loop
 from academy.handle import Handle
 
+from deepdrivewe.academy_agents.analysis import AnalysisPoolAgent
 from deepdrivewe.academy_agents.base import AcademyAgent
 from deepdrivewe.academy_agents.config import AcademyWorkflowConfig
 from deepdrivewe.academy_agents.ensemble import EnsembleManagerAgent
@@ -20,8 +21,8 @@ class OrchestratorAgent(AcademyAgent):
     """Agent that orchestrates the weighted ensemble workflow.
 
     This agent coordinates the overall workflow by managing interactions
-    between the simulation pool and ensemble manager. It advances iterations,
-    monitors progress, and handles checkpointing.
+    between the simulation pool, analysis pool, and ensemble manager.
+    It advances iterations, monitors progress, and handles checkpointing.
 
     Attributes
     ----------
@@ -31,6 +32,8 @@ class OrchestratorAgent(AcademyAgent):
         Handle to the simulation pool agent.
     ensemble_manager : Handle[EnsembleManagerAgent]
         Handle to the ensemble manager agent.
+    analysis_pool : Handle[AnalysisPoolAgent] | None
+        Handle to the analysis pool agent (optional).
     checkpointer : EnsembleCheckpointer
         Checkpointer for saving ensemble state.
     """
@@ -41,6 +44,7 @@ class OrchestratorAgent(AcademyAgent):
         simulation_pool: Handle[SimulationPoolAgent],
         ensemble_manager: Handle[EnsembleManagerAgent],
         checkpointer: EnsembleCheckpointer,
+        analysis_pool: Handle[AnalysisPoolAgent] | None = None,
     ) -> None:
         """Initialize the orchestrator agent.
 
@@ -54,11 +58,14 @@ class OrchestratorAgent(AcademyAgent):
             Handle to the ensemble manager agent.
         checkpointer : EnsembleCheckpointer
             Checkpointer for saving ensemble state.
+        analysis_pool : Handle[AnalysisPoolAgent] | None
+            Handle to the analysis pool agent (optional).
         """
         super().__init__()
         self.config = config
         self.simulation_pool = simulation_pool
         self.ensemble_manager = ensemble_manager
+        self.analysis_pool = analysis_pool
         self.checkpointer = checkpointer
         self._workflow_complete = False
         self._current_iteration = 0
@@ -130,12 +137,37 @@ class OrchestratorAgent(AcademyAgent):
             f'{self._current_iteration}',
         )
 
-        # Extract completed simulation metadata
-        cur_sims = [
-            result['metadata']
+        # Extract completed simulation results
+        sim_results = [
+            result
             for result in all_results.values()
             if result.get('success', False)
         ]
+
+        # Run analysis if analysis pool is enabled
+        if self.analysis_pool is not None:
+            self.logger.info('Running analysis on simulation results...')
+            try:
+                analysis_results = await self.analysis_pool.analyze_simulations(
+                    sim_results=sim_results,
+                    iteration_id=self._current_iteration,
+                )
+                self.logger.info(
+                    f'Analysis complete: {list(analysis_results.keys())}',
+                )
+
+                # Add analysis results to simulation metadata
+                for i, sim_result in enumerate(sim_results):
+                    if 'analysis' in sim_result:
+                        # Store analysis results in metadata for checkpointing
+                        sim_result['metadata']['analysis'] = sim_result['analysis']
+
+            except Exception as e:
+                self.logger.error(f'Analysis failed: {e}')
+                # Continue workflow even if analysis fails
+
+        # Extract simulation metadata
+        cur_sims = [result['metadata'] for result in sim_results]
 
         # Apply resampling to get next iteration
         cur_sims_updated, next_sims_new, metadata = (
