@@ -3,52 +3,153 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import shutil
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
+
+import numpy as np
 
 from academy.agent import action
 from academy.agent import loop
 from academy.handle import Handle
 
 from deepdrivewe import SimMetadata
+from deepdrivewe.api import SimResult
 from deepdrivewe.academy_agents.base import AcademyAgent
 from deepdrivewe.academy_agents.config import SimulationPoolConfig
 from deepdrivewe.simulation.openmm import OpenMMSimulation
+
+if TYPE_CHECKING:
+    from deepdrivewe.academy_agents.training import TrainingAgent
+    from deepdrivewe.academy_agents.inference import InferenceAgent
 
 
 class SimulationAgent(AcademyAgent):
     """Agent that executes individual MD simulations.
 
-    This agent runs OpenMM simulations and returns trajectory data.
-    It maintains a queue of simulation tasks and processes them
-    sequentially in its await_task loop.
+    In the decentralized Academy architecture, each SimulationAgent is its
+    own actor. It receives ``SimMetadata`` via the ``simulate`` action,
+    runs the OpenMM simulation, and streams the ``SimResult`` directly to
+    both the TrainingAgent and the InferenceAgent — no central orchestrator
+    is involved.
+
+    This mirrors the SimulationAgent from the minimal_pattern example
+    (https://github.com/braceal/deepdrivewe-academy), extended with real
+    OpenMM simulation logic.
 
     Attributes
     ----------
     config : SimulationPoolConfig
-        Configuration for simulations.
-    current_task : dict[str, Any] | None
-        Currently executing simulation task.
-    is_busy : bool
-        Whether the agent is currently running a simulation.
+        Configuration for simulations (output dir, OpenMM settings, etc.).
+    train_handle : Handle[TrainingAgent] | None
+        Handle to the TrainingAgent. When set, the SimResult is streamed
+        directly after each simulation completes.
+    inference_handle : Handle[InferenceAgent] | None
+        Handle to the InferenceAgent. When set, the SimResult is sent
+        directly after each simulation completes.
     """
 
-    def __init__(self, config: SimulationPoolConfig) -> None:
+    # Private logger (not serialized)
+    __logger: logging.Logger
+
+    def __init__(
+        self,
+        config: SimulationPoolConfig,
+        train_handle: Handle[TrainingAgent] | None = None,
+        inference_handle: Handle[InferenceAgent] | None = None,
+    ) -> None:
         """Initialize the simulation agent.
 
         Parameters
         ----------
         config : SimulationPoolConfig
             Configuration for simulations.
+        train_handle : Handle[TrainingAgent] | None
+            Handle to the TrainingAgent for streaming simulation results.
+            If None, results are not forwarded (pool-based mode).
+        inference_handle : Handle[InferenceAgent] | None
+            Handle to the InferenceAgent for streaming simulation results.
+            If None, results are not forwarded (pool-based mode).
         """
         super().__init__()
         self.config = config
+        self.train_handle = train_handle
+        self.inference_handle = inference_handle
+
+        # Legacy pool-based state (kept for backwards compatibility)
         self.current_task: dict[str, Any] | None = None
         self.is_busy = False
         self._task_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
         self._shutdown_event = asyncio.Event()
+
+    async def agent_on_startup(self) -> None:
+        """Initialize the agent logger."""
+        self.__logger = logging.getLogger(self.__class__.__name__)  # type: ignore[misc]
+        self.__logger.info('SimulationAgent started')
+
+    @action
+    async def simulate(self, sim_metadata: SimMetadata) -> None:
+        """Run a simulation and send the result to the TrainingAgent and InferenceAgent.
+
+        This is the primary entry point in the decentralized Academy pattern.
+        It is called by the InferenceAgent at the start of each iteration
+        (or by ``main()`` to kick off iteration 1). After the simulation
+        completes, the ``SimResult`` is forwarded simultaneously to both
+        the TrainingAgent (for online model training) and the InferenceAgent
+        (for batch collection and WE resampling).
+
+        This matches the ``simulate`` action in the minimal_pattern example.
+
+        Parameters
+        ----------
+        sim_metadata : SimMetadata
+            Metadata describing the simulation to run (parent restart file,
+            weights, iteration ID, etc.).
+        """
+        self.__logger.info(  # type: ignore[misc]
+            f'Running simulation {sim_metadata.simulation_id} '
+            f'iteration {sim_metadata.iteration_id}',
+        )
+
+        # Execute the simulation and get the raw result dict
+        result_dict = await self.run_simulation(sim_metadata.model_dump())
+
+        # Build the SimResult dataclass from the result
+        updated_metadata = SimMetadata(**result_dict['metadata'])
+
+        # Collect trajectory-derived data arrays
+        contact_maps = result_dict.get('contact_maps', np.array([]))
+        rmsd = result_dict.get('rmsd', np.array([]))
+
+        sim_result = SimResult(
+            data={
+                'contact_maps': np.array(contact_maps),
+                'rmsd': np.array(rmsd),
+            },
+            metadata=updated_metadata,
+        )
+
+        self.__logger.info(  # type: ignore[misc]
+            f'Simulation {sim_metadata.simulation_id} complete, '
+            f'forwarding result to training and inference agents.',
+        )
+
+        # Stream directly to TrainingAgent and InferenceAgent (decentralized pattern)
+        forward_tasks = []
+        if self.train_handle is not None:
+            forward_tasks.append(
+                self.train_handle.receive_simulation_data(sim_result),
+            )
+        if self.inference_handle is not None:
+            forward_tasks.append(
+                self.inference_handle.receive_simulation_data(sim_result),
+            )
+
+        if forward_tasks:
+            await asyncio.gather(*forward_tasks)
 
     @action
     async def run_simulation(
@@ -118,23 +219,28 @@ class SimulationAgent(AcademyAgent):
             # We run this in a thread pool to avoid blocking the event loop
             await asyncio.to_thread(simulation.run, reporters=reporters)
 
-            # Extract progress coordinate (RMSD values) if reporter was used
+            # Extract progress coordinate (RMSD values) and contact maps
+            # from the reporter if one was configured.
             if reporters:
                 pcoord = reporters[0].get_rmsds()
+                contact_maps = reporters[0].get_contact_maps()
             else:
-                # No progress coordinate computed
+                # No progress coordinate / contact maps computed
                 pcoord = []
+                contact_maps = []
 
-            # Get trajectory data
+            # Get trajectory file paths
             trajectory_data = {
                 'restart_file': str(simulation.restart_file),
                 'trajectory_file': str(simulation.trajectory_file),
                 'log_file': str(simulation.log_file),
             }
 
-            # Update metadata with progress coordinate
+            # Update metadata with progress coordinate and contact map auxdata
             sim_metadata.restart_file = simulation.restart_file
-            sim_metadata.pcoord = pcoord.tolist()
+            sim_metadata.pcoord = (
+                pcoord.tolist() if hasattr(pcoord, 'tolist') else list(pcoord)
+            )
             sim_metadata.mark_simulation_end()
 
             self.logger.info(
@@ -145,6 +251,17 @@ class SimulationAgent(AcademyAgent):
             return {
                 'metadata': sim_metadata.model_dump(),
                 'trajectory': trajectory_data,
+                # Data arrays used by the simulate() action to build SimResult
+                'contact_maps': (
+                    contact_maps.tolist()
+                    if hasattr(contact_maps, 'tolist')
+                    else list(contact_maps)
+                ),
+                'rmsd': (
+                    pcoord.tolist()
+                    if hasattr(pcoord, 'tolist')
+                    else list(pcoord)
+                ),
                 'success': True,
             }
 
@@ -155,6 +272,8 @@ class SimulationAgent(AcademyAgent):
             return {
                 'metadata': sim_metadata.model_dump(),
                 'trajectory': {},
+                'contact_maps': [],
+                'rmsd': [],
                 'success': False,
                 'error': str(e),
             }
