@@ -363,3 +363,12 @@ GitHub.sublime-settings
 
 #IRIS dataset
 *.data
+
+# Simulation output directories
+runs/
+
+# Backup files
+*.old
+
+# Claude AI assistant files
+.claude/

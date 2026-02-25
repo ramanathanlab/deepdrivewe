@@ -1,34 +1,38 @@
 """Academy-based NTL9 protein folding workflow using OpenMM and Huber-Kim resampling.
 
-This script implements the decentralized multi-agent architecture described in
-https://github.com/braceal/deepdrivewe-academy/tree/main/examples/minimal_pattern,
-extended with real OpenMM simulations, CVAE training, and weighted ensemble resampling.
+This script implements the Academy agents architecture with the following hierarchy:
 
 Agent Topology
 --------------
 ::
 
-    main()
-      ├── register + launch ──> SimulationAgent × N  (one per trajectory)
-      ├── register + launch ──> TrainingAgent         (GPU node, CVAE training)
-      └── register + launch ──> InferenceAgent        (GPU node, WE resampling)
+    OrchestratorAgent (Workflow Coordinator)
+    ├── SimulationPoolAgent (Task Distribution)
+    │   ├── SimulationAgent (Worker 1)
+    │   ├── SimulationAgent (Worker 2)
+    │   └── SimulationAgent (Worker N)
+    ├── EnsembleManagerAgent (WE State Management)
+    └── AnalysisPoolAgent (Analysis Coordination) [Optional]
+        ├── CVAEAnalyzer (Latent Space Projection)
+        └── LOFAnalyzer (Anomaly Detection)
 
-    SimulationAgent ──SimResult──> TrainingAgent.receive_simulation_data()
-    SimulationAgent ──SimResult──> InferenceAgent.receive_simulation_data()
-    TrainingAgent   ──TrainResult──> InferenceAgent.receive_model_weights()
-    InferenceAgent  ──SimMetadata──> SimulationAgent.simulate()   (next iter)
-    main()          ──await manager.wait((inference_handle,))──>  blocks until done
-
-Circular dependencies (SimulationAgent ↔ InferenceAgent) are resolved by
-using the register → get_handle → launch pattern from the Academy framework:
-mailboxes are created for all agents first, handles are obtained before
-instantiation, and agents are launched last with all handles already in hand.
+Workflow
+--------
+1. Initialization: Load/create weighted ensemble, launch agents
+2. Iteration Loop:
+   - Submit simulations to pool
+   - Execute simulations in parallel
+   - Run analysis on results (CVAE → LOF) [if enabled]
+   - Apply resampling (Huber-Kim)
+   - Update ensemble state
+   - Checkpoint results
+3. Shutdown: Graceful agent termination
 
 Usage
 -----
 ::
 
-    python examples/openmm_ntl9_hk_academy/main_academy.py -c config_minimal.yaml
+    python examples/openmm_ntl9_hk_academy/main_academy.py --config config_minimal.yaml
 
 """
 
@@ -50,14 +54,14 @@ from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.academy_agents.config import InferenceAgentConfig
-from deepdrivewe.academy_agents.config import SimulationPoolConfig
-from deepdrivewe.academy_agents.config import TrainingAgentConfig
-from deepdrivewe.academy_agents.inference import InferenceAgent
-from deepdrivewe.academy_agents.inference import InferenceAgentConfig as _InfCfg
-from deepdrivewe.academy_agents.simulation import SimulationAgent
-from deepdrivewe.academy_agents.training import TrainingAgent
-from deepdrivewe.academy_agents.training import TrainingAgentConfig as _TrnCfg
+from deepdrivewe.academy_agents import AcademyWorkflowConfig
+from deepdrivewe.academy_agents import AnalysisPoolAgent
+from deepdrivewe.academy_agents import AnalysisPoolConfig
+from deepdrivewe.academy_agents import EnsembleManagerAgent
+from deepdrivewe.academy_agents import OrchestratorAgent
+from deepdrivewe.academy_agents import SimulationAgent
+from deepdrivewe.academy_agents import SimulationPoolAgent
+from deepdrivewe.academy_agents import SimulationPoolConfig
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.examples.openmm_ntl9_hk.inference import InferenceConfig
 from deepdrivewe.examples.openmm_ntl9_hk.main import RMSDBasisStateInitializer
@@ -71,44 +75,52 @@ class ExperimentSettings(BaseModel):
 
     output_dir: Path = Field(description='Output directory for results')
     num_iterations: int = Field(description='Number of WE iterations to run')
-    num_simulations: int = Field(
-        default=4,
-        description='Number of parallel SimulationAgents to launch.',
-    )
     max_retries: int = Field(default=3, description='Max retries for failed sims')
     basis_states: BasisStates
     basis_state_initializer: RMSDBasisStateInitializer
     simulation_config: SimulationConfig
     inference_config: InferenceConfig
     target_states: list[TargetState]
-    # Optional override dicts for the new decentralized agents
-    training_agent_config: dict | None = Field(
+    academy_config: AcademyConfig | None = Field(
         default=None,
-        description='Extra TrainingAgentConfig fields (dict). '
-        'None uses defaults.',
+        description='Academy agents configuration',
     )
-    inference_agent_config: dict | None = Field(
+    analysis_config: AnalysisConfig | None = Field(
         default=None,
-        description='Extra InferenceAgentConfig fields (dict). '
-        'None uses defaults.',
+        description='Analysis pool configuration (optional)',
     )
 
 
-async def run_workflow(cfg: ExperimentSettings) -> None:
-    """Run the decentralized Academy workflow.
+class AcademyConfig(BaseModel):
+    """Configuration for Academy agents."""
 
-    This implements the register → get_handle → launch pattern described
-    in the minimal_pattern example, extended with real WE simulation logic.
-    """
-    logging.info('Starting decentralized Academy NTL9 folding workflow')
+    num_workers: int = Field(default=2, description='Number of simulation workers')
+    exchange_type: str = Field(default='local', description='Exchange type (local or redis)')
 
-    # ------------------------------------------------------------------
-    # Setup: output directory, checkpointing, ensemble state
-    # ------------------------------------------------------------------
+
+class AnalysisConfig(BaseModel):
+    """Configuration for analysis pool."""
+
+    enabled_analyzers: list[str] = Field(
+        default_factory=list,
+        description='List of enabled analyzers (cvae, lof)',
+    )
+    analyzer_configs: dict = Field(
+        default_factory=dict,
+        description='Configuration for each analyzer',
+    )
+
+
+async def run_academy_workflow(cfg: ExperimentSettings) -> None:
+    """Run the Academy-based weighted ensemble workflow."""
+    logging.info('Starting Academy-based NTL9 folding workflow')
+
+    # Setup output directory and checkpointing
     cfg.output_dir.mkdir(parents=True, exist_ok=True)
     checkpointer = EnsembleCheckpointer(output_dir=cfg.output_dir)
     checkpoint = checkpointer.latest_checkpoint()
 
+    # Initialize or load ensemble
     if checkpoint is None:
         ensemble = WeightedEnsemble(
             basis_states=cfg.basis_states,
@@ -122,9 +134,7 @@ async def run_workflow(cfg: ExperimentSettings) -> None:
 
     logging.info(f'Initial ensemble size: {len(ensemble.next_sims)}')
 
-    # ------------------------------------------------------------------
-    # WE algorithm components (binner / resampler / recycler)
-    # ------------------------------------------------------------------
+    # Initialize WE components
     binner = RectilinearBinner(
         bins=[0.0, 1.00]
         + [1.10 + 0.1 * i for i in range(35)]
@@ -145,11 +155,11 @@ async def run_workflow(cfg: ExperimentSettings) -> None:
         target_threshold=cfg.target_states[0].pcoord[0],
     )
 
-    # ------------------------------------------------------------------
-    # Per-agent configuration objects
-    # ------------------------------------------------------------------
+    # Configure Academy agents
+    academy_cfg = cfg.academy_config or AcademyConfig()
+
     sim_pool_config = SimulationPoolConfig(
-        num_workers=cfg.num_simulations,
+        num_workers=academy_cfg.num_workers,
         max_retries=cfg.max_retries,
         retry_delay=1.0,
         output_dir=cfg.output_dir / 'simulations',
@@ -160,157 +170,124 @@ async def run_workflow(cfg: ExperimentSettings) -> None:
         openmm_selection=cfg.simulation_config.openmm_selection,
     )
 
-    # Build TrainingAgentConfig (use simple dataclass from training module)
-    raw_train_cfg = cfg.training_agent_config or {}
-    train_agent_cfg = _TrnCfg(
-        output_dir=cfg.output_dir / 'training',
-        **raw_train_cfg,
+    workflow_config = AcademyWorkflowConfig(
+        output_dir=cfg.output_dir,
+        num_iterations=cfg.num_iterations,
+        checkpoint_interval=1,
+        simulation_pool_config=sim_pool_config,
     )
 
-    # Build InferenceAgentConfig (use simple dataclass from inference module)
-    raw_inf_cfg = cfg.inference_agent_config or {}
-    inf_agent_cfg = _InfCfg(
-        output_dir=cfg.output_dir / 'inference',
-        **raw_inf_cfg,
-    )
+    # Create Academy manager with local exchange
+    logging.info('Launching Academy agents...')
 
-    # ------------------------------------------------------------------
-    # Academy manager + decentralized agent launch
-    # ------------------------------------------------------------------
-    logging.info('Launching Academy agents (decentralized topology)...')
+    # We need enough workers for all agents:
+    # - num_workers SimulationAgent workers
+    # - 1 SimulationPoolAgent
+    # - 1 EnsembleManagerAgent
+    # - 1 AnalysisPoolAgent (if enabled)
+    # - 1 OrchestratorAgent
+    # Total: num_workers + 4
+    num_executor_workers = academy_cfg.num_workers + 4
 
     async with await Manager.from_exchange_factory(
-        # Use LocalExchangeFactory for local testing; swap to
-        # HybridExchangeFactory(redis_url=...) for HPC deployments.
         factory=LocalExchangeFactory(),
-        executors=ThreadPoolExecutor(),
+        executors=ThreadPoolExecutor(max_workers=num_executor_workers),
     ) as manager:
+        logging.info('Launched Academy Manager')
 
-        # ------------------------------------------------------------------
-        # Phase 1: Register all agents (creates mailboxes, no instantiation)
-        #
-        # This is required to resolve the circular dependency:
-        #   SimulationAgent ──> InferenceAgent ──> SimulationAgent
-        #
-        # Registering creates each agent's mailbox and returns a registration
-        # object from which a Handle can be obtained — even before the agent
-        # is running. This is the key insight from the minimal_pattern example.
-        # ------------------------------------------------------------------
-        reg_inference = await manager.register_agent(InferenceAgent)
-        reg_training = await manager.register_agent(TrainingAgent)
-        reg_simulations = await asyncio.gather(
-            *[
-                manager.register_agent(SimulationAgent)
-                for _ in range(cfg.num_simulations)
-            ],
+        # Launch simulation worker agents
+        workers = []
+        for i in range(academy_cfg.num_workers):
+            worker = await manager.launch(
+                SimulationAgent,
+                kwargs={'config': sim_pool_config},
+            )
+            workers.append(worker)
+            logging.info(f'Launched SimulationAgent worker {i}')
+
+        # Launch simulation pool agent
+        simulation_pool = await manager.launch(
+            SimulationPoolAgent,
+            kwargs={'config': sim_pool_config, 'workers': workers},
         )
+        logging.info('Launched SimulationPoolAgent')
 
-        logging.info(
-            f'Registered {len(reg_simulations)} SimulationAgent(s), '
-            '1 TrainingAgent, 1 InferenceAgent',
+        # Launch ensemble manager agent
+        ensemble_manager = await manager.launch(
+            EnsembleManagerAgent,
+            kwargs={
+                'ensemble': ensemble,
+                'binner': binner,
+                'resampler': resampler,
+                'recycler': recycler,
+            },
         )
+        logging.info('Launched EnsembleManagerAgent')
 
-        # ------------------------------------------------------------------
-        # Phase 2: Get handles BEFORE launching
-        #
-        # Handles are mailbox references — they can be passed to agent
-        # constructors even before the target agent has been instantiated.
-        # ------------------------------------------------------------------
-        inference_handle = manager.get_handle(reg_inference)
-        training_handle = manager.get_handle(reg_training)
-        simulation_handles = [
-            manager.get_handle(reg) for reg in reg_simulations
-        ]
+        # Launch analysis pool agent (if enabled)
+        analysis_agent = None
+        if cfg.analysis_config is not None:
+            analysis_pool_config = AnalysisPoolConfig(
+                output_dir=cfg.output_dir / 'analysis',
+                enabled_analyzers=cfg.analysis_config.enabled_analyzers,
+                analyzer_configs=cfg.analysis_config.analyzer_configs,
+            )
+            analysis_agent = await manager.launch(
+                AnalysisPoolAgent,
+                kwargs={
+                    'output_dir': analysis_pool_config.output_dir,
+                    'enabled_analyzers': analysis_pool_config.enabled_analyzers,
+                    'analyzer_configs': analysis_pool_config.analyzer_configs,
+                },
+            )
+            logging.info(
+                f'Launched AnalysisPoolAgent with analyzers: '
+                f'{analysis_pool_config.enabled_analyzers}',
+            )
 
-        # ------------------------------------------------------------------
-        # Phase 3: Launch agents with all handles already resolved
-        #
-        # Launch order:
-        #   1. InferenceAgent — owns the iteration loop; loads pretrained
-        #      model on startup; must be ready before simulations start.
-        #   2. TrainingAgent  — loads CVAE model on startup.
-        #   3. SimulationAgents — dispatched in parallel via asyncio.gather.
-        # ------------------------------------------------------------------
-
-        # 1. InferenceAgent
-        inference_handle = await manager.launch(
-            InferenceAgent,
-            registration=reg_inference,
-            args=(
-                cfg.num_simulations,    # num_simulations (batch size)
-                cfg.num_iterations,     # max_iterations
-                simulation_handles,     # list[Handle[SimulationAgent]]
-                inf_agent_cfg,          # InferenceAgentConfig
-                binner,                 # Binner
-                resampler,              # Resampler
-                recycler,               # Recycler
-                ensemble,               # WeightedEnsemble (initial state)
-                checkpointer,           # EnsembleCheckpointer
-            ),
+        # Launch orchestrator agent
+        orchestrator = await manager.launch(
+            OrchestratorAgent,
+            kwargs={
+                'config': workflow_config,
+                'simulation_pool': simulation_pool,
+                'ensemble_manager': ensemble_manager,
+                'checkpointer': checkpointer,
+                'analysis_pool': analysis_agent,
+            },
         )
-        logging.info('Launched InferenceAgent')
+        logging.info('Launched OrchestratorAgent')
 
-        # 2. TrainingAgent
-        training_handle = await manager.launch(
-            TrainingAgent,
-            registration=reg_training,
-            args=(
-                inference_handle,       # Handle[InferenceAgent]
-                train_agent_cfg,        # TrainingAgentConfig
-            ),
-        )
-        logging.info('Launched TrainingAgent')
+        # Start the workflow
+        await orchestrator.start_workflow()
+        logging.info('Workflow started')
 
-        # 3. SimulationAgents (parallel launch)
-        simulation_agents = await asyncio.gather(
-            *[
-                manager.launch(
-                    SimulationAgent,
-                    registration=reg,
-                    args=(
-                        sim_pool_config,    # SimulationPoolConfig
-                        training_handle,    # Handle[TrainingAgent]
-                        inference_handle,   # Handle[InferenceAgent]
-                    ),
-                )
-                for reg in reg_simulations
-            ],
-        )
-        logging.info(f'Launched {len(simulation_agents)} SimulationAgent(s)')
+        # Run iterations
+        for iteration in range(cfg.num_iterations):
+            logging.info(f'Starting iteration {iteration + 1}/{cfg.num_iterations}')
 
-        # ------------------------------------------------------------------
-        # Kick off iteration 1
-        #
-        # The initial SimMetadata objects come from the ensemble's next_sims
-        # (either basis states for a fresh run, or the last checkpoint's
-        # next_sims when resuming). We dispatch them concurrently.
-        # ------------------------------------------------------------------
-        initial_sims = ensemble.next_sims
+            # Advance iteration
+            success = await orchestrator.advance_iteration()
 
-        logging.info(
-            f'Dispatching {len(initial_sims)} simulation(s) '
-            f'to kick off iteration {ensemble.iteration}...',
-        )
-        await asyncio.gather(
-            *[
-                # Round-robin across agents if more sims than agents
-                simulation_agents[idx % len(simulation_agents)].simulate(sim)
-                for idx, sim in enumerate(initial_sims)
-            ],
-        )
+            if not success:
+                logging.info('Workflow complete (no more simulations)')
+                break
 
-        # ------------------------------------------------------------------
-        # Block until the InferenceAgent signals completion
-        #
-        # The InferenceAgent's @loop calls shutdown.set() after
-        # max_iterations. manager.wait() returns when the agent exits,
-        # and the async context manager cascades shutdown to all other agents.
-        # ------------------------------------------------------------------
-        logging.info(
-            'Simulations dispatched. '
-            'Waiting for InferenceAgent to signal completion...',
-        )
-        await manager.wait((inference_handle,))
+            # Get status
+            status = await orchestrator.get_status()
+            logging.info(
+                f'Iteration {iteration + 1} complete. '
+                f'Current iteration: {status["current_iteration"]}, '
+                f'Complete: {status["workflow_complete"]}',
+            )
+
+        # Check completion
+        is_complete = await orchestrator.check_completion()
+        logging.info(f'Workflow complete: {is_complete}')
+
+        # Get final status
+        final_status = await orchestrator.get_status()
+        logging.info(f'Final status: {final_status}')
 
     logging.info('All agents shut down. Workflow complete.')
 
@@ -318,7 +295,7 @@ async def run_workflow(cfg: ExperimentSettings) -> None:
 def main() -> None:
     """Main entry point."""
     parser = ArgumentParser(
-        description='Run NTL9 folding with decentralized Academy agents',
+        description='Run NTL9 folding with Academy agents',
     )
     parser.add_argument(
         '-c',
@@ -343,16 +320,19 @@ def main() -> None:
     )
 
     logging.info('=' * 80)
-    logging.info('Academy NTL9 Folding Workflow (decentralized agent topology)')
+    logging.info('Academy NTL9 Folding Workflow (Academy agents architecture)')
     logging.info('=' * 80)
     logging.info(f'Configuration:    {args.config}')
     logging.info(f'Output directory: {cfg.output_dir}')
     logging.info(f'Iterations:       {cfg.num_iterations}')
-    logging.info(f'Simulations:      {cfg.num_simulations}')
+    academy_cfg = cfg.academy_config or AcademyConfig()
+    logging.info(f'Workers:          {academy_cfg.num_workers}')
+    if cfg.analysis_config:
+        logging.info(f'Analysis:         {cfg.analysis_config.enabled_analyzers}')
     logging.info('=' * 80)
 
     try:
-        asyncio.run(run_workflow(cfg))
+        asyncio.run(run_academy_workflow(cfg))
         logging.info('Workflow completed successfully!')
     except Exception as e:
         logging.error(f'Workflow failed: {e}', exc_info=True)
