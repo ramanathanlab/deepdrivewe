@@ -250,6 +250,7 @@ class VistaConfig(BaseComputeConfig):
         return HighThroughputExecutor(
             label=label,
             available_accelerators=1,  # 1 GH per node
+            address='127.0.0.1', # Hardcoding to replace default localhost to prevent IPv4 validation errors (TO TRY in future: address_by_hostname() for dynamic variable setting and scalability)
             cores_per_worker=72,
             cpu_affinity='alternating',
             prefetch_capacity=0,
