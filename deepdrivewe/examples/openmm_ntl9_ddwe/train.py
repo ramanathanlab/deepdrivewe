@@ -13,6 +13,7 @@ from deepdrivewe import TrainResult
 from deepdrivewe.ai import ConvolutionalVAE
 from deepdrivewe.ai import ConvolutionalVAEConfig
 
+from proxystore.store import get_store
 
 class TrainConfig(BaseModel):
     """Arguments for the training module."""
@@ -33,15 +34,35 @@ class TrainConfig(BaseModel):
 
 
 def run_train(
-    sim_output: list[SimResult],
+    sim_output: list, # List of raw ProxyStore Keys
     config: TrainConfig,
     output_dir: Path,
 ) -> TrainResult:
     """Train the model on the simulation output."""
     # Make the output directory
     itetation = sim_output[0].metadata.iteration_id
-    output_dir = output_dir / f'{itetation:06d}'
+
+    # Manually resolve the keys using the registered 'file-store'
+    store = get_store('file-store')
+    if store is None:
+        raise RuntimeError("ProxyStore 'file-store' is not initialized on the worker.")
+
+    # store.get(key) retrieves the object without the destructive 'evict' behavior
+    resolved_sims = [store.get(key) for key in sim_output]
+    print(f"DEBUG: Successfully resolved {len(resolved_sims)} simulation objects", flush=True)
+
+    # Make the output directory using the first resolved object
+    iteration = resolved_sims[0].metadata.iteration_id
+    output_dir = output_dir / f'{iteration:06d}'
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Extract contact maps and pcoords from the resolved objects
+    contact_maps = np.concatenate(
+        [sim.data['contact_maps'] for sim in resolved_sims],
+        axis=0 # join along the frame/sample axis
+    )
+    pcoords = np.concatenate([sim.data['pcoords'] for sim in resolved_sims])
+    pcoords = pcoords.flatten()
 
     # Load the model configuration
     model_config = ConvolutionalVAEConfig.from_yaml(config.config_path)
@@ -51,13 +72,6 @@ def run_train(
         model_config,
         checkpoint_path=config.checkpoint_path,
     )
-
-    # Extract the last frame contact maps and rmsd from each simulation
-    contact_maps = np.concatenate(
-        [sim.data['contact_maps'] for sim in sim_output],
-    )
-    pcoords = np.concatenate([sim.data['pcoords'] for sim in sim_output])
-    pcoords = pcoords.flatten()
 
     # Fit the model
     checkpoint_path = model.fit(
