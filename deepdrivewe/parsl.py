@@ -24,6 +24,8 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
+from parsl.addresses import address_by_hostname
+
 
 class BaseComputeConfig(BaseModel, ABC):
     """Compute config (HPC platform, number of GPUs, etc)."""
@@ -250,7 +252,7 @@ class VistaConfig(BaseComputeConfig):
         return HighThroughputExecutor(
             label=label,
             available_accelerators=1,  # 1 GH per node
-            address='127.0.0.1', # Hardcoding to replace default localhost to prevent IPv4 validation errors (TO TRY in future: address_by_hostname() for dynamic variable setting and scalability)
+            address=address_by_hostname(), # dynamically set address from default 'localhost' to prevent IPv4 validation errors and ensure scaling
             cores_per_worker=72,
             cpu_affinity='alternating',
             prefetch_capacity=0,
