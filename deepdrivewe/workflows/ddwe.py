@@ -112,8 +112,8 @@ class DDWEThinker(BaseThinker):
         if not result.success:
             self.logger.error(
                 f'Simulation failed after {result.retries}'
-                f'/{result.max_retries} attempts, quitting workflow.',
-                f' result={result}',
+                f'/{result.max_retries} attempts, quitting workflow.' # Hanging commata removed -> previously caused issues if error reported | syntax
+                f' result={result}'
             )
             self.done.set()
             return
@@ -127,8 +127,30 @@ class DDWEThinker(BaseThinker):
         # extract the proxied objects. The non-streaming case will
         # need to extract and re-proxy the objects twice (once for
         # the train task and once for the inference task).
-        output = result.value if self.streaming else extract(result.value)
-        self.sim_output.append(output)
+
+        # This method extracts results from the ProxyStore backend and re-registers
+        # them to prevent automated cache eviction, ensuring data remains available
+        # for both training and inference agents.
+
+        from proxystore.store import get_store
+        from proxystore.proxy import extract
+
+        # Initialise store and safely handle proxied data
+        store = get_store('file-store')
+        raw_data = result.value
+
+        if not self.streaming:
+            # Check if the result is a proxy before extraction to handle hybrid workflows
+            if hasattr(raw_data, '__proxy_wrapped__'):
+                raw_data = extract(raw_data)
+
+            # Re-register data as a persistent key to bypass default 'evict-on-read' behaviour
+            key = store.put(raw_data)
+
+        else:
+            key = raw_data
+
+        self.sim_output.append(key)
 
         # If we have all the simulation results, submit a train task
         if len(self.sim_output) == len(self.ensemble.next_sims):
@@ -160,8 +182,23 @@ class DDWEThinker(BaseThinker):
             self.done.set()
             return
 
-        # Store the training output
-        self.train_output = result.value
+        # This method ensures the trained model checkpoint persists by manually 
+        # registering a non-evicting key in ProxyStore
+
+        from proxystore.store import get_store
+        from proxystore.proxy import extract
+
+        # Initialize store to handle model weight persistence
+        store = get_store('file-store')
+        raw_train_data = result.value
+
+        # SAFE EXTRACTION: Ensure we have a concrete object before re-registration.
+        # This prevents the inference task from encountering an evicted proxy.
+        if hasattr(raw_train_data, '__proxy_wrapped__'):
+            raw_train_data = extract(raw_train_data)
+
+        # Storing hard-copy key for inference
+        self.train_output = store.put(raw_train_data)
 
         # TODO: What should we do in the streaming case?
         #       Does the process_train_result method even run?
@@ -181,6 +218,8 @@ class DDWEThinker(BaseThinker):
             self.logger.warning('Inference failed, quitting workflow.')
             self.done.set()
             return
+
+        # Could add Safe extraction for best practice, but not stricly needed as final life step in proxy circle of life...
 
         # Unpack the output
         cur_sims, next_sims, metadata = result.value

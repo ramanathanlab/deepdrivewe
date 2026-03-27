@@ -20,6 +20,7 @@ from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
 from deepdrivewe.resamplers import LOFLowResampler
 
+from proxystore.store import get_store
 
 class InferenceConfig(BaseModel):
     """Arguments for the inference module."""
@@ -62,7 +63,7 @@ class InferenceConfig(BaseModel):
 
 
 def run_inference(
-    sim_output: list[SimResult],
+    sim_output: list,
     train_output: TrainResult,
     basis_states: BasisStates,
     target_states: list[TargetState],
@@ -70,20 +71,32 @@ def run_inference(
     output_dir: Path,
 ) -> tuple[list[SimMetadata], list[SimMetadata], IterationMetadata]:
     """Run inference on the input data."""
+
+    # Initialise the store and resolve simulation
+    store = get_store('file-store')
+    if store is None:
+        raise RuntimeError("ProxyStore 'file-store' not found on worker.")
+
+    resolved_sims = [store.get(key) for key in sim_output]
+
+    # Resolve train_output if it was passed as a key
+    if not hasattr(train_output, 'checkpoint_path'):
+        train_output = store.get(train_output)
+
     # Make the output directory
-    itetation = sim_output[0].metadata.iteration_id
+    itetation = resolved_sims[0].metadata.iteration_id
     output_dir = output_dir / f'{itetation:06d}'
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Extract the rmsd pcoord from the last frame of each simulation
-    pcoords = [sim.metadata.pcoord[-1][0] for sim in sim_output]
+    pcoords = [sim.metadata.pcoord[-1][0] for sim in resolved_sims]
 
     print(f'Progress coordinates: {pcoords}')
     print(f'Best progress coordinate: {min(pcoords)}')
-    print(f'Num input simulations: {len(sim_output)}')
+    print(f'Num input simulations: {len(resolved_sims)}')
 
     # Extract the simulation metadata
-    cur_sims = [sim.metadata for sim in sim_output]
+    cur_sims = [sim.metadata for sim in resolved_sims]
 
     # Load the model and history
     model, history = warmstart_model(
@@ -92,8 +105,8 @@ def run_inference(
     )
 
     # Extract the last frame contact maps and rmsd from each simulation
-    contact_maps = [sim.data['contact_maps'][-1] for sim in sim_output]
-    pcoords = [sim.data['pcoords'][-1] for sim in sim_output]
+    contact_maps = [sim.data['contact_maps'][-1] for sim in resolved_sims]
+    pcoords = [sim.data['pcoords'][-1] for sim in resolved_sims]
 
     # Convert to int16
     contact_maps = [x.astype(np.int16) for x in contact_maps]
@@ -156,3 +169,4 @@ def run_inference(
     result = resampler.run(cur_sims, binner, recycler)
 
     return result
+
