@@ -1,5 +1,6 @@
 import os
 import pytest
+from itertools import product
 
 import numpy as np
 
@@ -54,28 +55,8 @@ class TestRectilinearBinner:
 
     def test3dAssign(self) -> None: 
         boundaries = [(0, 1, 2), (0, 1, 2, 3, 4, 5), (0, 1, 2)]
-        coords = np.array([(0.5, 0.5, 0.5),
-                           (0.5, 0.5, 1.5),
-                           (0.5, 1.5, 0.5),
-                           (0.5, 1.5, 1.5),
-                           (0.5, 2.5, 0.5),
-                           (0.5, 2.5, 1.5),
-                           (0.5, 3.5, 0.5),
-                           (0.5, 3.5, 1.5),
-                           (0.5, 4.5, 0.5),
-                           (0.5, 4.5, 1.5),
-                           (1.5, 0.5, 0.5),
-                           (1.5, 0.5, 1.5),
-                           (1.5, 1.5, 0.5),
-                           (1.5, 1.5, 1.5),
-                           (1.5, 2.5, 0.5),
-                           (1.5, 2.5, 1.5),
-                           (1.5, 3.5, 0.5),
-                           (1.5, 3.5, 1.5),
-                           (1.5, 4.5, 0.5),
-                           (1.5, 4.5, 1.5),
-                           (2.5, 4.5, 1.5),
-                           (1.5, 5.5, 1.5),])
+        coords = list(product([0.5, 1.5], [0.5, 1.5, 2.5, 3.5, 4.5], [0.5, 1.5]))  # One point per bin, in row-major order
+        coords += [(2.5, 4.5, 1.5), (1.5, 5.5, 1.5)]  # Two points that are located outside the bin boundaries
 
         assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
 
