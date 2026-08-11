@@ -57,7 +57,8 @@ class TestRectilinearBinner:
         boundaries = [(0, 1, 2), (0, 1, 2, 3, 4, 5), (0, 1, 2)]
         coords = list(product([0.5, 1.5], [0.5, 1.5, 2.5, 3.5, 4.5], [0.5, 1.5]))  # One point per bin, in row-major order
         coords += [(2.5, 4.5, 1.5), (1.5, 5.5, 1.5)]  # Two points that are located outside the bin boundaries
-
+        coords = np.asarray(coords)
+        
         assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
 
         with pytest.warns(UserWarning):
