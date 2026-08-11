@@ -314,21 +314,27 @@ class DDWEStreamThinker(BaseThinker):
         # If we have all the simulation results, submit the inference task
         # using the previous iteration's model
         if len(self.sim_output) == len(self.ensemble.next_sims):
-            # We need to wait for the streaming train task to finish
-            if not self.use_stale_model:
+            # We need to wait for the first streaming train task to finish
+            if self.use_stale_model and self.train_output is None:
                 # Wait for the streaming train task to finish
-                self.logger.info('Waiting for streaming train task to finish')
+                self.logger.info(
+                    'Waiting for first streaming train task to finish',
+                )
                 while self.train_output is None:
                     time.sleep(10)
 
-            elif self.use_stale_model:
-                self.logger.info('Waiting for streaming train task to finish')
+            # We need to wait for the next streaming train task to finish
+            # to get a fresh model
+            elif not self.use_stale_model:
+                self.logger.info(
+                    'Waiting for next streaming train task to finish',
+                )
                 while self.train_iteration < self.ensemble.iteration:
                     time.sleep(10)
                 # This should hold (see train_stream_processor)
                 assert self.train_output is not None
 
-            # If it's okay to use the stale model, submit the inference task
+            # Submit the inference task using either a stale or fresh model
             self.submit_task('inference', self.sim_output, self.train_output)
 
     @agent()
