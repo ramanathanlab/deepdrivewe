@@ -348,16 +348,23 @@ class DDWEStreamThinker(BaseThinker):
 
             # Clean up the previous training output from the store
             if self.train_output is not None:
+                self.logger.info('Evicting previous training output')
                 # Get the proxy key for the current training output
                 key = get_key(self.train_output)
                 # Evict the key from the store to clean up memory
                 self.stream_config.get_store().evict(key)
+                self.logger.info(
+                    f'Evicted previous training output with key: {key}',
+                )
 
             # Store the training output
             self.train_output = result
 
             # Increment the training iteration
             self.train_iteration += 1
+
+            # Log the training iteration
+            self.logger.info(f'Training iteration: {self.train_iteration}')
 
     def stop_workflow(self) -> None:
         """Stop the workflow."""
@@ -383,7 +390,7 @@ class DDWEStreamThinker(BaseThinker):
 
         # Check if the task failed
         if not result.success:
-            self.logger.warning('Inference failed, quitting workflow.')
+            self.logger.error('Inference failed, quitting workflow.')
             self.stop_workflow()
             return
 

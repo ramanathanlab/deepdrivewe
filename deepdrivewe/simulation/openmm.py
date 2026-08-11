@@ -423,6 +423,9 @@ class CollectionReporter(OpenMMReporter):
         positions = self.get_positions(simulation, state)
 
         # Collect data from the simulation
+        # NOTE: The individual collectors are responsible for caching
+        # the data they collect, we add it to the data dictionary here
+        # for streaming.
         data = {x.topic: x.collect(positions) for x in self.collectors}
 
         # Stream the data if a stream config is provided

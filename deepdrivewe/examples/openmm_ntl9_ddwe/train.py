@@ -125,9 +125,11 @@ def run_stream_train(
 
     # Loop indefinitely until we get a stop iteration from the stream consumer
     for idx in itertools.count():
+        print(f'Train iteration: {idx}', flush=True)
         # If we have reached the retrain interval, re-initialize the trainer
         # NOTE: This always happens on the first iteration
         if idx % config.stream_retrain_interval == 0:
+            print(f'Retraining model at iteration: {idx}', flush=True)
             # Load the model configuration
             model_config = ConvolutionalVAEConfig.from_yaml(config.config_path)
 
@@ -147,7 +149,16 @@ def run_stream_train(
                 for _ in range(config.stream_items_per_train)
             ]
         except StopIteration:
+            print(
+                f'Reached end of training stream consumer at iteration: {idx}',
+                flush=True,
+            )
             break
+
+        print(
+            f'Got {len(items)} items from stream consumer at iteration: {idx}',
+            flush=True,
+        )
 
         # Extract the contact maps and rmsd from each simulation
         cmaps = np.array([x['contact_maps'] for x in items], dtype=object)
@@ -157,11 +168,14 @@ def run_stream_train(
         model_dir = output_dir / f'model_{idx:06d}'
 
         # Fit the model
+        print(f'Fitting model at iteration: {idx}', flush=True)
         checkpoint_path = model.fit(
             x=cmaps,
             model_dir=model_dir,
             scalars={'pcoord': pcoords},
         )
+        print(f'Finished fitting model at iteration: {idx}')
+        print(f'Checkpoint path: {checkpoint_path}')
 
         # Construct the train result
         result = TrainResult(
@@ -170,7 +184,11 @@ def run_stream_train(
         )
 
         # Send the new model weights to the thinker
-        stream_producer.send(topic=TRAIN_TOPIC, obj=result)
+        print(
+            f'Sending new model weights to thinker at iteration: {idx}',
+            flush=True,
+        )
+        stream_producer.send(topic=TRAIN_TOPIC, obj=result, evict=False)
 
     # NOTE: This final return is not necessary, but it is included
     #       to keep the function signature consistent with the non-streaming.

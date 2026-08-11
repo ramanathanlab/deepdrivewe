@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from parsl.addresses import address_by_hostname
 from proxystore.store import get_store
 from proxystore.store import register_store
 from proxystore.store import Store
@@ -12,6 +13,7 @@ from proxystore.stream import StreamConsumer
 from proxystore.stream import StreamProducer
 from proxystore.stream.shims.redis import RedisQueuePublisher
 from proxystore.stream.shims.redis import RedisQueueSubscriber
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 
@@ -25,6 +27,34 @@ class ProxyStreamConfig(BaseModel):
     store_config: StoreConfig
     redis_host: str = 'localhost'
     redis_port: int = 6379
+
+    @field_validator('redis_host')
+    @classmethod
+    def validate_redis_host(cls, value: str) -> str:
+        """Validate the Redis host."""
+        # Get the hostname if the address is 'hostname'
+        if value == 'hostname':
+            value = address_by_hostname()
+
+        return value
+
+    @field_validator('store_config')
+    @classmethod
+    def validate_store_config(cls, value: StoreConfig) -> StoreConfig:
+        """Validate the store configuration."""
+        if value.connector.kind == 'redis':
+            hostname = value.connector.options.get('hostname')
+            if hostname is None:
+                raise ValueError(
+                    'Hostname is required for Redis connector '
+                    'in store configuration. Use "hostname" to use the '
+                    'hostname of the current machine.',
+                )
+            # If the hostname is 'hostname', look up the hostname and set it
+            if hostname == 'hostname':
+                hostname = address_by_hostname()
+                value.connector.options['hostname'] = hostname
+        return value
 
     def get_store(self) -> Store[Any]:
         """Get the store for the proxy stream.
@@ -80,4 +110,4 @@ class ProxyStreamConfig(BaseModel):
         """
         store = self.get_store()
         publisher = RedisQueuePublisher(self.redis_host, self.redis_port)
-        return StreamProducer(publisher, {topic: store})
+        return StreamProducer(publisher, stores={topic: store})
