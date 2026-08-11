@@ -122,8 +122,6 @@ def run_stream_train(
     stream_producer = stream_config.get_producer(topic=TRAIN_TOPIC)
 
     # TODO: Decide how much data we want to keep in the re-train history.
-    contact_map_history = []
-    pcoord_history = []
 
     # Loop indefinitely until we get a stop iteration from the stream consumer
     for idx in itertools.count():
@@ -152,23 +150,17 @@ def run_stream_train(
             break
 
         # Extract the contact maps and rmsd from each simulation
-        contact_maps = np.concatenate([x['contact_maps'] for x in items])
-        pcoords = np.concatenate([x['pcoords'] for x in items])
-        pcoords = pcoords.flatten()
-
-        # TODO: It might be necessary to put these into a numpy array
-        # Concatenate the new data with the history
-        contact_map_history.extend(contact_maps)
-        pcoord_history.extend(pcoords)
+        cmaps = np.array([x['contact_maps'] for x in items], dtype=object)
+        pcoords = np.array([x['pcoords'] for x in items]).flatten()
 
         # Make a new model directory for this iteration
         model_dir = output_dir / f'model_{idx:06d}'
 
         # Fit the model
         checkpoint_path = model.fit(
-            x=contact_map_history,
+            x=cmaps,
             model_dir=model_dir,
-            scalars={'pcoord': pcoord_history},
+            scalars={'pcoord': pcoords},
         )
 
         # Construct the train result
