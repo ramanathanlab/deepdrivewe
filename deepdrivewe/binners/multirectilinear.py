@@ -101,7 +101,7 @@ class MultiRectilinearBinner(Binner):
         bin_ids = np.zeros(len(pcoords), dtype=int)
         for idx, ibid in enumerate(bid.T):
             for idim in range(len(nbins_per_dim) - 1):
-                bin_ids[idx] += (ibid[idim] - 1) * nbins_per_dim[idim]
+                bin_ids[idx] += (ibid[idim] - 1) * np.prod(nbins_per_dim[idim + 1:])
             bin_ids[idx] += ibid[-1] - 1
 
         # Check that the number of bin indices is the same as the

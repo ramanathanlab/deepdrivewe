@@ -1,5 +1,6 @@
 import os
 import pytest
+from itertools import product
 
 import numpy as np
 
@@ -41,3 +42,27 @@ class TestRectilinearBinner:
 
         with pytest.warns(UserWarning):
             assert (assigner.assign_bins(coords) == [0, 0, 5, 10, 10, 15, 7, 8]).all()
+
+    def test2dAssign_v2(self) -> None:
+        boundaries = [(0, 1, 2, 3), (0, 1, 2)]
+        coords = np.array([(0.5, 0.5), (0.5, 1.5), (1.5, 0.5), (1.5, 1.5), (2.5, 0.5), (2.5, 1.5), (3.5, 1.5)])
+
+        assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
+
+        with pytest.warns(UserWarning):
+            # first 6 points are in bins [0, 5]. The last point locate outside the bounds but will be clipped to bin 5
+            assert (assigner.assign_bins(coords) == [0, 1, 2, 3, 4, 5, 5]).all()
+
+    def test3dAssign(self) -> None: 
+        boundaries = [(0, 1, 2), (0, 1, 2, 3, 4, 5), (0, 1, 2)]
+        coords = list(product([0.5, 1.5], [0.5, 1.5, 2.5, 3.5, 4.5], [0.5, 1.5]))  # One point per bin, in row-major order
+        coords += [(2.5, 4.5, 1.5), (1.5, 5.5, 1.5)]  # Two points that are located outside the bin boundaries
+        coords = np.asarray(coords)
+        
+        assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
+
+        with pytest.warns(UserWarning):
+            # first 20 points are in bins [0, 19]. The last two locate outside the bounds but will be clipped to bin 19
+            assert (assigner.assign_bins(coords) == list(range(20)) + [19, 19]).all()
+
+
