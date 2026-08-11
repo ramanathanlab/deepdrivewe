@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
-from scipy.stats import binned_statistic_2d
+from scipy.stats import binned_statistic_dd
 
 from deepdrivewe.binners.base import Binner
 
@@ -67,18 +69,40 @@ class MultiRectilinearBinner(Binner):
         """
         # Bin the progress coordinates (make sure the target state
         # boundary is included in the target state bin).
-        _, x_edge, _, bid = binned_statistic_2d(
-            *pcoords.T,
+        _, bin_edges, bid = binned_statistic_dd(
+            np.asarray(pcoords),
             values=None,
             statistic='count',
             bins=self.bins,
             expand_binnumbers=True,
         )
 
+        # Clip the bin indices so any index outside of defined bins are moved
+        # to nearest defined bin
+        nbins_per_dim = [len(edges) - 1 for edges in bin_edges]
+
+        # If binning a 1D coordinate, a 1D array will be returned.
+        bid = np.atleast_2d(bid)
+
+        for idx, ibid in enumerate(bid):
+            if not np.all(ibid > 0) or not np.all(ibid < len(self.bins[idx])):
+                warnings.warn(
+                    'Simulations with progress coordinates outside the bin '
+                    f'boundaries definition of dimension {idx} are '
+                    'automatically placed into the nearest terminal bins. '
+                    'Consider modifying your bin boundaries by adding '
+                    "'np.inf' or '-np.inf' on either end of your bin "
+                    'definitions.',
+                    stacklevel=2,
+                )
+                bid[idx] = np.clip(ibid, 1, nbins_per_dim[idx])
+
         # Calculate the bin indices in row-major order
-        bin_ids = np.array(
-            [(ibid[0] - 1) * (len(x_edge) - 1) + ibid[1] for ibid in bid],
-        )
+        bin_ids = np.zeros(len(pcoords), dtype=int)
+        for idx, ibid in enumerate(bid.T):
+            for idim in range(len(nbins_per_dim) - 1):
+                bin_ids[idx] += (ibid[idim] - 1) * np.prod(nbins_per_dim[idim + 1:])
+            bin_ids[idx] += ibid[-1] - 1
 
         # Check that the number of bin indices is the same as the
         # number of simulations
