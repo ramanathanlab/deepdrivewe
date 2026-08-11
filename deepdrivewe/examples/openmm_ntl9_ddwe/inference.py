@@ -15,7 +15,7 @@ from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe import TargetState
 from deepdrivewe import TrainResult
-from deepdrivewe.ai import warmstart_model
+from deepdrivewe.ai import warmstart_cvae
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
 from deepdrivewe.resamplers import LOFLowResampler
@@ -86,7 +86,7 @@ def run_inference(
     cur_sims = [sim.metadata for sim in sim_output]
 
     # Load the model and history
-    model, history = warmstart_model(
+    model, history = warmstart_cvae(
         train_output.config_path,
         train_output.checkpoint_path,
     )
@@ -136,6 +136,7 @@ def run_inference(
     binner = RectilinearBinner(
         bins=[0.0, 1.0, float('inf')],
         bin_target_counts=config.sims_per_bin,
+        target_state_inds=0,  # The first bin is the target (folded) state
     )
 
     # Define the recycling policy

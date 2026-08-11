@@ -1,3 +1,5 @@
+# The inputs files are relative to the root of the deepdrivewe repository.
+
 # The output directory for the run
 output_dir: runs/ntl9-synd-v1
 
@@ -7,7 +9,7 @@ num_iterations: 150
 # The basis states for the simulation
 basis_states:
   # The nested directory containing the basis state files
-  basis_state_dir: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/bstates
+  basis_state_dir: examples/synd_ntl9_lof/bstates
   # The extension for the basis state files
   basis_state_ext: .npy
   # The number of initial ensemble members to use (should be the same as sims_per_bin in this use case)
@@ -25,17 +27,17 @@ target_states:
 # The configuration for the simulation
 simulation_config:
   # The path to the synd model file
-  synd_model_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/ntl9_folding.synd
+  synd_model_file: examples/synd_ntl9_lof/ntl9_folding.synd
   # The number of steps to run the simulation for (this includes the initial step)
   n_steps: 2
   # The reference structure for computing contact maps (getting the CA atom indices)
-  reference_file: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/ntl9_reference.pdb
+  reference_file: examples/synd_ntl9_lof/ntl9_reference.pdb
 
 inference_config:
   # The path to the CVAE model configuration file
-  ai_model_config_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/cvae-config.yaml
+  ai_model_config_path: examples/synd_ntl9_lof/cvae-config.yaml
   # The path to the CVAE model weights file
-  ai_model_checkpoint_path: /nfs/lambda_stor_01/homes/abrace/projects/ddwe/src/deepdrivewe/examples/synd_ntl9_lof/checkpoint-epoch-100.pt
+  ai_model_checkpoint_path: examples/synd_ntl9_lof/checkpoint-epoch-100.pt
 
   # The number of neighbors to use for LOF
   lof_n_neighbors: 20

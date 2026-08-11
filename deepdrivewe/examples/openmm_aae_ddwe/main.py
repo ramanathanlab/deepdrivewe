@@ -1,4 +1,4 @@
-"""WESTPA example.
+"""DDWE example.
 
 Adapted from:
 https://github.com/westpa/westpa2_tutorials/tree/main/tutorial7.7-hamsm
@@ -28,12 +28,14 @@ from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
 from deepdrivewe import validate_and_resolve_file
 from deepdrivewe import WeightedEnsemble
-from deepdrivewe.examples.openmm_ntl9_hk.inference import InferenceConfig
-from deepdrivewe.examples.openmm_ntl9_hk.inference import run_inference
-from deepdrivewe.examples.openmm_ntl9_hk.simulate import run_simulation
-from deepdrivewe.examples.openmm_ntl9_hk.simulate import SimulationConfig
+from deepdrivewe.examples.openmm_aae_ddwe.inference import InferenceConfig
+from deepdrivewe.examples.openmm_aae_ddwe.inference import run_inference
+from deepdrivewe.examples.openmm_aae_ddwe.simulate import run_simulation
+from deepdrivewe.examples.openmm_aae_ddwe.simulate import SimulationConfig
+from deepdrivewe.examples.openmm_aae_ddwe.train import run_train
+from deepdrivewe.examples.openmm_aae_ddwe.train import TrainConfig
 from deepdrivewe.parsl import ComputeConfigTypes
-from deepdrivewe.workflows.westpa import WESTPAThinker
+from deepdrivewe.workflows.ddwe import DDWEThinker
 
 
 class RMSDBasisStateInitializer(BaseModel):
@@ -70,7 +72,9 @@ class RMSDBasisStateInitializer(BaseModel):
         # Compute the RMSD between the basis and reference structures
         rmsd: float = rms.rmsd(pos, ref_pos, superposition=True)
 
-        return [rmsd]
+        # Return the RMSD and the zeroed progress coordinate place holder
+        # for the LOF dimension
+        return [rmsd, 0.0]
 
 
 class ExperimentSettings(BaseModel):
@@ -96,11 +100,21 @@ class ExperimentSettings(BaseModel):
     simulation_config: SimulationConfig = Field(
         description='Arguments for the simulation.',
     )
+    train_config: TrainConfig = Field(
+        description='Arguments for the training.',
+    )
     inference_config: InferenceConfig = Field(
         description='Arguments for the inference.',
     )
     compute_config: ComputeConfigTypes = Field(
         description='Config for the compute resources.',
+    )
+    use_stale_model: bool = Field(
+        default=False,
+        description='Whether to use the stale model for inference. This will '
+        'be faster but may not be as accurate. It uses the model from the '
+        'previous iteration for inference in the current iteration, which may '
+        'not be updated with new states.',
     )
     max_retries: int = Field(
         default=2,
@@ -143,7 +157,7 @@ if __name__ == '__main__':
     # Make the queues
     queues = PipeQueues(
         serialization_method='pickle',
-        topics=['simulation', 'inference'],
+        topics=['simulation', 'train', 'inference'],
         proxystore_name='file-store',
         proxystore_threshold=10000,
     )
@@ -184,29 +198,41 @@ if __name__ == '__main__':
         config=cfg.simulation_config,
         output_dir=cfg.output_dir / 'simulation',
     )
+    my_run_train = partial(
+        run_train,
+        config=cfg.train_config,
+        output_dir=cfg.output_dir / 'train',
+    )
     my_run_inference = partial(
         run_inference,
         basis_states=ensemble.basis_states,
         target_states=ensemble.target_states,
         config=cfg.inference_config,
+        output_dir=cfg.output_dir / 'inference',
     )
     update_wrapper(my_run_simulation, run_simulation)
+    update_wrapper(my_run_train, run_train)
     update_wrapper(my_run_inference, run_inference)
 
     # Create the task server
     doer = ParslTaskServer(
-        [my_run_simulation, my_run_inference],
+        [
+            (my_run_simulation, {'executors': ['simulation_htex']}),
+            (my_run_train, {'executors': ['train_htex']}),
+            (my_run_inference, {'executors': ['inference_htex']}),
+        ],
         queues,
         parsl_config,
     )
 
     # Create the workflow thinker
-    thinker = WESTPAThinker(
+    thinker = DDWEThinker(
         queue=queues,
         result_dir=cfg.output_dir / 'result',
         ensemble=ensemble,
         checkpointer=checkpointer,
         num_iterations=cfg.num_iterations,
+        use_stale_model=cfg.use_stale_model,
         max_retries=cfg.max_retries,
     )
     logging.info('Created the task server and task generator')

@@ -12,9 +12,11 @@ from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe import validate_and_resolve_file
-from deepdrivewe.simulation.openmm import ContactMapRMSDReporter
+from deepdrivewe.simulation.openmm import CollectionReporter
+from deepdrivewe.simulation.openmm import CoordinatesCollector
 from deepdrivewe.simulation.openmm import OpenMMConfig
 from deepdrivewe.simulation.openmm import OpenMMSimulation
+from deepdrivewe.simulation.openmm import RMSDCollector
 
 
 class SimulationConfig(BaseModel):
@@ -83,30 +85,34 @@ def run_simulation(
         checkpoint_file=metadata.parent_restart_file,
     )
 
-    # Add the contact map and RMSD reporter
-    reporter = ContactMapRMSDReporter(
+    # Setup the data collectors and reporter
+    reporter = CollectionReporter(
         report_interval=config.openmm_config.report_steps,
-        reference_file=config.reference_file,
-        cutoff_angstrom=config.cutoff_angstrom,
-        mda_selection=config.mda_selection,
         openmm_selection=config.openmm_selection,
+        collectors=[
+            CoordinatesCollector(
+                reference_file=config.reference_file,
+                mda_selection=config.mda_selection,
+            ),
+            RMSDCollector(
+                reference_file=config.reference_file,
+                mda_selection=config.mda_selection,
+                topic='pcoords',
+            ),
+        ],
     )
 
     # Run the simulation
     simulation.run(reporters=[reporter])
 
-    # Run the contact map and RMSD analysis
-    contact_maps = reporter.get_contact_maps()
-    pcoord = reporter.get_rmsds()
+    # Get the collected data
+    data = reporter.get_collected_data()
 
     # Update the simulation metadata
     metadata.restart_file = simulation.restart_file
-    metadata.pcoord = pcoord.tolist()
+    metadata.pcoord = data['pcoords'].tolist()
     metadata.mark_simulation_end()
 
-    result = SimResult(
-        data={'contact_maps': contact_maps, 'pcoord': pcoord},
-        metadata=metadata,
-    )
+    result = SimResult(data=data, metadata=metadata)
 
     return result

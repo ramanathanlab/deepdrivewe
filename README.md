@@ -7,6 +7,7 @@ To install the package, run the following command:
 ```bash
 git clone git@github.com:braceal/deepdrivewe.git
 cd deepdrivewe
+pip install -U pip setuptools wheel
 pip install -e .
 ```
 
@@ -17,14 +18,11 @@ cd deepdrivewe
 conda create -n deepdrivewe python=3.10 -y
 conda install omnia::ambertools -y
 conda install conda-forge::openmm==7.7 -y
+pip install -U pip setuptools wheel
 pip install -e .
 ```
 
-To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/)
-for your system and drivers. To use `mdlearn`, you may need an earlier version of PyTorch:
-```bash
-pip install torch==1.12
-```
+To use deep learning models, install the correct version of [PyTorch](https://pytorch.org/get-started/locally/).
 
 ### Installation on VISTA
 
@@ -48,6 +46,18 @@ and the YAML config file, and then run the following command:
 sbatch examples/openmm_ntl9_ddwe_vista/submit.sh
 ```
 
+### Installation on Polaris
+
+To install the package on Polaris@ALCF, run the following commands:
+```bash
+module use /soft/modulefiles; module load conda
+```
+
+Follow the full installation instructions above, and install torch via:
+```bash
+pip install torch
+```
+
 ## Usage
 To run the example, run the following command:
 ```bash
@@ -61,13 +71,28 @@ ps -e | grep -E 'sander|python|process_worker|parsl' | awk '{print $1}' | xargs 
 
 To check if any errors occurred in simulations or inference:
 ```bash
-cat runs/naive_resampler_test_v2/result/inference.json | grep '"success": false'
-cat runs/naive_resampler_test_v2/result/simulation.json | grep '"success": false'
+cat runs/*/result/inference.json | grep '"success": false'
+cat runs/*/result/simulation.json | grep '"success": false'
 ```
 
 To check the number of iterations completed:
 ```bash
 h5ls -d runs/naive_resampler_test_v2/west.h5/iterations
+```
+
+To watch the progress of the simulation:
+```bash
+tail -f runs/*/simulation/*/*/*.log
+```
+
+To pretty print potential errors:
+```bash
+deepdrivewe print-errors --run_dir runs/ntl9-v1
+```
+
+Run the following, for more information:
+```bash
+deepdrivewe --help
 ```
 
 ### Running with SynD

@@ -1,4 +1,4 @@
-"""Inference module for the synD LOF example."""
+"""Inference module for the LOF strategy."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import field_validator
 from sklearn.neighbors import LocalOutlierFactor
 
 from deepdrivewe import BasisStates
@@ -15,8 +14,8 @@ from deepdrivewe import IterationMetadata
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
 from deepdrivewe import TargetState
-from deepdrivewe import validate_and_resolve_file
-from deepdrivewe.ai import warmstart_model
+from deepdrivewe import TrainResult
+from deepdrivewe.ai import warmstart_aae
 from deepdrivewe.binners import RectilinearBinner
 from deepdrivewe.recyclers import LowRecycler
 from deepdrivewe.resamplers import LOFLowResampler
@@ -24,14 +23,6 @@ from deepdrivewe.resamplers import LOFLowResampler
 
 class InferenceConfig(BaseModel):
     """Arguments for the inference module."""
-
-    # AI model settings
-    ai_model_config_path: Path = Field(
-        description='The path to the CVAE model YAML configuration file.',
-    )
-    ai_model_checkpoint_path: Path = Field(
-        description='The path to the CVAE model checkpoint file.',
-    )
 
     # Local outlier factor settings
     lof_n_neighbors: int = Field(
@@ -69,15 +60,10 @@ class InferenceConfig(BaseModel):
         'is 10e-40.',
     )
 
-    @field_validator('ai_model_config_path', 'ai_model_checkpoint_path')
-    @classmethod
-    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
-        """Validate and resolve the file path."""
-        return validate_and_resolve_file(value)
-
 
 def run_inference(
     sim_output: list[SimResult],
+    train_output: TrainResult,
     basis_states: BasisStates,
     target_states: list[TargetState],
     config: InferenceConfig,
@@ -100,20 +86,17 @@ def run_inference(
     cur_sims = [sim.metadata for sim in sim_output]
 
     # Load the model and history
-    model, history = warmstart_model(
-        config_path=config.ai_model_config_path,
-        checkpoint_path=config.ai_model_checkpoint_path,
+    model, history = warmstart_aae(
+        train_output.config_path,
+        train_output.checkpoint_path,
     )
 
-    # Extract the last frame contact maps and rmsd from each simulation
-    contact_maps = [sim.data['contact_maps'][-1] for sim in sim_output]
+    # Extract the last frame coordinates and rmsd from each simulation
+    coordinates = [sim.data['coordinates'][-1] for sim in sim_output]
     pcoords = [sim.data['pcoords'][-1] for sim in sim_output]
 
-    # Convert to int16
-    contact_maps = [x.astype(np.int16) for x in contact_maps]
-
     # Compute the latent space representation
-    z = model.predict(x=contact_maps)
+    z = model.predict(x=coordinates)
 
     # Concatenate the latent history
     if history:

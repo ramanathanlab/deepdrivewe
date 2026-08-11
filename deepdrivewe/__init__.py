@@ -14,6 +14,7 @@ from deepdrivewe.api import SimMetadata
 from deepdrivewe.api import SimResult
 from deepdrivewe.api import TargetState
 from deepdrivewe.api import TrainResult
+from deepdrivewe.api import validate_and_resolve_file
 from deepdrivewe.api import WeightedEnsemble
 from deepdrivewe.binners import Binner
 from deepdrivewe.checkpoint import EnsembleCheckpointer

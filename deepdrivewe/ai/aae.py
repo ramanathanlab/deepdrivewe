@@ -1,4 +1,4 @@
-"""Convolutional Variational Autoencoder for Contact Maps."""
+"""Adversarial Autoencoder for Contact Maps."""
 
 from __future__ import annotations
 
@@ -14,121 +14,123 @@ from deepdrivewe import BaseModel
 from deepdrivewe.ai.utils import LatentSpaceHistory
 
 
-class ConvolutionalVAEConfig(BaseModel):
-    """Settings for mdlearn SymmetricConv2dVAETrainer."""
+class AdversarialAEConfig(BaseModel):
+    """Settings for mdlearn 3dAAE model."""
 
-    input_shape: tuple[int, int, int] = Field(
-        default=(1, 40, 40),
-        description='The shape of the input contact maps.',
+    scalar_dset_names: list[str] = Field(
+        description='Name of scalar datasets to paint w.r.t.',
     )
-    filters: list[int] = Field(
-        default=[16, 16, 16, 16],
-        description='The number of filters in each convolutional layer.',
+    num_points: int = Field(
+        default=3378,  # Number of Spike protein residues
+        description='Number of residues in the protein'
+        ' (i.e., points in the point cloud).',
     )
-    kernels: list[int] = Field(
-        default=[3, 3, 3, 3],
-        description='The kernel size in each convolutional layer.',
-    )
-    strides: list[int] = Field(
-        default=[1, 1, 1, 2],
-        description='The stride in each convolutional layer.',
-    )
-    affine_widths: list[int] = Field(
-        default=[128],
-        description='The width of the affine layers.',
-    )
-    affine_dropouts: list[float] = Field(
-        default=[0.5],
-        description='The dropout rate for the affine layers.',
+    num_features: int = Field(
+        default=0,
+        description='Number of additional per-point features'
+        ' in addition to xyz coords.',
     )
     latent_dim: int = Field(
         default=3,
-        description='The dimensionality of the latent space.',
+        description='Dimensionality of the latent space.',
+    )
+    encoder_bias: bool = Field(
+        default=True,
+        description='Whether to use bias in the encoder.',
+    )
+    encoder_relu_slope: float = Field(
+        default=0.0,
+        description='The slope of the ReLU function in the encoder.',
+    )
+    encoder_filters: list[int] = Field(
+        default=[64, 128, 256, 256, 512],
+        description='The number of filters in each convolutional layer'
+        ' of the encoder.',
+    )
+    encoder_kernels: list[int] = Field(
+        default=[5, 3, 3, 1, 1],
+        description='The kernel size in each convolutional layer '
+        'of the encoder.',
+    )
+    decoder_bias: bool = Field(
+        default=True,
+        description='Whether to use bias in the decoder.',
+    )
+    decoder_relu_slope: float = Field(
+        default=0.0,
+        description='The slope of the ReLU function in the decoder.',
+    )
+    decoder_affine_widths: list[int] = Field(
+        default=[64, 128, 512, 1024],
+        description='The width of the affine layers in the decoder.',
+    )
+    discriminator_bias: bool = Field(
+        default=True,
+        description='Whether to use bias in the discriminator.',
+    )
+    discriminator_relu_slope: float = Field(
+        default=0.0,
+        description='The slope of the ReLU function in the discriminator.',
+    )
+    discriminator_affine_widths: list[int] = Field(
+        default=[512, 512, 128, 64],
+        description='The width of the affine layers in the discriminator.',
+    )
+    noise_mu: float = Field(
+        default=0.0,
+        description='Mean of the prior distribution.',
+    )
+    noise_std: float = Field(
+        default=0.2,
+        description='Standard deviation of the prior distribution.',
+    )
+    lambda_gp: float = Field(
+        default=10.0,
+        description='Relative weight to put on gradient penalty.',
     )
     lambda_rec: float = Field(
-        default=1.0,
-        description='The reconstruction loss weight.',
+        default=0.5,
+        description='Relative weight to put on reconstruction loss.',
     )
     num_data_workers: int = Field(
         default=0,
-        description='The number of data workers for the data loader.',
-    )
-    prefetch_factor: int | None = Field(
-        default=None,
-        description='The prefetch factor for the data loader.',
+        description='Number of data loaders for inference.',
     )
     batch_size: int = Field(
-        default=64,
-        description='The batch size for training.',
+        default=32,
+        description='Inference batch size.',
     )
     inference_batch_size: int = Field(
-        default=128,
-        description='The batch size for inference.',
-    )
-    device: str = Field(
-        default='cuda',
-        description='The device to use for training.',
-    )
-    optimizer_name: str = Field(
-        default='RMSprop',
-        description='The optimizer to use for training.',
-    )
-    optimizer_hparams: dict[str, float] = Field(
-        default={
-            'lr': 0.001,
-            'weight_decay': 0.00001,
-        },
-        description='The hyperparameters for the optimizer.',
-    )
-    epochs: int = Field(
-        default=100,
-        description='The number of epochs to train for.',
-    )
-    checkpoint_log_every: int = Field(
-        default=25,
-        description='The number of epochs between checkpoint saves.',
-    )
-    plot_log_every: int = Field(
-        default=25,
-        description='The number of epochs between plot saves.',
-    )
-    plot_n_samples: int = Field(
-        default=5000,
-        description='The number of samples to plot.',
-    )
-    plot_method: str | None = Field(
-        default='raw',
-        description='The method to use for plotting.',
+        default=64,
+        description='Inference batch size.',
     )
 
 
-class ConvolutionalVAE:
-    """A convolutional variational autoencoder for contact maps."""
+class AdversarialAE:
+    """Adversarial autoencoder for protein conformers."""
 
     def __init__(
         self,
-        config: ConvolutionalVAEConfig,
+        config: AdversarialAEConfig,
         checkpoint_path: Path | None = None,
     ) -> None:
         """Initialize the ConvolutionalVAE.
 
         Parameters
         ----------
-        config : ConvolutionalVAEConfig
-            The configuration settings for the VAE.
+        config : AdversarialAEConfig
+            The configuration settings for the model.
         checkpoint_path : Path, optional
             The path to the model checkpoint to load, by default None.
         """
         # Lazy import to avoid needing torch to load module
-        from mdlearn.nn.models.vae.symmetric_conv2d_vae import (
-            SymmetricConv2dVAETrainer,
-        )
+        from mdlearn.nn.models.aae.point_3d_aae import AAE3dTrainer
 
         self.config = config
         self.checkpoint_path = checkpoint_path
 
         # Initialize the model
-        self.trainer = SymmetricConv2dVAETrainer(**config.model_dump())
+        self.trainer = AAE3dTrainer(**config.model_dump())
 
         # Load the model checkpoint if specified
         if checkpoint_path is not None:
@@ -214,15 +216,15 @@ class ConvolutionalVAE:
             The predicted latent space coordinates (n_samples, latent_dim).
         """
         # Predict the latent space coordinates
-        z, *_ = self.trainer.predict(x)
+        z, _ = self.trainer.predict(x)
         return z
 
 
 @lru_cache(maxsize=1)
-def warmstart_cvae(
+def warmstart_aae(
     config_path: Path,
     checkpoint_path: Path,
-) -> tuple[ConvolutionalVAE, LatentSpaceHistory]:
+) -> tuple[AdversarialAE, LatentSpaceHistory]:
     """Load the model once and then return a cached version.
 
     Parameters
@@ -234,8 +236,8 @@ def warmstart_cvae(
 
     Returns
     -------
-    ConvolutionalVAE
-        The ConvolutionalVAE model.
+    AdversarialAE
+        The AdversarialAE model.
     LatentSpaceHistory
         The latent space history.
     """
@@ -243,10 +245,10 @@ def warmstart_cvae(
     print(f'Cold start model from checkpoint {checkpoint_path}')
 
     # Load the model configuration
-    model_config = ConvolutionalVAEConfig.from_yaml(config_path)
+    model_config = AdversarialAEConfig.from_yaml(config_path)
 
     # Load the model
-    model = ConvolutionalVAE(
+    model = AdversarialAE(
         model_config,
         checkpoint_path=checkpoint_path,
     )

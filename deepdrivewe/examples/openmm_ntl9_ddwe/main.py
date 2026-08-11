@@ -26,6 +26,7 @@ from deepdrivewe import BaseModel
 from deepdrivewe import BasisStates
 from deepdrivewe import EnsembleCheckpointer
 from deepdrivewe import TargetState
+from deepdrivewe import validate_and_resolve_file
 from deepdrivewe import WeightedEnsemble
 from deepdrivewe.examples.openmm_ntl9_ddwe.inference import InferenceConfig
 from deepdrivewe.examples.openmm_ntl9_ddwe.inference import run_inference
@@ -34,7 +35,9 @@ from deepdrivewe.examples.openmm_ntl9_ddwe.simulate import SimulationConfig
 from deepdrivewe.examples.openmm_ntl9_ddwe.train import run_train
 from deepdrivewe.examples.openmm_ntl9_ddwe.train import TrainConfig
 from deepdrivewe.parsl import ComputeConfigTypes
+from deepdrivewe.workflows.ddwe import DDWEStreamThinker
 from deepdrivewe.workflows.ddwe import DDWEThinker
+from deepdrivewe.workflows.stream import ProxyStreamConfig
 
 
 class RMSDBasisStateInitializer(BaseModel):
@@ -47,6 +50,12 @@ class RMSDBasisStateInitializer(BaseModel):
         default='protein and name CA',
         description='The MDAnalysis selection string for the atoms to use.',
     )
+
+    @field_validator('reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
 
     def __call__(self, basis_file: str) -> list[float]:
         """Initialize the basis state parent coordinates."""
@@ -101,6 +110,10 @@ class ExperimentSettings(BaseModel):
     )
     compute_config: ComputeConfigTypes = Field(
         description='Config for the compute resources.',
+    )
+    stream_config: ProxyStreamConfig | None = Field(
+        default=None,
+        description='Stream configuration for simulation data.',
     )
     use_stale_model: bool = Field(
         default=False,
@@ -190,11 +203,13 @@ if __name__ == '__main__':
         run_simulation,
         config=cfg.simulation_config,
         output_dir=cfg.output_dir / 'simulation',
+        stream_config=cfg.stream_config,
     )
     my_run_train = partial(
         run_train,
         config=cfg.train_config,
         output_dir=cfg.output_dir / 'train',
+        stream_config=cfg.stream_config,
     )
     my_run_inference = partial(
         run_inference,
@@ -219,15 +234,28 @@ if __name__ == '__main__':
     )
 
     # Create the workflow thinker
-    thinker = DDWEThinker(
-        queue=queues,
-        result_dir=cfg.output_dir / 'result',
-        ensemble=ensemble,
-        checkpointer=checkpointer,
-        num_iterations=cfg.num_iterations,
-        use_stale_model=cfg.use_stale_model,
-        max_retries=cfg.max_retries,
-    )
+    if cfg.stream_config is None:
+        thinker = DDWEThinker(
+            queue=queues,
+            result_dir=cfg.output_dir / 'result',
+            ensemble=ensemble,
+            checkpointer=checkpointer,
+            num_iterations=cfg.num_iterations,
+            use_stale_model=cfg.use_stale_model,
+            max_retries=cfg.max_retries,
+        )
+    else:
+        thinker = DDWEStreamThinker(
+            queue=queues,
+            result_dir=cfg.output_dir / 'result',
+            ensemble=ensemble,
+            checkpointer=checkpointer,
+            num_iterations=cfg.num_iterations,
+            use_stale_model=cfg.use_stale_model,
+            max_retries=cfg.max_retries,
+            stream_config=cfg.stream_config,
+        )
+
     logging.info('Created the task server and task generator')
 
     try:

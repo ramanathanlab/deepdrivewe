@@ -6,13 +6,18 @@ from pathlib import Path
 from typing import Sequence
 
 from pydantic import Field
+from pydantic import field_validator
 
 from deepdrivewe import BaseModel
 from deepdrivewe import SimMetadata
 from deepdrivewe import SimResult
-from deepdrivewe.simulation.openmm import ContactMapRMSDReporter
+from deepdrivewe import validate_and_resolve_file
+from deepdrivewe.simulation.openmm import CollectionReporter
+from deepdrivewe.simulation.openmm import ContactMapCollector
 from deepdrivewe.simulation.openmm import OpenMMConfig
 from deepdrivewe.simulation.openmm import OpenMMSimulation
+from deepdrivewe.simulation.openmm import RMSDCollector
+from deepdrivewe.workflows.stream import ProxyStreamConfig
 
 
 class SimulationConfig(BaseModel):
@@ -41,11 +46,18 @@ class SimulationConfig(BaseModel):
         description='The OpenMM selection strings for the atoms to use.',
     )
 
+    @field_validator('top_file', 'reference_file')
+    @classmethod
+    def validate_and_resolve_file(cls, value: Path | None) -> Path | None:
+        """Validate and resolve the file path."""
+        return validate_and_resolve_file(value)
+
 
 def run_simulation(
     metadata: SimMetadata,
     config: SimulationConfig,
     output_dir: Path,
+    stream_config: ProxyStreamConfig | None = None,
 ) -> SimResult:
     """Run a simulation and return the pcoord and coordinates."""
     # Add performance logging
@@ -75,30 +87,39 @@ def run_simulation(
         checkpoint_file=metadata.parent_restart_file,
     )
 
-    # Add the contact map and RMSD reporter
-    reporter = ContactMapRMSDReporter(
+    # Setup the data collectors and reporter
+    reporter = CollectionReporter(
         report_interval=config.openmm_config.report_steps,
-        reference_file=config.reference_file,
-        cutoff_angstrom=config.cutoff_angstrom,
-        mda_selection=config.mda_selection,
         openmm_selection=config.openmm_selection,
+        collectors=[
+            ContactMapCollector(
+                cutoff_angstrom=config.cutoff_angstrom,
+            ),
+            RMSDCollector(
+                reference_file=config.reference_file,
+                mda_selection=config.mda_selection,
+                topic='pcoords',
+            ),
+        ],
+        stream_config=stream_config,
     )
 
     # Run the simulation
     simulation.run(reporters=[reporter])
 
-    # Run the contact map and RMSD analysis
-    contact_maps = reporter.get_contact_maps()
-    pcoord = reporter.get_rmsds()
+    # Get the collected data
+    data = reporter.get_collected_data()
 
     # Update the simulation metadata
     metadata.restart_file = simulation.restart_file
-    metadata.pcoord = pcoord.tolist()
+    metadata.pcoord = data['pcoords'].tolist()
     metadata.mark_simulation_end()
 
-    result = SimResult(
-        data={'contact_maps': contact_maps, 'pcoords': pcoord},
-        metadata=metadata,
-    )
+    # If we are streaming the data, only keep the last frame
+    # for use in the inference module.
+    if stream_config is not None:
+        data = {key: value[:-1] for key, value in data.items()}
+
+    result = SimResult(data=data, metadata=metadata)
 
     return result

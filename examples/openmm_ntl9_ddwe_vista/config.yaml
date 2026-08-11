@@ -1,4 +1,5 @@
 # Configuration file for the NTL9 folding example using OpenMM
+# The inputs files are relative to the root of the deepdrivewe repository.
 
 # The output directory for the runs
 output_dir: runs/ntl9-v1
@@ -9,7 +10,7 @@ num_iterations: 106
 # The basis states to use for the ensemble
 basis_states:
   # The directory containing the basis states sub directories
-  basis_state_dir: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/inputs
+  basis_state_dir: examples/openmm_ntl9_ddwe_vista/inputs
   # The file extension for the basis state files
   basis_state_ext: .pdb
   # The number of basis states to use
@@ -21,7 +22,7 @@ basis_states:
 # Strategy for initializing the basis state progress coordinates
 basis_state_initializer:
   # The path to the reference PDB file
-  reference_file: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/common_files/reference.pdb
+  reference_file: examples/openmm_ntl9_ddwe_vista/common_files/reference.pdb
 
 # The configuration for the simulation
 simulation_config:
@@ -34,28 +35,28 @@ simulation_config:
     # The time step to use in picoseconds
     dt_ps: 0.002
     # The temperature to run the simulation at
-    temperature: 300.0
+    temperature_kelvin: 300.0
     # The solvent type
     solvent_type: implicit
     # The hardware platform to run the simulation on
     hardware_platform: CUDA
 
   # The path to the reference PDB file
-  reference_file: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/common_files/reference.pdb
+  reference_file: examples/openmm_ntl9_ddwe_vista/common_files/reference.pdb
 
 # The configuration for training
 train_config:
   # The path to the CVAE model configuration file
-  config_path: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/cvae-config.yaml
+  config_path: examples/openmm_ntl9_ddwe_vista/cvae-config.yaml
   # The path to the CVAE model weights file
-  checkpoint_path: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/checkpoint-epoch-100.pt
+  checkpoint_path: examples/openmm_ntl9_ddwe_vista/checkpoint-epoch-100.pt
 
 # The configuration for the inference
 inference_config:
   # The path to the CVAE model configuration file
-  ai_model_config_path: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/cvae-config.yaml
+  ai_model_config_path: examples/openmm_ntl9_ddwe_vista/cvae-config.yaml
   # The path to the CVAE model weights file
-  ai_model_checkpoint_path: /scratch/08288/abrace/projects/ddwe/src/deepdrivewe/examples/openmm_ntl9_ddwe_vista/checkpoint-epoch-100.pt
+  ai_model_checkpoint_path: examples/openmm_ntl9_ddwe_vista/checkpoint-epoch-100.pt
 
   # The number of neighbors to use for LOF
   lof_n_neighbors: 20

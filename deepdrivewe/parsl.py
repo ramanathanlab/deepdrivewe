@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from abc import ABC
 from abc import abstractmethod
@@ -15,7 +16,7 @@ if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
 else:  # pragma: <3.11 cover
     from typing_extensions import Self
 
-
+from parsl.addresses import address_by_hostname
 from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import WrappedLauncher
@@ -128,6 +129,92 @@ class WorkstationConfig(BaseComputeConfig):
         )
 
 
+class WorkstationV2Config(BaseComputeConfig):
+    """Compute config for a workstation."""
+
+    name: Literal['workstation_v2'] = 'workstation_v2'  # type: ignore[assignment]
+
+    available_accelerators: int | Sequence[str] = Field(
+        description='Number of GPU accelerators to use.',
+    )
+    worker_port_range: tuple[int, int] = Field(
+        default=(10000, 20000),
+        description='Port range for the workers.',
+    )
+    retries: int = Field(
+        default=1,
+        description='Number of retries for the task.',
+    )
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+    address: str = Field(
+        default='localhost',
+        description='Address to bind the executor to [localhost, hostname].',
+    )
+
+    @model_validator(mode='after')
+    def validate_address(self) -> Self:
+        """Check that the address is valid."""
+        if self.address not in ('localhost', 'hostname'):
+            raise ValueError('Address must be either localhost or hostname.')
+
+        # Get the hostname if the address is 'hostname'
+        if self.address == 'hostname':
+            self.address = address_by_hostname()
+
+        return self
+
+    @model_validator(mode='after')
+    def validate_available_accelerators(self) -> Self:
+        """Check there are at least 3 GPUs."""
+        min_gpus = 3
+        gpus = self.available_accelerators
+        num_gpus = gpus if isinstance(gpus, int) else len(gpus)
+        if num_gpus < min_gpus:
+            raise ValueError('Must use at least 3 GPUs.')
+
+        return self
+
+    def _get_htex(
+        self,
+        label: str,
+        available_accelerators: Sequence[str],
+    ) -> HighThroughputExecutor:
+        return HighThroughputExecutor(
+            address=self.address,
+            label=label,
+            cpu_affinity='block',
+            available_accelerators=available_accelerators,
+            worker_port_range=self.worker_port_range,
+            provider=LocalProvider(init_blocks=1, max_blocks=1),
+        )
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration."""
+        # Handle the case where available_accelerators is an int
+        accelerators = self.available_accelerators
+        if isinstance(accelerators, int):
+            accelerators = [str(i) for i in range(accelerators)]
+
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.retries,
+            max_idletime=self.max_idletime,
+            executors=[
+                # Assign 1 GPU each for training and inference
+                self._get_htex('train_htex', accelerators[:1]),
+                self._get_htex('inference_htex', accelerators[1:2]),
+                # Assign the remaining GPUs to simulation
+                self._get_htex('simulation_htex', accelerators[2:]),
+            ],
+        )
+
+
 class HybridWorkstationConfig(BaseComputeConfig):
     """Run simulations on CPU and AI models on GPU."""
 
@@ -183,6 +270,14 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
         description='Config for the GPU executor to run AI models.',
     )
 
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
     @model_validator(mode='after')
     def validate_htex_labels(self) -> Self:
         """Ensure that the labels are unique."""
@@ -196,6 +291,7 @@ class InferenceTrainWorkstationConfig(BaseComputeConfig):
         return Config(
             run_dir=str(run_dir),
             retries=self.train_gpu_config.retries,
+            max_idletime=self.max_idletime,
             executors=[
                 HighThroughputExecutor(
                     address='localhost',
@@ -273,8 +369,92 @@ class VistaConfig(BaseComputeConfig):
                 # Assign 1 node each for training and inference
                 self._get_htex('train_htex', 1),
                 self._get_htex('inference_htex', 1),
-                # Assign the remaining nodes to the simulation
+                # Assign the remaining nodes to simulation
                 self._get_htex('simulation_htex', self.num_nodes - 2),
+            ],
+        )
+
+
+class PolarisConfig(BaseComputeConfig):
+    """Compute config for a workstation."""
+
+    name: Literal['polaris'] = 'polaris'  # type: ignore[assignment]
+
+    num_nodes: int = Field(
+        ge=3,
+        description='Number of nodes to use (must use at least 3 nodes).',
+    )
+    retries: int = Field(
+        default=1,
+        description='Number of retries for the task.',
+    )
+    # We have a long idletime to ensure train/inference executors are not
+    # shut down (to enable warmstarts) while simulations are running.
+    max_idletime: float = Field(
+        default=60.0 * 10,
+        description='The maximum idle time allowed for an executor before '
+        'strategy could shut down unused blocks. Default is 10 minutes.',
+    )
+
+    def _write_nodefiles(self, run_dir: Path) -> None:
+        """Write nodefiles for the train, inference, and simulation tasks."""
+        # Get the nodefile
+        node_file = os.environ['PBS_NODEFILE']
+        with open(node_file) as fp:
+            hosts = [x.strip() for x in fp]
+
+        # Determine the node files for each task type
+        labels = ['train_htex', 'inference_htex', 'simulation_htex']
+        hostnames = [hosts[0], hosts[1], hosts[2:]]
+
+        # Write the nodefiles for each task type
+        for label, hnames in zip(labels, hostnames):
+            nodefile = run_dir / f'{label}.hosts'
+            nodefile.write_text('\n'.join(hnames))
+
+    def _get_htex(
+        self,
+        label: str,
+        num_nodes: int,
+        run_dir: Path,
+    ) -> HighThroughputExecutor:
+        hostfile = run_dir / f'{label}.hosts'
+        return HighThroughputExecutor(
+            label=label,
+            cpu_affinity='block-reverse',
+            available_accelerators=4,
+            provider=LocalProvider(
+                launcher=WrappedLauncher(
+                    f'mpiexec -n {num_nodes} --ppn 1 --hostfile '
+                    f'{hostfile} --depth=64 --cpu-bind depth',
+                ),
+                cmd_timeout=120,
+                nodes_per_block=num_nodes,
+                init_blocks=1,
+                max_blocks=1,
+            ),
+        )
+
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
+        """Generate a Parsl configuration."""
+        # Convert run_dir to a Path object and create the directory
+        run_dir = Path(run_dir)
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        # Write the nodefiles for each task type
+        self._write_nodefiles(run_dir)
+
+        # Return the Parsl configuration
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.retries,
+            max_idletime=self.max_idletime,
+            executors=[
+                # Assign 1 GPU each for training and inference
+                self._get_htex('train_htex', 1, run_dir),
+                self._get_htex('inference_htex', 1, run_dir),
+                # Assign the remaining GPUs to simulation
+                self._get_htex('simulation_htex', self.num_nodes - 2, run_dir),
             ],
         )
 
@@ -282,7 +462,9 @@ class VistaConfig(BaseComputeConfig):
 ComputeConfigTypes = Union[
     LocalConfig,
     WorkstationConfig,
+    WorkstationV2Config,
     HybridWorkstationConfig,
     InferenceTrainWorkstationConfig,
     VistaConfig,
+    PolarisConfig,
 ]
