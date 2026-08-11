@@ -49,4 +49,38 @@ class TestRectilinearBinner:
         assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
 
         with pytest.warns(UserWarning):
+            # first 6 points are in bins [0, 5]. The last point locate outside the bounds but will be clipped to bin 5
             assert (assigner.assign_bins(coords) == [0, 1, 2, 3, 4, 5, 5]).all()
+
+    def test3dAssign(self) -> None: 
+        boundaries = [(0, 1, 2), (0, 1, 2, 3, 4, 5), (0, 1, 2)]
+        coords = np.array([(0.5, 0.5, 0.5),
+                           (0.5, 0.5, 1.5),
+                           (0.5, 1.5, 0.5),
+                           (0.5, 1.5, 1.5),
+                           (0.5, 2.5, 0.5),
+                           (0.5, 2.5, 1.5),
+                           (0.5, 3.5, 0.5),
+                           (0.5, 3.5, 1.5),
+                           (0.5, 4.5, 0.5),
+                           (0.5, 4.5, 1.5),
+                           (1.5, 0.5, 0.5),
+                           (1.5, 0.5, 1.5),
+                           (1.5, 1.5, 0.5),
+                           (1.5, 1.5, 1.5),
+                           (1.5, 2.5, 0.5),
+                           (1.5, 2.5, 1.5),
+                           (1.5, 3.5, 0.5),
+                           (1.5, 3.5, 1.5),
+                           (1.5, 4.5, 0.5),
+                           (1.5, 4.5, 1.5),
+                           (2.5, 4.5, 1.5),
+                           (1.5, 5.5, 1.5),])
+
+        assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
+
+        with pytest.warns(UserWarning):
+            # first 20 points are in bins [0, 19]. The last two locate outside the bounds but will be clipped to bin 19
+            assert (assigner.assign_bins(coords) == list(range(20)) + [19, 19]).all()
+
+
