@@ -43,10 +43,14 @@ def print_errors(
 
         # Parse each line as JSON
         for line in file_text.splitlines():
+            # Parse the line as JSON
             data = json.loads(line)
-            if 'failure_info' in data and 'traceback' in data['failure_info']:
+            # Get the failure info
+            failure_info = data.get('failure_info', None)
+            # Print the method and traceback if it exists
+            if failure_info is not None and 'traceback' in failure_info:
                 console.print(
-                    f"[bold blue]Method:[/bold blue] {data['method']}",
+                    f'[bold blue]Method:[/bold blue] {data["method"]}',
                 )
                 console.print(data['failure_info']['traceback'], style='red')
 
