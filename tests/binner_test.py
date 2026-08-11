@@ -41,3 +41,12 @@ class TestRectilinearBinner:
 
         with pytest.warns(UserWarning):
             assert (assigner.assign_bins(coords) == [0, 0, 5, 10, 10, 15, 7, 8]).all()
+
+    def test2dAssign_v2(self) -> None:
+        boundaries = [(0, 1, 2, 3), (0, 1, 2)]
+        coords = np.array([(0.5, 0.5), (0.5, 1.5), (1.5, 0.5), (1.5, 1.5), (2.5, 0.5), (2.5, 1.5), (3.5, 1.5)])
+
+        assigner = MultiRectilinearBinner(boundaries, bin_target_counts=3, target_state_inds=[None])
+
+        with pytest.warns(UserWarning):
+            assert (assigner.assign_bins(coords) == [0, 1, 2, 3, 4, 5, 5]).all()
